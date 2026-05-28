@@ -48,6 +48,7 @@ import { PatientsPage as MamaCarePatientsPage } from '@/pages/mamacare';
 import { PatientProfilePage as MamaCarePatientProfilePage } from '@/pages/mamacare';
 import { ReferralsPage as MamaCareReferralsPage } from '@/pages/mamacare';
 import { AnalyticsPage as MamaCareAnalyticsPage } from '@/pages/mamacare';
+import { FacilitiesPage as MamaCareFacilitiesPage } from '@/pages/mamacare';
 import {
   NetworkAppRosterPage,
   NetworkAuthorPage,
@@ -109,6 +110,7 @@ export function AppRoutingSetup() {
           <Route path="/patients/:id" element={<MamaCarePatientProfilePage />} />
           <Route path="/referrals" element={<MamaCareReferralsPage />} />
           <Route path="/analytics" element={<MamaCareAnalyticsPage />} />
+          <Route path="/facilities" element={<MamaCareFacilitiesPage />} />
           <Route path="/dark-sidebar" element={<Demo1DarkSidebarPage />} />
           <Route
             path="/public-profile/profiles/default/"
