@@ -40,3 +40,18 @@ export const REFERRAL_STATUS_COLORS: Record<ReferralStatus, string> = {
   Resolved: 'secondary',
   'Lost to Follow-up': 'muted',
 }
+
+export type UserRole = 'CHW' | 'Provider'
+
+export const currentUserRole: UserRole = 'Provider'
+
+export const ROLE_BADGE_VARIANT: Record<UserRole, string> = {
+  CHW: 'primary',
+  Provider: 'success',
+}
+
+export const MOCK_USER = {
+  name: 'Amina Kofi',
+  email: 'amina@mamacare.ai',
+  role: currentUserRole,
+}
