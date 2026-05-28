@@ -18,10 +18,8 @@ export function Sidebar() {
       )}
     >
       <SidebarHeader />
-      <div className="overflow-hidden">
-        <div className="w-(--sidebar-default-width)">
-          <SidebarMenu />
-        </div>
+      <div className="overflow-hidden grow">
+        <SidebarMenu />
       </div>
     </div>
   );
