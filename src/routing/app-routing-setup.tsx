@@ -43,6 +43,7 @@ import {
   AuthWelcomeMessagePage,
 } from '@/pages/auth';
 import { DefaultPage, Demo1DarkSidebarPage } from '@/pages/dashboards';
+import { DashboardPage as MamaCareDashboardPage } from '@/pages/mamacare';
 import {
   NetworkAppRosterPage,
   NetworkAuthorPage,
@@ -99,7 +100,7 @@ export function AppRoutingSetup() {
     <Routes>
       <Route element={<RequireAuth />}>
         <Route element={<Demo1Layout />}>
-          <Route path="/" element={<DefaultPage />} />
+          <Route path="/" element={<MamaCareDashboardPage />} />
           <Route path="/dark-sidebar" element={<Demo1DarkSidebarPage />} />
           <Route
             path="/public-profile/profiles/default/"
