@@ -75,20 +75,22 @@ export function SidebarMenu() {
         </AccordionMenuSub>
       );
     } else {
+      const isActive = matchPath(item.path || '');
       return (
-        <AccordionMenuItem
-          key={index}
-          value={item.path || ''}
-          className="text-sm font-medium"
-        >
+        <div key={index} className="flex">
           <Link
             to={item.path || '#'}
-            className="flex items-center justify-between grow gap-2"
+            data-selected={isActive ? 'true' : undefined}
+            className={cn(
+              'relative cursor-pointer select-none flex w-full text-start items-center rounded-lg gap-2 px-2 py-1.5 text-sm outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground',
+              isActive && 'bg-muted text-primary font-medium',
+              classNames?.item,
+            )}
           >
-            {item.icon && <item.icon data-slot="accordion-menu-icon" />}
+            {item.icon && <item.icon data-slot="accordion-menu-icon" className="size-4 shrink-0 opacity-60" />}
             <span data-slot="accordion-menu-title">{item.title}</span>
           </Link>
-        </AccordionMenuItem>
+        </div>
       );
     }
   };
