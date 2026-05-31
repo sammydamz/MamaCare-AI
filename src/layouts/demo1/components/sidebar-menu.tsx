@@ -1,8 +1,9 @@
 'use client';
 
-import { JSX, useCallback } from 'react';
+import { JSX, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { MENU_SIDEBAR } from '@/config/menu.config';
+import { currentUserRole } from '@/lib/mamacare/constants';
 import { MenuConfig, MenuItem } from '@/config/types';
 import { cn } from '@/lib/utils';
 import {
@@ -19,6 +20,13 @@ import { Badge } from '@/components/ui/badge';
 
 export function SidebarMenu() {
   const { pathname } = useLocation();
+
+  const filteredMenu = useMemo(() => {
+    const providerOnlyRoutes = ['/analytics'];
+    return MENU_SIDEBAR.filter(
+      (item) => currentUserRole === 'Provider' || !providerOnlyRoutes.includes(item.path ?? ''),
+    );
+  }, []);
 
   // Memoize matchPath to prevent unnecessary re-renders
   const matchPath = useCallback(
@@ -220,7 +228,7 @@ export function SidebarMenu() {
         collapsible
         classNames={classNames}
       >
-        {buildMenu(MENU_SIDEBAR)}
+        {buildMenu(filteredMenu)}
       </AccordionMenu>
     </div>
   );
