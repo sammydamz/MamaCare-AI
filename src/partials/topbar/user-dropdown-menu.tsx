@@ -5,6 +5,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { Link } from 'react-router-dom';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { MOCK_USER, ROLE_BADGE_VARIANT } from '@/lib/mamacare/constants';
 import { Badge } from '@/components/ui/badge';
@@ -59,9 +60,11 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className="flex items-center gap-2">
-          <Settings />
-          Settings
+        <DropdownMenuItem asChild>
+          <Link to="/settings" className="flex items-center gap-2">
+            <Settings />
+            Settings
+          </Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
