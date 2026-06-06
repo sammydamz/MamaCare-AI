@@ -19,6 +19,7 @@ import { useMamaCare } from '@/providers/mamacare-provider';
 import { RISK_COLORS } from '@/lib/mamacare/constants';
 import type { Consultation } from '@/lib/mamacare/types';
 import { ConsultationDetail } from './components/consultation-detail';
+import { SimulateConsultationDialog } from './components/simulate-consultation-dialog';
 
 export function ConsultationsContent() {
   const { consultations } = useMamaCare();
@@ -66,6 +67,10 @@ export function ConsultationsContent() {
             <SelectItem value="LOW">LOW</SelectItem>
           </SelectContent>
         </Select>
+
+        <div className="ml-auto">
+          <SimulateConsultationDialog />
+        </div>
       </div>
 
       <Table>

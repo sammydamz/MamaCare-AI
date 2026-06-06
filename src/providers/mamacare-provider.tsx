@@ -89,6 +89,11 @@ interface MamaCareContextType {
     phone: string;
     address: string;
   }) => Promise<void>;
+  recordConsultation: (data: {
+    patientId: string;
+    transcript: Array<{ speaker: 'AI' | 'Mother' | 'Patient'; text: string }>;
+    language: string;
+  }) => Promise<{ success: boolean; riskLevel: string; referralTriggered: boolean }>;
 }
 
 const MamaCareContext = createContext<MamaCareContextType | undefined>(undefined);
@@ -220,6 +225,21 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const recordConsultation = async (data: {
+    patientId: string;
+    transcript: Array<{ speaker: 'AI' | 'Mother' | 'Patient'; text: string }>;
+    language: string;
+  }) => {
+    try {
+      const res = await mamacareApi.recordConsultation(data);
+      await refreshAll();
+      return res;
+    } catch (error) {
+      console.error('Failed to record consultation:', error);
+      throw error;
+    }
+  };
+
   return (
     <MamaCareContext.Provider
       value={{
@@ -238,6 +258,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
         createReferral,
         updateReferralStatus,
         addFacility,
+        recordConsultation,
       }}
     >
       {children}

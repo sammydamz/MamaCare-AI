@@ -15,7 +15,6 @@
     "lint": "eslint src --fix",
     "format": "prettier --write .",
     "preview": "vite preview",
-    "migrate:railway": "psql \"$DATABASE_URL\" -f server/schema.sql",
     "create-demo-user": "tsx scripts/create-demo-user.js",
     "debug-auth": "tsx scripts/debug-auth.js"
   },

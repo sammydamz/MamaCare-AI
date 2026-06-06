@@ -71,6 +71,20 @@ export const mamacareApi = {
     return res.json();
   },
 
+  async recordConsultation(data: {
+    patientId: string;
+    transcript: Array<{ speaker: 'AI' | 'Mother' | 'Patient'; text: string }>;
+    language: string;
+  }): Promise<{ success: boolean; riskLevel: string; referralTriggered: boolean }> {
+    const res = await fetch(`${API_BASE}/consultations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to record consultation');
+    return res.json();
+  },
+
   async fetchReferrals(): Promise<Referral[]> {
     const res = await fetch(`${API_BASE}/referrals`);
     if (!res.ok) throw new Error('Failed to fetch referrals');

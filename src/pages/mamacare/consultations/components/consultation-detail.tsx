@@ -49,7 +49,7 @@ export function ConsultationDetail({ consultation }: { consultation: Consultatio
               <div
                 className={`max-w-[80%] rounded-lg px-4 py-2.5 text-sm ${
                   entry.speaker === 'AI'
-                    ? 'bg-primary/10 text-primary-foreground'
+                    ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground'
                 }`}
               >

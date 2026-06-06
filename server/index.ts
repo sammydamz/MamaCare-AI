@@ -282,6 +282,130 @@ app.get('/api/consultations', async (req, res) => {
   }
 });
 
+// POST /api/consultations
+app.post('/api/consultations', async (req, res) => {
+  const { patientId, transcript, language } = req.body;
+  const id = 'c' + Math.floor(100 + Math.random() * 900);
+  const timestamp = new Date().toISOString();
+
+  try {
+    // 1. Fetch Patient
+    const patientRes = await pool.query('SELECT * FROM patients WHERE id = $1', [patientId]);
+    if (patientRes.rows.length === 0) {
+       res.status(404).json({ error: 'Patient not found' });
+       return;
+    }
+    const patient = patientRes.rows[0];
+
+    // 2. Extract and pre-process Patient Dialogue turns
+    const patientTurns = transcript
+      .filter((t: any) => t.speaker !== 'AI')
+      .map((t: any) => t.text)
+      .join(' ');
+    
+    // 3. Triage Classification via Hugging Face model inference
+    let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
+    const triageMethod = 'Machine Learning Model';
+    const matchedSymptoms: string[] = [];
+
+    const cleanText = patientTurns.trim().toLowerCase();
+
+    // Simple keyword mapping for symptoms (English only, no Twi)
+    if (/\bbleed(ing)?\b/i.test(cleanText)) {
+      matchedSymptoms.push('Vaginal Bleeding');
+    }
+    if (/\bheadache\b/i.test(cleanText) || /\bhead\b/i.test(cleanText)) {
+      matchedSymptoms.push('Severe Headache');
+    }
+    if (/\bvision\b/i.test(cleanText) || /\beye(s)?\b/i.test(cleanText)) {
+      matchedSymptoms.push('Blurred Vision');
+    }
+    if (/\bswollen\b/i.test(cleanText) || /\bswell\b/i.test(cleanText)) {
+      matchedSymptoms.push('Swelling');
+    }
+    if (/\bmovement\b/i.test(cleanText) || /\bkick\b/i.test(cleanText)) {
+      matchedSymptoms.push('Fetal Movement Loss');
+    }
+    if (/\burni(ne|nate)\b/i.test(cleanText) || /\bpeeing\b/i.test(cleanText)) {
+      matchedSymptoms.push('Urinary Pain');
+    }
+
+    try {
+      const hfResponse = await fetch(
+        'https://api-inference.huggingface.co/models/sammydamz/mamacare-triage-model',
+        {
+          headers: { 
+            'Authorization': process.env.HF_TOKEN ? `Bearer ${process.env.HF_TOKEN}` : '',
+            'Content-Type': 'application/json' 
+          },
+          method: 'POST',
+          body: JSON.stringify({ inputs: patientTurns || 'Routine check-in' }),
+        }
+      );
+
+      if (hfResponse.ok) {
+        const result = await hfResponse.json();
+        if (Array.isArray(result) && Array.isArray(result[0])) {
+          const scores = result[0];
+          const topPred = scores.reduce((prev: any, current: any) => (prev.score > current.score) ? prev : current);
+          
+          if (topPred.label === 'LABEL_2' || topPred.label === 'HIGH') {
+            riskLevel = 'HIGH';
+          } else if (topPred.label === 'LABEL_1' || topPred.label === 'MEDIUM') {
+            riskLevel = 'MEDIUM';
+          } else {
+            riskLevel = 'LOW';
+          }
+        }
+      } else {
+        console.warn('Hugging Face inference failed, falling back to database default evaluation rules.');
+      }
+    } catch (hfErr) {
+      console.error('Error contacting HF API:', hfErr);
+    }
+
+    if (matchedSymptoms.length === 0) {
+      matchedSymptoms.push(riskLevel === 'LOW' ? 'Healthy Check-in' : 'General Symptoms');
+    }
+
+    // 4. Generate AI Summary
+    const aiSummary = `Risk assessed as ${riskLevel} using ${triageMethod}. Symptoms identified: ${matchedSymptoms.join(', ')}. Details: Patient completed automated prenatal triage dialog in ${language}.`;
+
+    // 5. Insert Consultation Record
+    await pool.query(
+      `INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [id, patientId, patient.name, timestamp.split('T')[0], language, matchedSymptoms, riskLevel, aiSummary, JSON.stringify(transcript), false]
+    );
+
+    if (riskLevel !== patient.risk_level) {
+      const updatedHistory = patient.risk_history || [];
+      updatedHistory.push({ date: timestamp.split('T')[0], level: riskLevel });
+
+      await pool.query(
+        `UPDATE patients SET risk_level = $1, risk_history = $2, last_call_date = $3 WHERE id = $4`,
+        [riskLevel, JSON.stringify(updatedHistory), timestamp.split('T')[0], patientId]
+      );
+    } else {
+      await pool.query(
+        `UPDATE patients SET last_call_date = $1 WHERE id = $2`,
+        [timestamp.split('T')[0], patientId]
+      );
+    }
+
+    res.status(201).json({ 
+      success: true, 
+      consultationId: id, 
+      riskLevel, 
+      referralTriggered: false, 
+      referralId: null 
+    });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/referrals
 app.get('/api/referrals', async (req, res) => {
   try {

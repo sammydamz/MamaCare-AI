@@ -1,22 +1,36 @@
-# MamaCare AI Clinical Dashboard
+# MamaCare AI: Multilingual Maternal Triage & Clinical Intelligence Platform
 
-MamaCare AI is a specialized clinical intelligence dashboard built for maternal healthcare providers and community health workers (CHWs) in Ghana. The system assists in monitoring patient health, tracking CHW performance metrics, and analyzing consultations with translation capabilities for local Ghanaian languages.
+MamaCare AI is an end-to-end, voice-first maternal care and clinical triage system built for maternal healthcare providers and community health workers (CHWs) in Sub-Saharan Africa. The platform keeps pregnant and post-pregnancy loss mothers connected to continuous care via basic mobile voice calls on GSM networks, while providing clinical facilities with real-time risk dashboards, automated notifications, and AI-driven decision support.
 
-## Key Features
+---
 
-1. **Patient Monitoring & Analytics**: Track maternal risk profiles and essential vitals.
-2. **CHW Performance Metric Tracking**: Log and analyze key indicators of community health worker activities.
-3. **Local Transcripts Integration**: Support for consultation transcripts in local Ghanaian languages (Twi, Ga, Ewe, Fante) translated to English.
-4. **PostgreSQL Database Integration**: Direct integration with PostgreSQL on Railway.
-5. **Modern Dashboard UI**: Rebranded, responsive interface customized for Ghanaian clinical facilities (e.g., Korle-Bu Teaching Hospital, Komfo Anokye Teaching Hospital).
+## 🚀 Key Innovation: Guideline-Driven Few-Shot Fine-Tuning (GDF-FT)
 
-## Getting Started
+MamaCare AI leverages a fine-tuned sequence classification model based on **`distilbert-base-multilingual-cased`**. Using **Guideline-Driven Few-Shot Fine-Tuning**, clinical guidelines from the Ghana Health Service **National Safe Motherhood Protocol (Revised Edition)** are injected directly into the model's weights as semantic anchor constraints, aligning local dialect inputs (such as Twi) with standard clinical protocols.
+
+*   **Model Repository**: [sammydamz/mamacare-triage-model on Hugging Face](https://huggingface.co/sammydamz/mamacare-triage-model)
+*   **Training Notebook**: `me-docs/mamacare-ai-triage.ipynb`
+*   **Model Accuracy**: **66.67%** (0.80 F1-score for high-risk triage, optimized to eliminate false negatives for life-threatening symptoms)
+
+---
+
+## 🛠️ Key System Features
+
+1.  **Voice check-in & Telephony (ElevenLabs)**: Automates outbound calls viaTwilio/GSM, using ElevenLabs multilingual speech-to-text and speech synthesis for warm, empathetic voice assessments in local languages (Twi, Hausa, Swahili, Amharic).
+2.  **Patient Monitoring & Analytics**: Tracks maternal risk profiles (LOW, MEDIUM, HIGH) and symptoms (bleeding, pre-eclampsia signs, sepsis indicators).
+3.  **Post-Pregnancy Loss Track**: Dedicated support pathway offering compassionate physical recovery tracking and emotional checking for mothers recovering from miscarriage or stillbirth.
+4.  **Clinician Dashboard**: Prioritizes patient queues by risk, pushes immediate WebSocket alerts for critical warning signs, and maintains digitized histories.
+5.  **PostgreSQL Integration**: Direct data layer syncing with PostgreSQL, optimized for low-bandwidth operations.
+
+---
+
+## 📦 Getting Started
 
 ### Prerequisites
 
-- Node.js >= 20.20.0
-- PNPM (recommended package manager)
-- PostgreSQL (local or hosted instance)
+-   **Node.js** >= 20.20.0
+-   **PNPM** (recommended package manager)
+-   **PostgreSQL** (local or hosted instance)
 
 ### Installation
 
@@ -39,23 +53,27 @@ PORT=3000
 
 The application automatically checks the database connection, performs migrations, and seeds the initial localized data on server startup.
 
-### Development
+### Running the Application
 
-To start the development server (runs both Vite frontend and Express backend):
+To start the development server (runs both the Vite frontend and Express backend):
 
 ```bash
 pnpm run dev
 ```
 
-### Production Build
-
-To build the client and server bundles:
+To build and run in production:
 
 ```bash
 pnpm run build
 pnpm start
 ```
 
-## Deployment
+---
 
-This project is configured for seamless deployment to Railway, automatically provisioning a PostgreSQL database and linking environment variables.
+## 🧪 Reproducibility Package
+
+The model training pipeline, datasets, and test configurations are fully documented under the `me-docs/` folder:
+*   **Training Notebook**: [mamacare-ai-triage.ipynb](file:///c:/Comp/me-docs/mamacare-ai-triage.ipynb)
+*   **Clinical Anchors**: [triage_anchors.json](file:///c:/Comp/me-docs/triage_anchors.json)
+*   **Test Set**: [triage_test_data.json](file:///c:/Comp/me-docs/triage_test_data.json)
+*   **Full Report**: [mamacare_technical_report.md](file:///c:/Comp/me-docs/mamacare_technical_report.md)

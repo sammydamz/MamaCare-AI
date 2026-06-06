@@ -2,7 +2,6 @@ import { MOCK_USER, ROLE_BADGE_VARIANT } from '@/lib/mamacare/constants';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardHeading, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { toAbsoluteUrl } from '@/lib/helpers';
 
 export function ProfileSection() {
   return (
@@ -17,7 +16,7 @@ export function ProfileSection() {
         <div className="flex items-center gap-4">
           <img
             className="size-16 rounded-full border-2 border-green-500"
-            src={toAbsoluteUrl('/media/avatars/300-2.png')}
+            src="https://images.unsplash.com/photo-1677195063105-276fd4b95b21?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="User avatar"
           />
           <div className="flex flex-col gap-1">
