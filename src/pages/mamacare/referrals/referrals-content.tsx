@@ -7,19 +7,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { referrals, facilities } from '@/lib/mamacare/mock-data';
-import type { Referral } from '@/lib/mamacare/types';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { ReferralTable } from './components/referral-table';
 import { ReferralTimeline } from './components/referral-timeline';
 import { FacilityMiniCard } from './components/facility-mini-card';
 
 export function ReferralsContent() {
-  const [selectedReferral, setSelectedReferral] = useState<Referral | null>(null);
+  const { referrals, facilities } = useMamaCare();
+  const [selectedReferralId, setSelectedReferralId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const filtered = referrals.filter(
     (r) => statusFilter === 'all' || r.status === statusFilter,
   );
+
+  const selectedReferral = referrals.find((r) => r.id === selectedReferralId) || null;
 
   const selectedFacility = selectedReferral
     ? facilities.find((f) => f.id === selectedReferral.facilityId)
@@ -45,8 +47,8 @@ export function ReferralsContent() {
 
       <ReferralTable
         referrals={filtered}
-        selectedId={selectedReferral?.id ?? null}
-        onSelect={setSelectedReferral}
+        selectedId={selectedReferralId}
+        onSelect={(r) => setSelectedReferralId(r.id)}
       />
 
       {selectedReferral && selectedFacility && (

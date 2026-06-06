@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { facilities } from '@/lib/mamacare/mock-data';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { FacilityCard } from './components/facility-card';
 
 export function FacilitiesContent() {
   const [search, setSearch] = useState('');
+  const { facilities } = useMamaCare();
 
   const filtered = facilities.filter((f) =>
     f.name.toLowerCase().includes(search.toLowerCase()),

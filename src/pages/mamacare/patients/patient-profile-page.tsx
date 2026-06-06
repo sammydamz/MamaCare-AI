@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { patients } from '@/lib/mamacare/mock-data';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { Container } from '@/components/common/container';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -7,6 +7,7 @@ import { PatientProfileContent } from './patient-profile-content';
 
 export function PatientProfilePage() {
   const { id } = useParams<{ id: string }>();
+  const { patients } = useMamaCare();
   const patient = patients.find((p) => p.id === id);
 
   if (!patient) {

@@ -16,10 +16,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { facilities } from '@/lib/mamacare/mock-data';
+import { useMamaCare } from '@/providers/mamacare-provider';
 
-export function CreateReferralDialog() {
+export function CreateReferralDialog({ patientId }: { patientId: string }) {
   const [open, setOpen] = useState(false);
+  const [facilityId, setFacilityId] = useState('');
+  const [reason, setReason] = useState('');
+  const { facilities, createReferral } = useMamaCare();
+
+  const handleSubmit = async () => {
+    if (!facilityId || !reason) return;
+    try {
+      await createReferral({ patientId, facilityId, reason });
+      setOpen(false);
+      setFacilityId('');
+      setReason('');
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -38,7 +53,7 @@ export function CreateReferralDialog() {
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Facility</label>
-            <Select>
+            <Select value={facilityId} onValueChange={setFacilityId}>
               <SelectTrigger>
                 <SelectValue placeholder="Select facility" />
               </SelectTrigger>
@@ -53,13 +68,18 @@ export function CreateReferralDialog() {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Reason</label>
-            <Textarea placeholder="Enter referral reason..." rows={3} />
+            <Textarea
+              placeholder="Enter referral reason..."
+              rows={3}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={() => setOpen(false)}>
+            <Button variant="primary" onClick={handleSubmit} disabled={!facilityId || !reason}>
               Submit Referral
             </Button>
           </div>

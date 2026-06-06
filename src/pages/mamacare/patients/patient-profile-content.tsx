@@ -15,12 +15,8 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RISK_COLORS, REFERRAL_STATUS_COLORS } from '@/lib/mamacare/constants';
-import type { Patient, RiskLevel, ReferralStatus } from '@/lib/mamacare/types';
-import {
-  consultations,
-  referrals,
-  actionLog,
-} from '@/lib/mamacare/mock-data';
+import type { Patient, RiskLevel, ReferralStatus, Consultation } from '@/lib/mamacare/types';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { RiskTrendChart } from './components/risk-trend-chart';
 import { ActionLog } from './components/action-log';
 import {
@@ -69,10 +65,11 @@ function StatCard({
 }
 
 function OverviewTab({ patient }: { patient: Patient }) {
+  const { referrals, actionLogs } = useMamaCare();
   const patientReferrals = referrals.filter(
     (r) => r.patientId === patient.id,
   );
-  const patientActions = actionLog.filter(
+  const patientActions = actionLogs.filter(
     (a) => a.patientId === patient.id,
   );
   const sortedActions = [...patientActions].sort(
@@ -260,6 +257,7 @@ function OverviewTab({ patient }: { patient: Patient }) {
 }
 
 function ConsultationsTab({ patient }: { patient: Patient }) {
+  const { consultations } = useMamaCare();
   const patientConsultations = consultations
     .filter((c) => c.patientId === patient.id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -323,7 +321,7 @@ function ConsultationRow({
   isOpen,
   onToggle,
 }: {
-  consultation: (typeof consultations)[number];
+  consultation: Consultation;
   isOpen: boolean;
   onToggle: () => void;
 }) {
@@ -588,6 +586,7 @@ function PostLossVitals({ patient }: { patient: Patient }) {
 }
 
 function ReferralsTab({ patient }: { patient: Patient }) {
+  const { referrals } = useMamaCare();
   const patientReferrals = referrals
     .filter((r) => r.patientId === patient.id)
     .sort(
@@ -696,7 +695,8 @@ function ReferralsTab({ patient }: { patient: Patient }) {
 }
 
 function ActionLogTab({ patient }: { patient: Patient }) {
-  const patientActions = actionLog.filter(
+  const { actionLogs } = useMamaCare();
+  const patientActions = actionLogs.filter(
     (a) => a.patientId === patient.id,
   );
 

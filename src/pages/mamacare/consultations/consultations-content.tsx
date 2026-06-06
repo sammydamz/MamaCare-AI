@@ -15,12 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { consultations } from '@/lib/mamacare/mock-data';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { RISK_COLORS } from '@/lib/mamacare/constants';
 import type { Consultation } from '@/lib/mamacare/types';
 import { ConsultationDetail } from './components/consultation-detail';
 
 export function ConsultationsContent() {
+  const { consultations } = useMamaCare();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [patientFilter, setPatientFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');

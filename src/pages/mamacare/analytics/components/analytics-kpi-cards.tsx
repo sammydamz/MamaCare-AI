@@ -1,35 +1,46 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { CountingNumber } from '@/components/ui/counting-number';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { Users, Clock, PhoneForwarded, AlertTriangle } from 'lucide-react';
 
-const analyticsKpiData = [
-  {
-    label: 'Total Referrals',
-    value: 24,
-    icon: Users,
-    format: (v: number) => String(Math.round(v)),
-  },
-  {
-    label: 'Avg Resolution Time',
-    value: 3.2,
-    icon: Clock,
-    format: (v: number) => `${v.toFixed(1)} days`,
-  },
-  {
-    label: 'Follow-up Rate',
-    value: 87,
-    icon: PhoneForwarded,
-    format: (v: number) => `${Math.round(v)}%`,
-  },
-  {
-    label: 'Emergency Escalations',
-    value: 5,
-    icon: AlertTriangle,
-    format: (v: number) => String(Math.round(v)),
-  },
-];
-
 export function AnalyticsKpiCards() {
+  const { analyticsData } = useMamaCare();
+
+  const totalReferrals = analyticsData?.kpis.totalReferrals ?? 24;
+  const avgResolutionTimeStr = analyticsData?.kpis.avgResolutionTime ?? '3.2 days';
+  const followUpRateStr = analyticsData?.kpis.followUpRate ?? '87%';
+  const emergencyEscalations = analyticsData?.kpis.emergencyEscalations ?? 5;
+
+  const avgResolutionTimeValue = parseFloat(avgResolutionTimeStr);
+  const followUpRateValue = parseFloat(followUpRateStr);
+
+  const analyticsKpiData = [
+    {
+      label: 'Total Referrals',
+      value: totalReferrals,
+      icon: Users,
+      format: (v: number) => String(Math.round(v)),
+    },
+    {
+      label: 'Avg Resolution Time',
+      value: avgResolutionTimeValue,
+      icon: Clock,
+      format: (v: number) => `${v.toFixed(1)} ${avgResolutionTimeStr.split(' ')[1] || 'days'}`,
+    },
+    {
+      label: 'Follow-up Rate',
+      value: followUpRateValue,
+      icon: PhoneForwarded,
+      format: (v: number) => `${Math.round(v)}%`,
+    },
+    {
+      label: 'Emergency Escalations',
+      value: emergencyEscalations,
+      icon: AlertTriangle,
+      format: (v: number) => String(Math.round(v)),
+    },
+  ];
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-7.5">
       {analyticsKpiData.map((card) => {
