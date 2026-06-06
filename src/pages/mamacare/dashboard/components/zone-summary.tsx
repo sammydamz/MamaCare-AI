@@ -2,7 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useMamaCare } from '@/providers/mamacare-provider';
-import { zoneSummary, patients } from '@/lib/mamacare/mock-data';
 import { RISK_COLORS, RISK_ORDER } from '@/lib/mamacare/constants';
 import type { RiskLevel } from '@/lib/mamacare/types';
 
@@ -14,8 +13,8 @@ const RISK_LABELS: Record<RiskLevel, string> = {
 
 export function ZoneSummary() {
   const { dashboardData, patients: contextPatients } = useMamaCare();
-  const summary = dashboardData?.zoneSummary || zoneSummary;
-  const patientsList = contextPatients.length > 0 ? contextPatients : patients;
+  const summary = dashboardData?.zoneSummary || { caseload: 0, pendingVisits: 0, unresolvedDanger: 0 };
+  const patientsList = contextPatients;
 
   const sortedPatients = [...patientsList]
     .sort((a, b) => RISK_ORDER[a.riskLevel] - RISK_ORDER[b.riskLevel])

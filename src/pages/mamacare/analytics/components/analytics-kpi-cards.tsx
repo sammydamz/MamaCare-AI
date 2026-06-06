@@ -6,10 +6,10 @@ import { Users, Clock, PhoneForwarded, AlertTriangle } from 'lucide-react';
 export function AnalyticsKpiCards() {
   const { analyticsData } = useMamaCare();
 
-  const totalReferrals = analyticsData?.kpis.totalReferrals ?? 24;
-  const avgResolutionTimeStr = analyticsData?.kpis.avgResolutionTime ?? '3.2 days';
-  const followUpRateStr = analyticsData?.kpis.followUpRate ?? '87%';
-  const emergencyEscalations = analyticsData?.kpis.emergencyEscalations ?? 5;
+  const totalReferrals = analyticsData?.kpis.totalReferrals ?? 0;
+  const avgResolutionTimeStr = analyticsData?.kpis.avgResolutionTime ?? '0 days';
+  const followUpRateStr = analyticsData?.kpis.followUpRate ?? '0%';
+  const emergencyEscalations = analyticsData?.kpis.emergencyEscalations ?? 0;
 
   const avgResolutionTimeValue = parseFloat(avgResolutionTimeStr);
   const followUpRateValue = parseFloat(followUpRateStr);

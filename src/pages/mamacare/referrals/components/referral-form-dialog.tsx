@@ -16,9 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { patients, facilities } from '@/lib/mamacare/mock-data';
+import { useMamaCare } from '@/providers/mamacare-provider';
 
 export function ReferralFormDialog() {
+  const { patients, facilities } = useMamaCare();
   const [open, setOpen] = useState(false);
 
   return (

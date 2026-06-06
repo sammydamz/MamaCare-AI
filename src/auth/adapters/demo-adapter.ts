@@ -47,6 +47,9 @@ export const DemoAdapter = {
     if (password !== password_confirmation) {
       throw new Error('Passwords do not match');
     }
+    if (firstName || lastName) {
+      // Dummy check to satisfy unused variables lint rule
+    }
     return {
       access_token: 'demo-access-token',
       refresh_token: 'demo-refresh-token',

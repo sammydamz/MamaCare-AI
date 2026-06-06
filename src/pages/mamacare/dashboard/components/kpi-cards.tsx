@@ -1,12 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { CountingNumber } from '@/components/ui/counting-number';
 import { useMamaCare } from '@/providers/mamacare-provider';
-import { kpiData } from '@/lib/mamacare/mock-data';
 import { Users, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 
 export function KpiCards() {
   const { dashboardData } = useMamaCare();
-  const data = dashboardData?.kpis || kpiData;
+  const data = dashboardData?.kpis || { totalMothers: 0, highRisk: 0, pendingActions: 0, resolutionRate: 0 };
 
   const cards = [
     {

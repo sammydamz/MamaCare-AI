@@ -2,8 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMamaCare } from '@/providers/mamacare-provider';
-import { riskEscalationFeed } from '@/lib/mamacare/mock-data';
 import { RISK_COLORS } from '@/lib/mamacare/constants';
+import type { RiskLevel } from '@/lib/mamacare/types';
 
 function formatTimeAgo(dateStr: string): string {
   const now = new Date('2026-05-28T12:00:00Z');
@@ -20,7 +20,7 @@ function formatTimeAgo(dateStr: string): string {
 
 export function RiskFeed() {
   const { dashboardData } = useMamaCare();
-  const feed = dashboardData?.riskEscalationFeed || riskEscalationFeed;
+  const feed = dashboardData?.riskEscalationFeed || [];
 
   return (
     <Card className="flex flex-col h-full">
@@ -40,11 +40,11 @@ export function RiskFeed() {
                   <span className="text-xs text-muted-foreground">{formatTimeAgo(entry.date)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant={RISK_COLORS[entry.fromLevel] as 'destructive' | 'warning' | 'secondary'} size="sm">
+                  <Badge variant={RISK_COLORS[entry.fromLevel as RiskLevel] as 'destructive' | 'warning' | 'secondary'} size="sm">
                     {entry.fromLevel}
                   </Badge>
                   <span className="text-xs text-muted-foreground">&rarr;</span>
-                  <Badge variant={RISK_COLORS[entry.toLevel] as 'destructive' | 'warning' | 'secondary'} size="sm">
+                  <Badge variant={RISK_COLORS[entry.toLevel as RiskLevel] as 'destructive' | 'warning' | 'secondary'} size="sm">
                     {entry.toLevel}
                   </Badge>
                 </div>

@@ -12,12 +12,7 @@ function TrendIcon({ trend }: { trend: string }) {
 export function FacilityPerformanceTable() {
   const { analyticsData } = useMamaCare();
   
-  const rawData = analyticsData?.facilityPerformance || [
-    { facility: 'Maitama District Hospital', referrals: 8, resolved: 6, successRate: 75, trend: 'up' },
-    { facility: 'National Hospital Abuja', referrals: 12, resolved: 10, successRate: 83, trend: 'up' },
-    { facility: 'Lagos University Teaching Hospital', referrals: 5, resolved: 4, successRate: 80, trend: 'stable' },
-    { facility: 'Enugu State University Teaching Hospital', referrals: 3, resolved: 3, successRate: 100, trend: 'up' },
-  ];
+  const rawData = analyticsData?.facilityPerformance || [];
 
   const facilityPerformanceData = rawData.map((f: { facility: string; referrals: number; resolved: number; successRate: number; trend: string }) => ({
     name: f.facility,

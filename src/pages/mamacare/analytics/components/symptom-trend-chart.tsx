@@ -15,13 +15,7 @@ const COLORS = ['#6366f1', '#ef4444', '#f59e0b', '#22c55e'];
 export function SymptomTrendChart() {
   const { analyticsData } = useMamaCare();
   
-  const rawData = analyticsData?.symptomTrend || [
-    { month: 'Jan', headache: 4, bleeding: 1, fatigue: 12 },
-    { month: 'Feb', headache: 6, bleeding: 2, fatigue: 15 },
-    { month: 'Mar', headache: 8, bleeding: 0, fatigue: 10 },
-    { month: 'Apr', headache: 12, bleeding: 3, fatigue: 18 },
-    { month: 'May', headache: 15, bleeding: 4, fatigue: 20 },
-  ];
+  const rawData = analyticsData?.symptomTrend || [];
 
   const chartData = rawData.map((d: { month?: string; week?: string; headache?: number; bleeding?: number; fatigue?: number }) => ({
     week: d.month || d.week,
