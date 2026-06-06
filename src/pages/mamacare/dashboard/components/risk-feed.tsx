@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { riskEscalationFeed } from '@/lib/mamacare/mock-data';
 import { RISK_COLORS } from '@/lib/mamacare/constants';
 
@@ -9,7 +10,7 @@ function formatTimeAgo(dateStr: string): string {
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
+  if (diffDays <= 0) return 'Today';
   if (diffDays === 1) return '1 day ago';
   if (diffDays < 30) return `${diffDays} days ago`;
   const diffMonths = Math.floor(diffDays / 30);
@@ -18,6 +19,9 @@ function formatTimeAgo(dateStr: string): string {
 }
 
 export function RiskFeed() {
+  const { dashboardData } = useMamaCare();
+  const feed = dashboardData?.riskEscalationFeed || riskEscalationFeed;
+
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
@@ -26,7 +30,7 @@ export function RiskFeed() {
       <CardContent className="flex-1 min-h-0 p-0">
         <ScrollArea className="h-[320px] px-5 pb-5">
           <div className="flex flex-col gap-4">
-            {riskEscalationFeed.map((entry) => (
+            {feed.map((entry) => (
               <div
                 key={`${entry.patientId}-${entry.date}`}
                 className="flex flex-col gap-1.5 pb-4 border-b border-border last:border-b-0 last:pb-0"

@@ -12,6 +12,10 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 
 export function AnalyticsPage() {
+  const handleExport = () => {
+    window.open('/api/export/analytics', '_blank');
+  };
+
   return (
     <Fragment>
       <Container>
@@ -26,7 +30,7 @@ export function AnalyticsPage() {
             <span className="text-sm text-muted-foreground">
               {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </span>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="size-4" />
               Export
             </Button>

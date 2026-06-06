@@ -3,7 +3,7 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RISK_COLORS } from '@/lib/mamacare/constants';
 import type { Patient, RiskLevel } from '@/lib/mamacare/types';
-import { consultations, actionLog } from '@/lib/mamacare/mock-data';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { RiskTrendChart } from './risk-trend-chart';
 import { ActionLog } from './action-log';
@@ -32,6 +32,8 @@ function RiskTrendArrow({ history }: { history: { level: RiskLevel }[] }) {
 }
 
 export function PatientDetail({ patient }: { patient: Patient }) {
+  const { consultations, actionLogs } = useMamaCare();
+
   const initials = patient.name
     .split(' ')
     .map((n) => n[0])
@@ -41,7 +43,7 @@ export function PatientDetail({ patient }: { patient: Patient }) {
     .filter((c) => c.patientId === patient.id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
-  const patientActions = actionLog.filter(
+  const patientActions = actionLogs.filter(
     (a) => a.patientId === patient.id,
   );
 
@@ -97,9 +99,9 @@ export function PatientDetail({ patient }: { patient: Patient }) {
         </div>
 
         <div className="flex items-center gap-2 pt-2">
-          <LogVisitDialog />
-          <CreateReferralDialog />
-          <RecordVitalsDialog pathway={patient.pathway} />
+          <LogVisitDialog patientId={patient.id} />
+          <CreateReferralDialog patientId={patient.id} />
+          <RecordVitalsDialog patientId={patient.id} pathway={patient.pathway} />
         </div>
       </div>
     </ScrollArea>

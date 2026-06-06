@@ -17,9 +17,39 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PATHWAY_LABELS, LANGUAGE_LABELS } from '@/lib/mamacare/constants';
+import { useMamaCare } from '@/providers/mamacare-provider';
+import type { Pathway } from '@/lib/mamacare/types';
 
 export function RegisterPatientDialog() {
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [language, setLanguage] = useState('');
+  const [pathway, setPathway] = useState<Pathway | ''>('');
+  const { registerPatient } = useMamaCare();
+
+  const handleSubmit = async () => {
+    if (!name || !age || !language || !pathway) return;
+    try {
+      const defaultStage = pathway === 'Pregnancy' ? '12 weeks' : 'Post-loss: 1 month';
+      await registerPatient({
+        name,
+        age: parseInt(age),
+        pathway,
+        language,
+        stage: defaultStage,
+      });
+      setOpen(false);
+      setName('');
+      setAge('');
+      setLanguage('');
+      setPathway('');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const isFormValid = name && age && language && pathway;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -38,15 +68,24 @@ export function RegisterPatientDialog() {
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Full Name</label>
-            <Input placeholder="Enter patient name" />
+            <Input
+              placeholder="Enter patient name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Age</label>
-            <Input type="number" placeholder="Enter age" />
+            <Input
+              type="number"
+              placeholder="Enter age"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Language</label>
-            <Select>
+            <Select value={language} onValueChange={setLanguage}>
               <SelectTrigger>
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
@@ -61,7 +100,7 @@ export function RegisterPatientDialog() {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Pathway</label>
-            <Select>
+            <Select value={pathway} onValueChange={(v) => setPathway(v as Pathway)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select pathway" />
               </SelectTrigger>
@@ -78,7 +117,7 @@ export function RegisterPatientDialog() {
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={() => setOpen(false)}>
+            <Button variant="primary" onClick={handleSubmit} disabled={!isFormValid}>
               Register Patient
             </Button>
           </div>

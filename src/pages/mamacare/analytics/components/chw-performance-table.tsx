@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMamaCare } from '@/providers/mamacare-provider';
 import { chwPerformanceData } from '@/lib/mamacare/mock-data';
 import { ArrowUpDown } from 'lucide-react';
 
 export function ChwPerformanceTable() {
   const [sortBy, setSortBy] = useState<'followUpRate' | 'totalCases'>('followUpRate');
   const [sortAsc, setSortAsc] = useState(false);
+  const { analyticsData } = useMamaCare();
+  const chwData = analyticsData?.chwPerformance || chwPerformanceData;
 
-  const sorted = [...chwPerformanceData].sort((a, b) => {
+  const sorted = [...chwData].sort((a, b) => {
     const diff = a[sortBy] - b[sortBy];
     return sortAsc ? diff : -diff;
   });
