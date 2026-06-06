@@ -1,7 +1,6 @@
 import { Fragment } from 'react';
 import {
   Toolbar,
-  ToolbarActions,
   ToolbarDescription,
   ToolbarHeading,
   ToolbarPageTitle,

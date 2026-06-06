@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMamaCare } from '@/providers/mamacare-provider';
-import type { Referral } from '@/lib/mamacare/types';
 import { ReferralTable } from './components/referral-table';
 import { ReferralTimeline } from './components/referral-timeline';
 import { FacilityMiniCard } from './components/facility-mini-card';

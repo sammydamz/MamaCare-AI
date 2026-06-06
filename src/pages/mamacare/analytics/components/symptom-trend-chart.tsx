@@ -23,7 +23,7 @@ export function SymptomTrendChart() {
     { month: 'May', headache: 15, bleeding: 4, fatigue: 20 },
   ];
 
-  const chartData = rawData.map((d: any) => ({
+  const chartData = rawData.map((d: { month?: string; week?: string; headache?: number; bleeding?: number; fatigue?: number }) => ({
     week: d.month || d.week,
     Headache: d.headache || 0,
     Bleeding: d.bleeding || 0,

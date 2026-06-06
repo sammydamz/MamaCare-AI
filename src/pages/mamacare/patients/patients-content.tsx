@@ -5,7 +5,6 @@ import {
   ResizableHandle,
 } from '@/components/ui/resizable';
 import { useMamaCare } from '@/providers/mamacare-provider';
-import type { Patient } from '@/lib/mamacare/types';
 import { PatientQueue } from './components/patient-queue';
 import { PatientDetail } from './components/patient-detail';
 

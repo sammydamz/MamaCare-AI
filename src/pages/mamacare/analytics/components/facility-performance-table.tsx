@@ -19,7 +19,7 @@ export function FacilityPerformanceTable() {
     { facility: 'Enugu State University Teaching Hospital', referrals: 3, resolved: 3, successRate: 100, trend: 'up' },
   ];
 
-  const facilityPerformanceData = rawData.map((f: any) => ({
+  const facilityPerformanceData = rawData.map((f: { facility: string; referrals: number; resolved: number; successRate: number; trend: string }) => ({
     name: f.facility,
     referrals: f.referrals,
     resolved: f.resolved,
