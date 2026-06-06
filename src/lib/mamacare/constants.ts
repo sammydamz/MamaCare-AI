@@ -18,11 +18,11 @@ export const PATHWAY_LABELS: Record<Pathway, string> = {
 }
 
 export const LANGUAGE_LABELS: Record<Language, string> = {
-  Hausa: 'Hausa',
-  Yoruba: 'Yoruba',
-  Igbo: 'Igbo',
+  Twi: 'Twi',
+  Ga: 'Ga',
+  Ewe: 'Ewe',
+  Fante: 'Fante',
   English: 'English',
-  French: 'French',
 }
 
 export const REFERRAL_STATUS_LABELS: Record<ReferralStatus, string> = {

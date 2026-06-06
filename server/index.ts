@@ -27,13 +27,16 @@ const pool = new pg.Pool({
 // Run DB Migrations/Schema
 async function runMigrations() {
   try {
-    const schemaPath = path.join(__dirname, 'schema.sql');
+    let schemaPath = path.join(__dirname, 'schema.sql');
+    if (!fs.existsSync(schemaPath)) {
+      schemaPath = path.join(__dirname, '../server/schema.sql');
+    }
     if (fs.existsSync(schemaPath)) {
       const sql = fs.readFileSync(schemaPath, 'utf8');
       await pool.query(sql);
       console.log('Database migrations completed successfully.');
     } else {
-      console.log('schema.sql not found at', schemaPath);
+      console.log('schema.sql not found at default and fallback paths');
     }
   } catch (error) {
     console.error('Error running migrations:', error);
@@ -467,9 +470,9 @@ app.get('/api/analytics', async (req, res) => {
         activeCases: row.active_cases,
       })),
       facilityPerformance: [
-        { facility: 'Maitama District Hospital', referrals: 12, resolved: 10, successRate: 83, trend: 'up' },
-        { facility: 'National Hospital Abuja', referrals: 8, resolved: 6, successRate: 75, trend: 'down' },
-        { facility: 'Lagos University Teaching Hospital', referrals: 5, resolved: 5, successRate: 100, trend: 'stable' },
+        { facility: 'Korle-Bu Teaching Hospital', referrals: 12, resolved: 10, successRate: 83, trend: 'up' },
+        { facility: 'Komfo Anokye Teaching Hospital', referrals: 8, resolved: 6, successRate: 75, trend: 'down' },
+        { facility: 'Greater Accra Regional Hospital', referrals: 5, resolved: 5, successRate: 100, trend: 'stable' },
       ],
       symptomTrend: [
         { month: 'Jan', headache: 4, bleeding: 1, fatigue: 12 },
@@ -507,7 +510,7 @@ app.get('/api/export/analytics', async (req, res) => {
 if (isProd) {
   const distPath = path.join(__dirname, '../dist');
   app.use(express.static(distPath));
-  app.get('*', (req, res) => {
+  app.get('/{*splat}', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
