@@ -27,13 +27,16 @@ const pool = new pg.Pool({
 // Run DB Migrations/Schema
 async function runMigrations() {
   try {
-    const schemaPath = path.join(__dirname, 'schema.sql');
+    let schemaPath = path.join(__dirname, 'schema.sql');
+    if (!fs.existsSync(schemaPath)) {
+      schemaPath = path.join(__dirname, '../server/schema.sql');
+    }
     if (fs.existsSync(schemaPath)) {
       const sql = fs.readFileSync(schemaPath, 'utf8');
       await pool.query(sql);
       console.log('Database migrations completed successfully.');
     } else {
-      console.log('schema.sql not found at', schemaPath);
+      console.log('schema.sql not found at default and fallback paths');
     }
   } catch (error) {
     console.error('Error running migrations:', error);
