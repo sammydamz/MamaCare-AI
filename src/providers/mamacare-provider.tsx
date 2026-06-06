@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { mamacareApi } from '@/lib/mamacare/api';
-import type { Patient, Consultation, Referral, Facility, ActionLogEntry, Pathway } from '@/lib/mamacare/types';
+import type { Patient, Consultation, Referral, Facility, ActionLogEntry, Pathway, RiskLevel, Language } from '@/lib/mamacare/types';
 
 interface DashboardData {
   kpis: {
@@ -212,7 +212,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
         age: data.age,
         pathway: data.pathway,
         riskLevel: 'LOW',
-        language: data.language,
+        language: data.language as Language,
         assignedChw: data.assignedChw || 'Hadiza Bello',
         stage: data.stage,
         lastCallDate: new Date().toISOString().split('T')[0],

@@ -51,6 +51,7 @@ export interface Referral {
   facilityName: string
   assignedChw: string
   outcome?: string
+  reason?: string
   createdAt: string
   timeline: { stage: string; timestamp: string; note?: string }[]
 }
