@@ -1,56 +1,102 @@
 import { Link, Outlet } from 'react-router-dom';
 import { toAbsoluteUrl } from '@/lib/helpers';
-import { Card, CardContent } from '@/components/ui/card';
 
 export function BrandedLayout() {
   return (
-    <>
-      <style>
-        {`
-          .branded-bg {
-            background-image: url('${toAbsoluteUrl('/media/images/2600x1600/1.png')}');
-          }
-          .dark .branded-bg {
-            background-image: url('${toAbsoluteUrl('/media/images/2600x1600/1-dark.png')}');
-          }
-        `}
-      </style>
-      <div className="grid lg:grid-cols-2 grow">
-        <div className="flex justify-center items-center p-8 lg:p-10 order-2 lg:order-1">
-          <Card className="w-full max-w-[400px]">
-            <CardContent className="p-6">
-              <Outlet />
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:rounded-xl lg:border lg:border-border lg:m-5 order-1 lg:order-2 bg-top xxl:bg-center xl:bg-cover bg-no-repeat branded-bg">
-          <div className="flex flex-col p-8 lg:p-16 gap-4">
-            <Link to="/">
+    <div className="flex min-h-screen w-full bg-background">
+      {/* Left — Login Form */}
+      <div className="flex flex-col justify-center items-center w-full lg:w-[45%] px-8 py-12">
+        <div className="w-full max-w-[380px]">
+          <div className="mb-8 text-center">
+            <Link to="/" className="inline-flex items-center gap-2 justify-center mb-6">
               <img
-                src={toAbsoluteUrl('/media/app/mini-logo.svg')}
-                className="h-[28px] max-w-none"
-                alt=""
+                src={toAbsoluteUrl('/media/app/default-logo.svg')}
+                className="h-[44px] w-auto"
+                alt="MamaCare AI"
               />
+              <span className="text-[18px] font-bold tracking-tight text-foreground">
+                MamaCare <span style={{ color: '#ff66c4' }}>AI</span>
+              </span>
             </Link>
-
-            <div className="flex flex-col gap-3">
-              <h3 className="text-2xl font-semibold text-mono">
-                Secure Dashboard Access
-              </h3>
-              <div className="text-base font-medium text-secondary-foreground">
-                A robust authentication gateway ensuring
-                <br /> secure&nbsp;
-                <span className="text-mono font-semibold">
-                  efficient user access
-                </span>
-                &nbsp;to the Metronic
-                <br /> Dashboard interface.
-              </div>
-            </div>
           </div>
+          <Outlet />
         </div>
       </div>
-    </>
+
+      {/* Right — Branded Panel (rounded card with margin) */}
+      <div className="hidden lg:flex items-stretch w-[55%] p-6">
+        <div
+          className="flex flex-col justify-between w-full rounded-2xl p-10 relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(160deg, #0d2137 0%, #0a2a2a 50%, #061a1a 100%)',
+          }}
+        >
+          {/* Pink glow top-right */}
+          <div
+            className="absolute top-[-60px] right-[-60px] w-[320px] h-[320px] rounded-full opacity-25 blur-3xl pointer-events-none"
+            style={{ background: '#ff66c4' }}
+          />
+          {/* Teal glow bottom-right */}
+          <div
+            className="absolute bottom-0 right-0 w-[350px] h-[350px] rounded-full opacity-30 blur-3xl pointer-events-none"
+            style={{ background: '#0d5c4a' }}
+          />
+
+          <div>
+            {/* Logo mark */}
+            <div className="mb-10">
+              <img
+                src={toAbsoluteUrl('/media/app/default-logo.svg')}
+                className="h-16 w-16"
+                alt="MamaCare AI"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
+            </div>
+
+            {/* Badges — hidden for now */}
+
+            {/* Headline */}
+            <h2 className="text-white text-[28px] font-bold leading-snug mb-5">
+              AI-powered maternal care
+              <br />
+              for CHWs, patients, and
+              <br />
+              every call in between.
+            </h2>
+
+            {/* Description */}
+            <p className="text-sm leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              MamaCare AI monitors pregnant and post-loss mothers through automated voice calls,
+              surfacing real-time risk scores and alerts so CHWs can focus on the patients who
+              need them most.
+            </p>
+
+            {/* Feature grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {['Risk escalation feed', 'Referral tracking', 'CHW performance', 'Analytics dashboard'].map(
+                (feature) => (
+                  <div
+                    key={feature}
+                    className="px-4 py-3 rounded-xl text-sm font-medium"
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'rgba(255,255,255,0.7)',
+                    }}
+                  >
+                    {feature}
+                  </div>
+                ),
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <p className="text-xs mt-10 relative z-10" style={{ color: 'rgba(255,255,255,0.25)' }}>
+            {new Date().getFullYear()} MamaCare AI. Empowering maternal health with technology.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

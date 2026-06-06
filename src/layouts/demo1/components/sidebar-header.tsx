@@ -17,31 +17,17 @@ export function SidebarHeader() {
 
   return (
     <div className="sidebar-header hidden lg:flex items-center relative justify-between px-3 lg:px-6 shrink-0">
-      <Link to="/">
-        <div className="dark:hidden">
-          <img
-            src={toAbsoluteUrl('/media/app/default-logo.svg')}
-            className="default-logo h-[22px] max-w-none"
-            alt="Default Logo"
-          />
-          <img
-            src={toAbsoluteUrl('/media/app/mini-logo.svg')}
-            className="small-logo h-[22px] max-w-none"
-            alt="Mini Logo"
-          />
-        </div>
-        <div className="hidden dark:block">
-          <img
-            src={toAbsoluteUrl('/media/app/default-logo-dark.svg')}
-            className="default-logo h-[22px] max-w-none"
-            alt="Default Dark Logo"
-          />
-          <img
-            src={toAbsoluteUrl('/media/app/mini-logo.svg')}
-            className="small-logo h-[22px] max-w-none"
-            alt="Mini Logo"
-          />
-        </div>
+      <Link to="/" className="flex items-center gap-2">
+        {/* Icon always visible */}
+        <img
+          src={toAbsoluteUrl('/media/app/default-logo.svg')}
+          className="h-[36px] w-auto max-w-none shrink-0"
+          alt="MamaCare AI"
+        />
+        {/* Text hidden on collapse via CSS .default-logo rule */}
+        <span className="default-logo text-[15px] font-bold tracking-tight text-foreground whitespace-nowrap">
+          MamaCare <span style={{ color: '#ff66c4' }}>AI</span>
+        </span>
       </Link>
       <Button
         onClick={handleToggleClick}
