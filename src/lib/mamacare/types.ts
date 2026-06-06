@@ -2,7 +2,7 @@ export type RiskLevel = 'HIGH' | 'MEDIUM' | 'LOW'
 
 export type Pathway = 'Pregnancy' | 'Post-Loss'
 
-export type Language = 'Hausa' | 'Yoruba' | 'Igbo' | 'English' | 'French'
+export type Language = 'Twi' | 'Ga' | 'Ewe' | 'Fante' | 'English'
 
 export type ReferralStatus = 'Pending' | 'In Transit' | 'Admitted' | 'Resolved' | 'Lost to Follow-up'
 
