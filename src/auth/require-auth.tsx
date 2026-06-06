@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { ScreenLoader } from '@/components/common/screen-loader';
 import { useAuth } from './context/auth-context';
 
@@ -9,7 +9,6 @@ import { useAuth } from './context/auth-context';
  */
 export const RequireAuth = () => {
   const { auth, verify, loading: globalLoading } = useAuth();
-  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const verificationStarted = useRef(false);
 
@@ -35,14 +34,9 @@ export const RequireAuth = () => {
     return <ScreenLoader />;
   }
 
-  // If not authenticated, redirect to login
+  // If not authenticated, redirect to sign-in
   if (!auth?.access_token) {
-    return (
-      <Navigate
-        to={`/auth/signin?next=${encodeURIComponent(location.pathname)}`}
-        replace
-      />
-    );
+    return <Navigate to="/auth/signin" replace />;
   }
 
   // If authenticated, render child routes

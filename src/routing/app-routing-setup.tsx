@@ -32,7 +32,7 @@ export function AppRoutingSetup() {
       </Route>
       <Route path="error/*" element={<ErrorRouting />} />
       <Route path="auth/*" element={<AuthRouting />} />
-      <Route path="*" element={<Navigate to="/error/404" />} />
+      <Route path="*" element={<Navigate to="/auth/signin" replace />} />
     </Routes>
   );
 }
