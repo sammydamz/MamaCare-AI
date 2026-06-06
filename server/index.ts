@@ -467,9 +467,9 @@ app.get('/api/analytics', async (req, res) => {
         activeCases: row.active_cases,
       })),
       facilityPerformance: [
-        { facility: 'Maitama District Hospital', referrals: 12, resolved: 10, successRate: 83, trend: 'up' },
-        { facility: 'National Hospital Abuja', referrals: 8, resolved: 6, successRate: 75, trend: 'down' },
-        { facility: 'Lagos University Teaching Hospital', referrals: 5, resolved: 5, successRate: 100, trend: 'stable' },
+        { facility: 'Korle-Bu Teaching Hospital', referrals: 12, resolved: 10, successRate: 83, trend: 'up' },
+        { facility: 'Komfo Anokye Teaching Hospital', referrals: 8, resolved: 6, successRate: 75, trend: 'down' },
+        { facility: 'Greater Accra Regional Hospital', referrals: 5, resolved: 5, successRate: 100, trend: 'stable' },
       ],
       symptomTrend: [
         { month: 'Jan', headache: 4, bleeding: 1, fatigue: 12 },
