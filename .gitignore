@@ -1,6 +1,8 @@
 node_modules/
 dist/
 dist-server/
+docs/
+me-docs/
 .env
 .env.local
 .env.*.local

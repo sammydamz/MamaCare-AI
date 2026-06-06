@@ -4,7 +4,7 @@ MamaCare AI is an end-to-end, voice-first maternal care and clinical triage syst
 
 ---
 
-## 🚀 Key Innovation: Guideline-Driven Few-Shot Fine-Tuning (GDF-FT)
+## Key Innovation: Guideline-Driven Few-Shot Fine-Tuning (GDF-FT)
 
 MamaCare AI leverages a fine-tuned sequence classification model based on **`distilbert-base-multilingual-cased`**. Using **Guideline-Driven Few-Shot Fine-Tuning**, clinical guidelines from the Ghana Health Service **National Safe Motherhood Protocol (Revised Edition)** are injected directly into the model's weights as semantic anchor constraints, aligning local dialect inputs (such as Twi) with standard clinical protocols.
 
@@ -14,7 +14,7 @@ MamaCare AI leverages a fine-tuned sequence classification model based on **`dis
 
 ---
 
-## 🛠️ Key System Features
+## Key System Features
 
 1.  **Voice check-in & Telephony (ElevenLabs)**: Automates outbound calls viaTwilio/GSM, using ElevenLabs multilingual speech-to-text and speech synthesis for warm, empathetic voice assessments in local languages (Twi, Hausa, Swahili, Amharic).
 2.  **Patient Monitoring & Analytics**: Tracks maternal risk profiles (LOW, MEDIUM, HIGH) and symptoms (bleeding, pre-eclampsia signs, sepsis indicators).
@@ -24,7 +24,7 @@ MamaCare AI leverages a fine-tuned sequence classification model based on **`dis
 
 ---
 
-## 📦 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -70,7 +70,7 @@ pnpm start
 
 ---
 
-## 🧪 Reproducibility Package
+## Reproducibility Package
 
 The model training pipeline, datasets, and test configurations are fully documented under the `me-docs/` folder:
 *   **Training Notebook**: [mamacare-ai-triage.ipynb](file:///c:/Comp/me-docs/mamacare-ai-triage.ipynb)
