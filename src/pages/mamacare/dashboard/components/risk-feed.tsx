@@ -6,7 +6,7 @@ import { RISK_COLORS } from '@/lib/mamacare/constants';
 import type { RiskLevel } from '@/lib/mamacare/types';
 
 function formatTimeAgo(dateStr: string): string {
-  const now = new Date('2026-05-28T12:00:00Z');
+  const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));

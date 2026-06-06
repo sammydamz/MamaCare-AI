@@ -444,13 +444,55 @@ app.get('/api/action-logs', async (req, res) => {
 });
 
 // GET /api/analytics
+// GET /api/analytics
 app.get('/api/analytics', async (req, res) => {
   try {
+    // KPI values
+    const kpisResult = await pool.query('SELECT * FROM kpis');
+    const kpisMap: Record<string, number> = {};
+    kpisResult.rows.forEach((row) => {
+      kpisMap[row.key] = Number(row.value);
+    });
+    const avgResolutionTime = kpisMap['avg_resolution_time_hrs']
+      ? `${kpisMap['avg_resolution_time_hrs']} hrs`
+      : 'N/A';
+    // Compute follow-up rate from CHW performance
+    const followUpRes = await pool.query('SELECT AVG(follow_up_rate) as avg_follow_up FROM chw_performance');
+    const followUpRate = followUpRes.rows[0].avg_follow_up
+      ? `${Math.round(followUpRes.rows[0].avg_follow_up)}%`
+      : 'N/A';
+
+    // Facility performance from DB
+    const facilityPerfRes = await pool.query(
+      'SELECT facility_name as facility, referrals, resolved, success_rate as successRate, trend FROM facility_performance'
+    );
+    const facilityPerformance = facilityPerfRes.rows.map((row) => ({
+      facility: row.facility,
+      referrals: row.referrals,
+      resolved: row.resolved,
+      successRate: row.successRate,
+      trend: row.trend,
+    }));
+
+    // Symptom trend from DB
+    const symptomTrendRes = await pool.query(
+      'SELECT month, headache, bleeding, fatigue, fever FROM symptom_trend ORDER BY month'
+    );
+    const symptomTrend = symptomTrendRes.rows.map((row) => ({
+      month: row.month,
+      headache: row.headache,
+      bleeding: row.bleeding,
+      fatigue: row.fatigue,
+      fever: row.fever,
+    }));
+
+    // CHW performance
     const chwRes = await pool.query('SELECT * FROM chw_performance');
+
+    // Referral counts
     const referralsCount = await pool.query('SELECT COUNT(*) FROM referrals');
     const resolvedCount = await pool.query("SELECT COUNT(*) FROM referrals WHERE status = 'Resolved'");
     const activeCount = await pool.query("SELECT COUNT(*) FROM patients WHERE risk_level = 'HIGH'");
-
     const totalReferrals = parseInt(referralsCount.rows[0].count);
     const resolvedReferrals = parseInt(resolvedCount.rows[0].count);
     const resolutionRate = totalReferrals > 0 ? Math.round((resolvedReferrals / totalReferrals) * 100) : 0;
@@ -458,8 +500,9 @@ app.get('/api/analytics', async (req, res) => {
     res.json({
       kpis: {
         totalReferrals,
-        avgResolutionTime: '4.2 hrs',
-        followUpRate: '91%',
+        avgResolutionTime,
+        followUpRate,
+        resolutionRate,
         emergencyEscalations: activeCount.rows[0].count,
       },
       chwPerformance: chwRes.rows.map((row) => ({
@@ -469,18 +512,8 @@ app.get('/api/analytics', async (req, res) => {
         resolvedCases: row.resolved_cases,
         activeCases: row.active_cases,
       })),
-      facilityPerformance: [
-        { facility: 'Korle-Bu Teaching Hospital', referrals: 12, resolved: 10, successRate: 83, trend: 'up' },
-        { facility: 'Komfo Anokye Teaching Hospital', referrals: 8, resolved: 6, successRate: 75, trend: 'down' },
-        { facility: 'Greater Accra Regional Hospital', referrals: 5, resolved: 5, successRate: 100, trend: 'stable' },
-      ],
-      symptomTrend: [
-        { month: 'Jan', headache: 4, bleeding: 1, fatigue: 12 },
-        { month: 'Feb', headache: 6, bleeding: 2, fatigue: 15 },
-        { month: 'Mar', headache: 8, bleeding: 0, fatigue: 10 },
-        { month: 'Apr', headache: 12, bleeding: 3, fatigue: 18 },
-        { month: 'May', headache: 15, bleeding: 4, fatigue: 20 },
-      ]
+      facilityPerformance,
+      symptomTrend,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
