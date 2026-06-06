@@ -507,7 +507,7 @@ app.get('/api/export/analytics', async (req, res) => {
 if (isProd) {
   const distPath = path.join(__dirname, '../dist');
   app.use(express.static(distPath));
-  app.get('/:any*', (req, res) => {
+  app.get('/{*splat}', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
