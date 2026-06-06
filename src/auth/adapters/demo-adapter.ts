@@ -37,7 +37,13 @@ export const DemoAdapter = {
     throw new Error('OAuth is not available in demo mode');
   },
 
-  async register(email: string, password: string, password_confirmation: string): Promise<AuthModel> {
+  async register(
+    email: string,
+    password: string,
+    password_confirmation: string,
+    firstName?: string,
+    lastName?: string,
+  ): Promise<AuthModel> {
     if (password !== password_confirmation) {
       throw new Error('Passwords do not match');
     }
@@ -47,8 +53,8 @@ export const DemoAdapter = {
     };
   },
 
-  async requestPasswordReset(): Promise<void> {
-    console.log('Demo mode: password reset requested');
+  async requestPasswordReset(email?: string): Promise<void> {
+    console.log(`Demo mode: password reset requested for ${email}`);
   },
 
   async resetPassword(password: string, password_confirmation: string): Promise<void> {
@@ -57,8 +63,8 @@ export const DemoAdapter = {
     }
   },
 
-  async resendVerificationEmail(): Promise<void> {
-    console.log('Demo mode: verification email resent');
+  async resendVerificationEmail(email?: string): Promise<void> {
+    console.log(`Demo mode: verification email resent to ${email}`);
   },
 
   async getCurrentUser(): Promise<UserModel | null> {

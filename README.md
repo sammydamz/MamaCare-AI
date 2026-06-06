@@ -1,95 +1,61 @@
-# Metronic 9 | All-in-One Tailwind based HTML/React/Next.js Template for Modern Web Applications
+# MamaCare AI Clinical Dashboard
+
+MamaCare AI is a specialized clinical intelligence dashboard built for maternal healthcare providers and community health workers (CHWs) in Ghana. The system assists in monitoring patient health, tracking CHW performance metrics, and analyzing consultations with translation capabilities for local Ghanaian languages.
+
+## Key Features
+
+1. **Patient Monitoring & Analytics**: Track maternal risk profiles and essential vitals.
+2. **CHW Performance Metric Tracking**: Log and analyze key indicators of community health worker activities.
+3. **Local Transcripts Integration**: Support for consultation transcripts in local Ghanaian languages (Twi, Ga, Ewe, Fante) translated to English.
+4. **PostgreSQL Database Integration**: Direct integration with PostgreSQL on Railway.
+5. **Modern Dashboard UI**: Rebranded, responsive interface customized for Ghanaian clinical facilities (e.g., Korle-Bu Teaching Hospital, Komfo Anokye Teaching Hospital).
 
 ## Getting Started
 
-Refer to the [Metronic Vite Documentation](https://docs.keenthemes.com/metronic-react)
-for comprehensive guidance on setting up and getting started your project with Metronic.
-
-## ReUI Components
-
-Metronic now leverages [ReUI](https://v1.reui.io), our open-source React component library.
-
-Star the [ReUI on GitHub](https://github.com/keenthemes/reui) to help us grow the project and stay updated on new features!
-
-## Login with Supabase Auth
-
-This project uses Supabase for authentication. Follow these steps to set up and test the login functionality:
-
 ### Prerequisites
 
-- Node.js 16.x or higher
-- Npm or Yarn
-- Tailwind CSS 4.x
-- React 19.x
-- A Supabase account and project
+- Node.js >= 20.20.0
+- PNPM (recommended package manager)
+- PostgreSQL (local or hosted instance)
 
 ### Installation
 
-To set up the project dependencies, including those required for React 19, use the `--force` flag to resolve any dependency conflicts:
+Install all required dependencies:
 
 ```bash
-npm install --force
+pnpm install
 ```
 
-### Environment Setup
+### Environment Variables
 
-1. Make sure your `.env` file is configured with Supabase credentials:
+Configure a `.env` file in the root directory:
 
+```env
+DATABASE_URL=postgresql://user:password@host:port/database
+PORT=3000
 ```
 
-VITE_SUPABASE_URL=https://your-project-url.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-for-admin-functions
+### Database Migration and Seed
 
-```
-
-### Creating a Demo User
-
-For testing purposes, you can create a demo user with:
-
-```bash
-npm run create-demo-user
-```
-
-This will create a user with the following credentials:
-
-- Email: demo@kt.com
-- Password: demo123
-
-### Login Features
-
-The login implementation includes:
-
-- Email/Password authentication
-- Google OAuth integration
-- Password reset flow
-- Error handling
-- Token management
-- Protected routes
-
-### Setting Up the Demo Layout
-
-Follow the [Metronic Vite Documentation](https://docs.keenthemes.com/metronic-vite/guides/layouts) to configure and use the demo layout of your choice.
+The application automatically checks the database connection, performs migrations, and seeds the initial localized data on server startup.
 
 ### Development
 
-Start the development server:
+To start the development server (runs both Vite frontend and Express backend):
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
-Visit `http://localhost:5173/auth/signin` to test the login functionality.
+### Production Build
 
-### Testing Login
+To build the client and server bundles:
 
-You can test login using:
+```bash
+pnpm run build
+pnpm start
+```
 
-1. The demo account credentials
-2. Register a new account (when implemented)
-3. Google Sign-in (requires proper OAuth setup in Supabase)
+## Deployment
 
-### Reporting Issues
-
-If you encounter any issues or have suggestions for improvement, please contact us at [support@keenthemes.com](mailto:support@keenthemes.com).
-Include a detailed description of the issue or suggestion, and we will work to address it in the next stable release.
+This project is configured for seamless deployment to Railway, automatically provisioning a PostgreSQL database and linking environment variables.

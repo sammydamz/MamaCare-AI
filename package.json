@@ -1,5 +1,5 @@
 {
-  "name": "metronic-vite",
+  "name": "mamacare-ai",
   "private": true,
   "version": "9.4.13",
   "type": "module",
@@ -36,7 +36,6 @@
     "@radix-ui/react-popover": "^1.1.16",
     "@radix-ui/react-slot": "^1.2.5",
     "@remixicon/react": "^4.6.0",
-    "@supabase/supabase-js": "^2.56.0",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-query": "^5.85.5",
     "@tanstack/react-query-devtools": "^5.85.5",
