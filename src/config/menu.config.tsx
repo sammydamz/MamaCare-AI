@@ -73,6 +73,11 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/referrals',
   },
   {
+    title: 'Communications',
+    icon: Bell,
+    path: '/communications',
+  },
+  {
     title: 'Analytics',
     icon: TrendingUp,
     path: '/analytics',
@@ -81,6 +86,43 @@ export const MENU_SIDEBAR: MenuConfig = [
     title: 'Facilities',
     icon: Building,
     path: '/facilities',
+  },
+  {
+    title: 'Settings',
+    icon: Settings,
+    path: '/settings',
+  },
+];
+export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
+  {
+    title: 'Dashboard',
+    icon: LayoutGrid,
+    path: '/',
+  },
+  {
+    title: 'Mothers',
+    icon: Heart,
+    path: '/patients', // Reuses the same path, filtered by context
+  },
+  {
+    title: 'Wellness Check-ins',
+    icon: MessageSquare,
+    path: '/consultations',
+  },
+  {
+    title: 'Counselor Referrals',
+    icon: LifeBuoy,
+    path: '/referrals',
+  },
+  {
+    title: 'SMS Alerts',
+    icon: Bell,
+    path: '/communications',
+  },
+  {
+    title: 'Analytics',
+    icon: TrendingUp,
+    path: '/analytics',
   },
   {
     title: 'Settings',

@@ -1,0 +1,1124 @@
+{
+  "nodes": [
+    {
+      "id": "datause_ghssafemotherhoodprotocol",
+      "label": "GHS National Safe Motherhood Protocol (Revised Edition)",
+      "file_type": "document",
+      "source_file": "sumbission-docs/Data Use Documentation.md",
+      "source_location": "line 5",
+      "source_url": "https://platform.who.int/docs/default-source/mca-documents/policy-documents/operational-guidance/GHA-CC-10-02-OPERATIONALGUIDANCE-eng-National-Safe-Motherhood-Protocol.pdf",
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "datause_multilingualtriageguidelines",
+      "label": "Multilingual Triage Guidelines Dataset",
+      "file_type": "dataset",
+      "source_file": "sumbission-docs/Data Use Documentation.md",
+      "source_location": "line 6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "datause_gdfft",
+      "label": "Guideline-Driven Few-Shot Fine-Tuning (GDF-FT)",
+      "file_type": "concept",
+      "source_file": "sumbission-docs/Data Use Documentation.md",
+      "source_location": "line 7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_mamacareai",
+      "label": "MamaCare AI Platform",
+      "file_type": "entity",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_distilbertmultilingualcased",
+      "label": "distilbert-base-multilingual-cased",
+      "file_type": "model",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_huggingfacetransformers",
+      "label": "Hugging Face Transformers",
+      "file_type": "library",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_huggingfacepeft",
+      "label": "Hugging Face PEFT",
+      "file_type": "library",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_huggingfacesetfit",
+      "label": "Hugging Face SetFit",
+      "file_type": "library",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_huggingfacedatasets",
+      "label": "Hugging Face Datasets",
+      "file_type": "library",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_react",
+      "label": "React",
+      "file_type": "framework",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 10",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_vite",
+      "label": "Vite",
+      "file_type": "build_tool",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 10",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_expressjs",
+      "label": "Express.js",
+      "file_type": "framework",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 10",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_postgresql",
+      "label": "PostgreSQL",
+      "file_type": "database",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 11",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_apache20",
+      "label": "Apache 2.0 License",
+      "file_type": "license",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_mit",
+      "label": "MIT License",
+      "file_type": "license",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 10",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_postgresqllcense",
+      "label": "PostgreSQL License",
+      "file_type": "license",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 11",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_hashinnovationchallenge",
+      "label": "HASH Innovation Challenge",
+      "file_type": "organization",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 17",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_idrc",
+      "label": "IDRC",
+      "file_type": "organization",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 17",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_sunbirdai",
+      "label": "Sunbird AI",
+      "file_type": "organization",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 17",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_aphrc",
+      "label": "APHRC",
+      "file_type": "organization",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 17",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ip_datascienceafrica",
+      "label": "Data Science Africa",
+      "file_type": "organization",
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 17",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prototype_mamacareprototype",
+      "label": "MamaCare AI Prototype (Railway)",
+      "file_type": "deployment",
+      "source_file": "sumbission-docs/Prototype Link.txt",
+      "source_location": "line 1",
+      "source_url": "https://mamacare-web-production.up.railway.app/",
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "source_mamacarerepository",
+      "label": "MamaCare AI GitHub Repository",
+      "file_type": "repository",
+      "source_file": "sumbission-docs/Source Code Link.txt",
+      "source_location": "line 1",
+      "source_url": "https://github.com/sammydamz/MamaCare-AI",
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "team_rosemondosei",
+      "label": "Rosemond Osei",
+      "file_type": "person",
+      "source_file": "sumbission-docs/Team Contribution Statement.md",
+      "source_location": "line 3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "team_samuelankapong",
+      "label": "Samuel Danquah Ankapong",
+      "file_type": "person",
+      "source_file": "sumbission-docs/Team Contribution Statement.md",
+      "source_location": "line 3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "team_graceametepi",
+      "label": "Grace Ametepi",
+      "file_type": "person",
+      "source_file": "sumbission-docs/Team Contribution Statement.md",
+      "source_location": "line 3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "team_marthaafful",
+      "label": "Martha Afful",
+      "file_type": "person",
+      "source_file": "sumbission-docs/Team Contribution Statement.md",
+      "source_location": "line 3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_maternalmortalitycrisis",
+      "label": "Maternal Mortality Crisis in Sub-Saharan Africa",
+      "file_type": "problem",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_voicebasedplatform",
+      "label": "Voice-Based Maternal Care Platform",
+      "file_type": "solution",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 27",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_elevenlabs",
+      "label": "ElevenLabs",
+      "file_type": "service",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 47",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_twilio",
+      "label": "Twilio",
+      "file_type": "service",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 107",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_websockets",
+      "label": "WebSockets",
+      "file_type": "technology",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 49",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_sms",
+      "label": "SMS Notifications",
+      "file_type": "technology",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 49",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_cliniciandashboard",
+      "label": "Clinician Dashboard",
+      "file_type": "component",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 39",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_triageassessment",
+      "label": "Triage Assessment (Low/Medium/High Risk)",
+      "file_type": "concept",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 48",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_huggingfaceinference",
+      "label": "Hugging Face Inference Endpoint",
+      "file_type": "service",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 109",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_b2gsaas",
+      "label": "Business-to-Government (B2G) SaaS Model",
+      "file_type": "business_model",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 140",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_chpsframework",
+      "label": "Community-Based Health Planning and Services (CHPS) Framework",
+      "file_type": "framework",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 142",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_postlossprogram",
+      "label": "Post-Loss Continuity of Care Programme",
+      "file_type": "feature",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 37",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_privacysecurity",
+      "label": "Data Privacy & Security (TLS 1.3, AES-256, RBAC)",
+      "file_type": "ethical_control",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 117",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_biasfairness",
+      "label": "Bias & Fairness Mitigation (Local Languages)",
+      "file_type": "ethical_control",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 126",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_transparency",
+      "label": "Transparency & Explainability (Plain-Language Summaries)",
+      "file_type": "ethical_control",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 132",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_who_maternalmortality",
+      "label": "WHO Maternal Mortality Fact Sheet 2023",
+      "file_type": "citation",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 146",
+      "source_url": "https://www.who.int/news-room/fact-sheets/detail/maternal-mortality",
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_who_trendsmaternalmortality",
+      "label": "WHO Trends in Maternal Mortality 2000-2020",
+      "file_type": "citation",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 147",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_who_antenatalcare",
+      "label": "WHO Antenatal Care Coverage 2023",
+      "file_type": "citation",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 148",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_who_postnatalcare",
+      "label": "WHO Recommendations on Postnatal Care 2013",
+      "file_type": "citation",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 149",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_gsma_mobileinternet",
+      "label": "GSMA State of Mobile Internet Connectivity 2023",
+      "file_type": "citation",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 150",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_gsma_gendergap",
+      "label": "GSMA Mobile Gender Gap Report 2023",
+      "file_type": "citation",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 151",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tech_who_healthreport2006",
+      "label": "WHO World Health Report 2006",
+      "file_type": "citation",
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 152",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "datause_multilingualtriageguidelines",
+      "target": "datause_ghssafemotherhoodprotocol",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Data Use Documentation.md",
+      "source_location": "line 5-6",
+      "weight": 1.0
+    },
+    {
+      "source": "datause_multilingualtriageguidelines",
+      "target": "datause_gdfft",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Data Use Documentation.md",
+      "source_location": "line 7",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_maternalmortalitycrisis",
+      "target": "tech_who_maternalmortality",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 146",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_maternalmortalitycrisis",
+      "target": "tech_who_trendsmaternalmortality",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 147",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "tech_maternalmortalitycrisis",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 5-27",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "tech_gsma_mobileinternet",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 150",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "tech_gsma_gendergap",
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 151",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "tech_elevenlabs",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 47",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "tech_twilio",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 107",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "tech_websockets",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 49",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "tech_sms",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 49",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "tech_cliniciandashboard",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 39",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_triageassessment",
+      "target": "datause_multilingualtriageguidelines",
+      "relation": "reference",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 48",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_triageassessment",
+      "target": "datause_gdfft",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 48",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_huggingfaceinference",
+      "target": "tech_triageassessment",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 109",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_cliniciandashboard",
+      "target": "tech_triageassessment",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 39-49",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_distilbertmultilingualcased",
+      "target": "datause_gdfft",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 7",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_postlossprogram",
+      "target": "tech_voicebasedplatform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 37",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_b2gsaas",
+      "target": "tech_voicebasedplatform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 140",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_chpsframework",
+      "target": "tech_voicebasedplatform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 142",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_privacysecurity",
+      "target": "tech_voicebasedplatform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 115-120",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_biasfairness",
+      "target": "tech_voicebasedplatform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 126-128",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_transparency",
+      "target": "tech_voicebasedplatform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 132",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "source_mamacarerepository",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Source Code Link.txt",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "prototype_mamacareprototype",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Prototype Link.txt",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_hashinnovationchallenge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 17",
+      "weight": 1.0
+    },
+    {
+      "source": "team_rosemondosei",
+      "target": "ip_mamacareai",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Team Contribution Statement.md",
+      "source_location": "line 3",
+      "weight": 1.0
+    },
+    {
+      "source": "team_samuelankapong",
+      "target": "ip_mamacareai",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Team Contribution Statement.md",
+      "source_location": "line 3",
+      "weight": 1.0
+    },
+    {
+      "source": "team_graceametepi",
+      "target": "ip_mamacareai",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Team Contribution Statement.md",
+      "source_location": "line 3",
+      "weight": 1.0
+    },
+    {
+      "source": "team_marthaafful",
+      "target": "ip_mamacareai",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Team Contribution Statement.md",
+      "source_location": "line 3",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_apache20",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 7",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_mit",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 10",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_postgresqllcense",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 11",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_huggingfacetransformers",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 9",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_huggingfacepeft",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 9",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_huggingfacesetfit",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 9",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_huggingfacedatasets",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 9",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_react",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 10",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_vite",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 10",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_expressjs",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 10",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_postgresql",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 11",
+      "weight": 1.0
+    },
+    {
+      "source": "ip_mamacareai",
+      "target": "ip_distilbertmultilingualcased",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 7",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_elevenlabs",
+      "target": "tech_triageassessment",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 47-48",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_twilio",
+      "target": "tech_elevenlabs",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 107",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_triageassessment",
+      "target": "tech_huggingfaceinference",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 109",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_websockets",
+      "target": "tech_cliniciandashboard",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 49",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_datascienceafricartners",
+      "target": "ip_datascienceafrica",
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "sumbission-docs/IP and Open Science Declaration.md",
+      "source_location": "line 17",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_who_maternalmortality",
+      "target": "tech_who_trendsmaternalmortality",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 146-147",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_gsma_mobileinternet",
+      "target": "tech_gsma_gendergap",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 150-151",
+      "weight": 1.0
+    },
+    {
+      "source": "datause_ghssafemotherhoodprotocol",
+      "target": "tech_maternalmortalitycrisis",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "sumbission-docs/Data Use Documentation.md",
+      "source_location": "line 5",
+      "weight": 1.0
+    },
+    {
+      "source": "datause_gdfft",
+      "target": "tech_biasfairness",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 64-66",
+      "weight": 1.0
+    },
+    {
+      "source": "tech_voicebasedplatform",
+      "target": "ip_mamacareai",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "sumbission-docs/Technical_document_with_references.md",
+      "source_location": "line 27",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "ai_triage_pipeline",
+      "label": "AI/ML Triage Pipeline",
+      "nodes": [
+        "datause_gdfft",
+        "ip_distilbertmultilingualcased",
+        "datause_multilingualtriageguidelines",
+        "tech_triageassessment"
+      ],
+      "relation": "implement",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "sumbission-docs/Technical_document_with_references.md"
+    },
+    {
+      "id": "voice_telephony_stack",
+      "label": "Voice Telephony Integration Stack",
+      "nodes": [
+        "tech_twilio",
+        "tech_elevenlabs",
+        "tech_websockets",
+        "tech_sms"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "sumbission-docs/Technical_document_with_references.md"
+    },
+    {
+      "id": "mamacare_development_team",
+      "label": "MamaCare AI Development Team",
+      "nodes": [
+        "team_rosemondosei",
+        "team_samuelankapong",
+        "team_graceametepi",
+        "team_marthaafful"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "sumbission-docs/Team Contribution Statement.md"
+    },
+    {
+      "id": "ethical_and_responsible_ai_framework",
+      "label": "Ethical and Responsible AI Framework",
+      "nodes": [
+        "tech_privacysecurity",
+        "tech_biasfairness",
+        "tech_transparency"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "sumbission-docs/Technical_document_with_references.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

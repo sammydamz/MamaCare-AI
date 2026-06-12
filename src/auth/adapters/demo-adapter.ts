@@ -66,7 +66,7 @@ export const DemoAdapter = {
         return await response.json();
       }
       return null;
-    } catch (e) {
+    } catch {
       return null;
     }
   },

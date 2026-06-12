@@ -12,6 +12,7 @@ import {
   PatientProfilePage,
   ReferralsPage,
   SettingsPage,
+  CommunicationsPage,
 } from '@/pages/mamacare';
 import { Navigate, Route, Routes } from 'react-router';
 
@@ -27,6 +28,7 @@ export function AppRoutingSetup() {
           <Route path="/referrals" element={<ReferralsPage />} />
           <Route path="/analytics" element={currentUserRole === 'Provider' ? <AnalyticsPage /> : <Navigate to="/" />} />
           <Route path="/facilities" element={<FacilitiesPage />} />
+          <Route path="/communications" element={<CommunicationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>

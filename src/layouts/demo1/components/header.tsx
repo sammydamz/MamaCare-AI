@@ -24,9 +24,12 @@ import {
 import { Container } from '@/components/common/container';
 import { Breadcrumb } from './breadcrumb';
 import { SidebarMenu } from './sidebar-menu';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { usePathway } from '@/providers/pathway-provider';
 
 export function Header() {
   const [isSidebarSheetOpen, setIsSidebarSheetOpen] = useState(false);
+  const { activePathway, setActivePathway } = usePathway();
 
   const { pathname } = useLocation();
   const mobileMode = useIsMobile();
@@ -81,6 +84,26 @@ export function Header() {
         {!mobileMode && <Breadcrumb />}
 
         <div className="flex items-center gap-3">
+          {!mobileMode && (
+            <div className="mr-4">
+              <ToggleGroup 
+                type="single" 
+                value={activePathway}
+                onValueChange={(val) => {
+                  if (val) setActivePathway(val as 'Pregnancy' | 'Post-Loss');
+                }}
+                className="bg-muted p-1 rounded-full border"
+              >
+                <ToggleGroupItem value="Pregnancy" className="rounded-full px-4 py-1 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground transition-all">
+                  Prenatal Care
+                </ToggleGroupItem>
+                <ToggleGroupItem value="Post-Loss" className="rounded-full px-4 py-1 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground transition-all">
+                  Post-Loss Support
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          )}
+
           {!mobileMode && (
             <SearchDialog
               trigger={

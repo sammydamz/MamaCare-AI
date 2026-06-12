@@ -18,9 +18,19 @@ function formatTimeAgo(dateStr: string): string {
   return `${diffMonths} months ago`;
 }
 
+import { usePathway } from '@/providers/pathway-provider';
+
 export function RiskFeed() {
-  const { dashboardData } = useMamaCare();
-  const feed = dashboardData?.riskEscalationFeed || [];
+  const { dashboardData, patients } = useMamaCare();
+  const { activePathway } = usePathway();
+  
+  const rawFeed = dashboardData?.riskEscalationFeed || [];
+  
+  // Filter feed by cross-referencing patient's pathway
+  const feed = rawFeed.filter(entry => {
+    const patient = patients.find(p => p.id === entry.patientId);
+    return patient && patient.pathway === activePathway;
+  });
 
   return (
     <Card className="flex flex-col h-full">

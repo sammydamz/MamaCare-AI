@@ -142,12 +142,12 @@ INSERT INTO users (id, username, email, password, first_name, last_name, fullnam
 ON CONFLICT DO NOTHING;
 
 INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, last_call_date, registration_date, risk_history, coping_index) VALUES
-    ('p001', 'Abena Osei', 27, 'Pregnancy', 'HIGH', 'Twi', 'Grace Mensah', '32 weeks', '2026-05-27', '2025-12-10', '[{"date": "2025-12-10", "level": "LOW"}, {"date": "2026-03-15", "level": "MEDIUM"}, {"date": "2026-05-20", "level": "HIGH"}]'::jsonb, NULL),
-    ('p002', 'Efua Mensah', 31, 'Post-Loss', 'MEDIUM', 'Fante', 'Comfort Asante', 'Post-loss: 4 months', '2026-05-26', '2026-02-01', '[{"date": "2026-02-01", "level": "HIGH"}, {"date": "2026-04-10", "level": "MEDIUM"}]'::jsonb, 5),
-    ('p003', 'Akosua Addo', 23, 'Pregnancy', 'LOW', 'Twi', 'Grace Mensah', '18 weeks', '2026-05-25', '2026-01-20', '[{"date": "2026-01-20", "level": "LOW"}]'::jsonb, NULL),
-    ('p004', 'Ama Serwaa', 34, 'Pregnancy', 'HIGH', 'Twi', 'Comfort Asante', '36 weeks', '2026-05-28', '2025-09-15', '[{"date": "2025-09-15", "level": "MEDIUM"}, {"date": "2025-12-20", "level": "MEDIUM"}, {"date": "2026-04-01", "level": "HIGH"}]'::jsonb, NULL),
-    ('p005', 'Yaa Ansah', 26, 'Pregnancy', 'MEDIUM', 'Ga', 'Mercy Owusu', '24 weeks', '2026-05-24', '2025-11-30', '[{"date": "2025-11-30", "level": "LOW"}, {"date": "2026-03-20", "level": "MEDIUM"}]'::jsonb, NULL),
-    ('p006', 'Esi Naadu', 29, 'Post-Loss', 'LOW', 'Ewe', 'Mercy Owusu', 'Post-loss: 8 months', '2026-05-22', '2025-10-05', '[{"date": "2025-10-05", "level": "HIGH"}, {"date": "2025-12-15", "level": "MEDIUM"}, {"date": "2026-03-01", "level": "LOW"}]'::jsonb, 8)
+    ('p001', 'Abena Osei', 27, 'Pregnancy', 'HIGH', 'English', 'Grace Mensah', '32 weeks', '2026-05-27', '2025-12-10', '[{"date": "2025-12-10", "level": "LOW"}, {"date": "2026-03-15", "level": "MEDIUM"}, {"date": "2026-05-20", "level": "HIGH"}]'::jsonb, NULL),
+    ('p002', 'Efua Mensah', 31, 'Post-Loss', 'MEDIUM', 'English', 'Comfort Asante', 'Post-loss: 4 months', '2026-05-26', '2026-02-01', '[{"date": "2026-02-01", "level": "HIGH"}, {"date": "2026-04-10", "level": "MEDIUM"}]'::jsonb, 5),
+    ('p003', 'Akosua Addo', 23, 'Pregnancy', 'LOW', 'English', 'Grace Mensah', '18 weeks', '2026-05-25', '2026-01-20', '[{"date": "2026-01-20", "level": "LOW"}]'::jsonb, NULL),
+    ('p004', 'Ama Serwaa', 34, 'Pregnancy', 'HIGH', 'English', 'Comfort Asante', '36 weeks', '2026-05-28', '2025-09-15', '[{"date": "2025-09-15", "level": "MEDIUM"}, {"date": "2025-12-20", "level": "MEDIUM"}, {"date": "2026-04-01", "level": "HIGH"}]'::jsonb, NULL),
+    ('p005', 'Yaa Ansah', 26, 'Pregnancy', 'MEDIUM', 'English', 'Mercy Owusu', '24 weeks', '2026-05-24', '2025-11-30', '[{"date": "2025-11-30", "level": "LOW"}, {"date": "2026-03-20", "level": "MEDIUM"}]'::jsonb, NULL),
+    ('p006', 'Esi Naadu', 29, 'Post-Loss', 'LOW', 'English', 'Mercy Owusu', 'Post-loss: 8 months', '2026-05-22', '2025-10-05', '[{"date": "2025-10-05", "level": "HIGH"}, {"date": "2025-12-15", "level": "MEDIUM"}, {"date": "2026-03-01", "level": "LOW"}]'::jsonb, 8)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral) VALUES

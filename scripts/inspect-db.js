@@ -10,15 +10,8 @@ const client = new Client({
 async function run() {
   try {
     await client.connect();
-    console.log("Connected. Dropping clinical columns from patients table...");
-    await client.query(`
-      ALTER TABLE patients 
-      DROP COLUMN IF EXISTS blood_pressure,
-      DROP COLUMN IF EXISTS kick_count,
-      DROP COLUMN IF EXISTS sleep_quality,
-      DROP COLUMN IF EXISTS bleeding_status;
-    `);
-    console.log("Columns dropped successfully!");
+    const result = await client.query('SELECT email, password FROM users;');
+    console.log("Users in DB:", result.rows);
   } catch (err) {
     console.error("Error:", err);
   } finally {

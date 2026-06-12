@@ -2,10 +2,11 @@
 
 import { JSX, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MENU_SIDEBAR } from '@/config/menu.config';
+import { MENU_SIDEBAR, MENU_SIDEBAR_POST_LOSS } from '@/config/menu.config';
 import { currentUserRole } from '@/lib/mamacare/constants';
 import { MenuConfig, MenuItem } from '@/config/types';
 import { cn } from '@/lib/utils';
+import { usePathway } from '@/providers/pathway-provider';
 import {
   AccordionMenu,
   AccordionMenuClassNames,
@@ -20,13 +21,15 @@ import { Badge } from '@/components/ui/badge';
 
 export function SidebarMenu() {
   const { pathname } = useLocation();
+  const { activePathway } = usePathway();
 
   const filteredMenu = useMemo(() => {
     const providerOnlyRoutes = ['/analytics'];
-    return MENU_SIDEBAR.filter(
+    const baseMenu = activePathway === 'Pregnancy' ? MENU_SIDEBAR : MENU_SIDEBAR_POST_LOSS;
+    return baseMenu.filter(
       (item) => currentUserRole === 'Provider' || !providerOnlyRoutes.includes(item.path ?? ''),
     );
-  }, []);
+  }, [activePathway]);
 
   // Memoize matchPath to prevent unnecessary re-renders
   const matchPath = useCallback(

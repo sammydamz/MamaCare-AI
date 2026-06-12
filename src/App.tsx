@@ -13,6 +13,7 @@ import { ThemeProvider } from './providers/theme-provider';
 import { TooltipsProvider } from './providers/tooltips-provider';
 
 import { MamaCareProvider } from './providers/mamacare-provider';
+import { PathwayProvider } from './providers/pathway-provider';
 
 const { BASE_URL } = import.meta.env;
 
@@ -32,9 +33,11 @@ export function App() {
                       <BrowserRouter basename={BASE_URL}>
                         <Toaster />
                         <MamaCareProvider>
-                          <ModulesProvider>
-                            <AppRouting />
-                          </ModulesProvider>
+                          <PathwayProvider>
+                            <ModulesProvider>
+                              <AppRouting />
+                            </ModulesProvider>
+                          </PathwayProvider>
                         </MamaCareProvider>
                       </BrowserRouter>
                     </LoadingBarContainer>

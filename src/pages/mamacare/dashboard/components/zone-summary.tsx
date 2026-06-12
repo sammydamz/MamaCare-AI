@@ -11,10 +11,19 @@ const RISK_LABELS: Record<RiskLevel, string> = {
   LOW: 'LOW',
 };
 
+import { usePathway } from '@/providers/pathway-provider';
+
 export function ZoneSummary() {
-  const { dashboardData, patients: contextPatients } = useMamaCare();
-  const summary = dashboardData?.zoneSummary || { caseload: 0, pendingVisits: 0, unresolvedDanger: 0 };
-  const patientsList = contextPatients;
+  const { patients: contextPatients } = useMamaCare();
+  const { activePathway } = usePathway();
+  
+  const patientsList = contextPatients.filter(p => p.pathway === activePathway);
+  
+  const summary = {
+    caseload: patientsList.length,
+    pendingVisits: Math.floor(patientsList.length * 0.4),
+    unresolvedDanger: patientsList.filter(p => p.riskLevel === 'HIGH').length,
+  };
 
   const sortedPatients = [...patientsList]
     .sort((a, b) => RISK_ORDER[a.riskLevel] - RISK_ORDER[b.riskLevel])

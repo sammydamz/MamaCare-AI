@@ -1,34 +1,42 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { CountingNumber } from '@/components/ui/counting-number';
 import { useMamaCare } from '@/providers/mamacare-provider';
+import { usePathway } from '@/providers/pathway-provider';
 import { Users, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 
 export function KpiCards() {
-  const { dashboardData } = useMamaCare();
-  const data = dashboardData?.kpis || { totalMothers: 0, highRisk: 0, pendingActions: 0, resolutionRate: 0 };
+  const { patients } = useMamaCare();
+  const { activePathway } = usePathway();
+
+  const filteredPatients = patients.filter(p => p.pathway === activePathway);
+  
+  const totalMothers = filteredPatients.length;
+  const highRisk = filteredPatients.filter(p => p.riskLevel === 'HIGH').length;
+  const pendingActions = Math.floor(totalMothers * 0.4); // Mock data for demo
+  const resolutionRate = activePathway === 'Pregnancy' ? 78 : 92; // Mock data for demo
 
   const cards = [
     {
-      label: 'Total Mothers',
-      value: data.totalMothers,
+      label: activePathway === 'Pregnancy' ? 'Total Mothers' : 'Total Mothers Supported',
+      value: totalMothers,
       icon: Users,
       format: (v: number) => String(Math.round(v)),
     },
     {
       label: 'High Risk Active',
-      value: data.highRisk,
+      value: highRisk,
       icon: AlertTriangle,
       format: (v: number) => String(Math.round(v)),
     },
     {
       label: 'Pending Actions',
-      value: data.pendingActions,
+      value: pendingActions,
       icon: Clock,
       format: (v: number) => String(Math.round(v)),
     },
     {
       label: 'Resolution Rate',
-      value: data.resolutionRate,
+      value: resolutionRate,
       icon: CheckCircle,
       format: (v: number) => `${Math.round(v)}%`,
     },
