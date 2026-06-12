@@ -24,11 +24,7 @@ CREATE TABLE IF NOT EXISTS patients (
     last_call_date VARCHAR(50),
     registration_date VARCHAR(50) NOT NULL,
     risk_history JSONB NOT NULL DEFAULT '[]'::jsonb,
-    blood_pressure VARCHAR(50),
-    kick_count INT,
-    coping_index INT,
-    sleep_quality VARCHAR(50),
-    bleeding_status VARCHAR(50)
+    coping_index INT
 );
 
 -- Consultations
@@ -115,6 +111,24 @@ CREATE TABLE IF NOT EXISTS symptom_trend (
     fever INT NOT NULL
 );
 
+-- Users
+CREATE TABLE IF NOT EXISTS users (
+    id VARCHAR(50) PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    fullname VARCHAR(255) NOT NULL,
+    email_verified BOOLEAN DEFAULT TRUE,
+    occupation VARCHAR(255),
+    company_name VARCHAR(255),
+    phone VARCHAR(50),
+    pic TEXT,
+    language VARCHAR(10) DEFAULT 'en',
+    is_admin BOOLEAN DEFAULT FALSE
+);
+
 -- Seed data (use ON CONFLICT DO NOTHING to avoid duplicate inserts)
 INSERT INTO facilities (id, name, distance, hours, services, phone, address) VALUES
     ('f001', 'Korle-Bu Teaching Hospital', '2.8 km', '24/7 Emergency', ARRAY['Obstetrics', 'Neonatal ICU', 'Emergency', 'Laboratory', 'Ultrasound'], '+233-30-267-3000', 'Guggisberg Avenue, Korle Gonno, Accra'),
@@ -123,13 +137,17 @@ INSERT INTO facilities (id, name, distance, hours, services, phone, address) VAL
     ('f004', 'Tamale Teaching Hospital', '9.1 km', 'Mon-Sat 7AM-9PM, Emergency 24/7', ARRAY['Obstetrics', 'Paediatrics', 'Emergency', 'Laboratory', 'Ultrasound'], '+233-37-202-2415', 'Hospital Road, Tamale')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, last_call_date, registration_date, risk_history, blood_pressure, kick_count, coping_index, sleep_quality, bleeding_status) VALUES
-    ('p001', 'Abena Osei', 27, 'Pregnancy', 'HIGH', 'Twi', 'Grace Mensah', '32 weeks', '2026-05-27', '2025-12-10', '[{"date": "2025-12-10", "level": "LOW"}, {"date": "2026-03-15", "level": "MEDIUM"}, {"date": "2026-05-20", "level": "HIGH"}]'::jsonb, '150/95 mmHg', 8, NULL, NULL, NULL),
-    ('p002', 'Efua Mensah', 31, 'Post-Loss', 'MEDIUM', 'Fante', 'Comfort Asante', 'Post-loss: 4 months', '2026-05-26', '2026-02-01', '[{"date": "2026-02-01", "level": "HIGH"}, {"date": "2026-04-10", "level": "MEDIUM"}]'::jsonb, NULL, NULL, 5, 'Fair', 'None'),
-    ('p003', 'Akosua Addo', 23, 'Pregnancy', 'LOW', 'Twi', 'Grace Mensah', '18 weeks', '2026-05-25', '2026-01-20', '[{"date": "2026-01-20", "level": "LOW"}]'::jsonb, '118/76 mmHg', 12, NULL, NULL, NULL),
-    ('p004', 'Ama Serwaa', 34, 'Pregnancy', 'HIGH', 'Twi', 'Comfort Asante', '36 weeks', '2026-05-28', '2025-09-15', '[{"date": "2025-09-15", "level": "MEDIUM"}, {"date": "2025-12-20", "level": "MEDIUM"}, {"date": "2026-04-01", "level": "HIGH"}]'::jsonb, '160/100 mmHg', 4, NULL, NULL, NULL),
-    ('p005', 'Yaa Ansah', 26, 'Pregnancy', 'MEDIUM', 'Ga', 'Mercy Owusu', '24 weeks', '2026-05-24', '2025-11-30', '[{"date": "2025-11-30", "level": "LOW"}, {"date": "2026-03-20", "level": "MEDIUM"}]'::jsonb, '135/88 mmHg', 10, NULL, NULL, NULL),
-    ('p006', 'Esi Naadu', 29, 'Post-Loss', 'LOW', 'Ewe', 'Mercy Owusu', 'Post-loss: 8 months', '2026-05-22', '2025-10-05', '[{"date": "2025-10-05", "level": "HIGH"}, {"date": "2025-12-15", "level": "MEDIUM"}, {"date": "2026-03-01", "level": "LOW"}]'::jsonb, NULL, NULL, 8, 'Good', 'None')
+INSERT INTO users (id, username, email, password, first_name, last_name, fullname, email_verified, occupation, company_name, phone, pic, language, is_admin) VALUES
+    ('user-001', 'sarahc', 'sarac@kbth.com', 'demo123', 'Sarah', 'Coffie', 'Sarah Coffie', true, 'Healthcare Professional', 'Korle Bu Teaching Hospital', '+233 20 123 4567', 'https://images.pexels.com/photos/29852895/pexels-photo-29852895.jpeg', 'en', true)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, last_call_date, registration_date, risk_history, coping_index) VALUES
+    ('p001', 'Abena Osei', 27, 'Pregnancy', 'HIGH', 'Twi', 'Grace Mensah', '32 weeks', '2026-05-27', '2025-12-10', '[{"date": "2025-12-10", "level": "LOW"}, {"date": "2026-03-15", "level": "MEDIUM"}, {"date": "2026-05-20", "level": "HIGH"}]'::jsonb, NULL),
+    ('p002', 'Efua Mensah', 31, 'Post-Loss', 'MEDIUM', 'Fante', 'Comfort Asante', 'Post-loss: 4 months', '2026-05-26', '2026-02-01', '[{"date": "2026-02-01", "level": "HIGH"}, {"date": "2026-04-10", "level": "MEDIUM"}]'::jsonb, 5),
+    ('p003', 'Akosua Addo', 23, 'Pregnancy', 'LOW', 'Twi', 'Grace Mensah', '18 weeks', '2026-05-25', '2026-01-20', '[{"date": "2026-01-20", "level": "LOW"}]'::jsonb, NULL),
+    ('p004', 'Ama Serwaa', 34, 'Pregnancy', 'HIGH', 'Twi', 'Comfort Asante', '36 weeks', '2026-05-28', '2025-09-15', '[{"date": "2025-09-15", "level": "MEDIUM"}, {"date": "2025-12-20", "level": "MEDIUM"}, {"date": "2026-04-01", "level": "HIGH"}]'::jsonb, NULL),
+    ('p005', 'Yaa Ansah', 26, 'Pregnancy', 'MEDIUM', 'Ga', 'Mercy Owusu', '24 weeks', '2026-05-24', '2025-11-30', '[{"date": "2025-11-30", "level": "LOW"}, {"date": "2026-03-20", "level": "MEDIUM"}]'::jsonb, NULL),
+    ('p006', 'Esi Naadu', 29, 'Post-Loss', 'LOW', 'Ewe', 'Mercy Owusu', 'Post-loss: 8 months', '2026-05-22', '2025-10-05', '[{"date": "2025-10-05", "level": "HIGH"}, {"date": "2025-12-15", "level": "MEDIUM"}, {"date": "2026-03-01", "level": "LOW"}]'::jsonb, 8)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral) VALUES

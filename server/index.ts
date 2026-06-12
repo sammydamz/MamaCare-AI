@@ -56,6 +56,77 @@ pool.connect((err, client, release) => {
 
 // --- API ENDPOINTS ---
 
+// POST /api/login
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+    const user = result.rows[0];
+    if (user.password !== password) {
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+    
+    // In a real app we would use JWT, but for demo we just return success
+    res.json({
+      access_token: 'demo-access-token',
+      refresh_token: 'demo-refresh-token',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        fullname: user.fullname,
+        email_verified: user.email_verified,
+        occupation: user.occupation,
+        company_name: user.company_name,
+        phone: user.phone,
+        pic: user.pic,
+        language: user.language,
+        is_admin: user.is_admin
+      }
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/user
+app.get('/api/user', async (req, res) => {
+  // Demo mock: returning the first user or mock user if no auth token is passed
+  // In a real app, this would verify the token from the header
+  try {
+    const result = await pool.query('SELECT * FROM users LIMIT 1');
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    const user = result.rows[0];
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      fullname: user.fullname,
+      email_verified: user.email_verified,
+      occupation: user.occupation,
+      company_name: user.company_name,
+      phone: user.phone,
+      pic: user.pic,
+      language: user.language,
+      is_admin: user.is_admin
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/dashboard
 app.get('/api/dashboard', async (req, res) => {
   try {

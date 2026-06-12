@@ -1,35 +1,24 @@
 import { AuthModel, UserModel } from '@/auth/lib/models';
 
-const DEMO_USER: UserModel = {
-  id: 'demo-user-001',
-  username: 'demo',
-  email: 'demo@kt.com',
-  first_name: 'Demo',
-  last_name: 'User',
-  fullname: 'Demo User',
-  email_verified: true,
-  occupation: 'Developer',
-  company_name: 'Keenthemes',
-  phone: '+1 234 567 890',
-  roles: [1],
-  pic: '',
-  language: 'en',
-  is_admin: true,
-};
-
-const DEMO_CREDENTIALS = { email: 'demo@kt.com', password: 'demo123' };
-
 export const DemoAdapter = {
   async login(email: string, password: string): Promise<AuthModel> {
-    if (
-      email !== DEMO_CREDENTIALS.email ||
-      password !== DEMO_CREDENTIALS.password
-    ) {
-      throw new Error('Invalid email or password');
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Invalid email or password');
     }
+
+    const data = await response.json();
     return {
-      access_token: 'demo-access-token',
-      refresh_token: 'demo-refresh-token',
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
     };
   },
 
@@ -71,15 +60,29 @@ export const DemoAdapter = {
   },
 
   async getCurrentUser(): Promise<UserModel | null> {
-    return { ...DEMO_USER };
+    try {
+      const response = await fetch('/api/user');
+      if (response.ok) {
+        return await response.json();
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   },
 
   async getUserProfile(): Promise<UserModel> {
-    return { ...DEMO_USER };
+    const response = await fetch('/api/user');
+    if (!response.ok) {
+      throw new Error('Failed to fetch user profile');
+    }
+    return await response.json();
   },
 
   async updateUserProfile(userData: Partial<UserModel>): Promise<UserModel> {
-    return { ...DEMO_USER, ...userData };
+    // Return mock update for demo
+    const profile = await this.getUserProfile();
+    return { ...profile, ...userData };
   },
 
   async logout(): Promise<void> {},

@@ -119,7 +119,7 @@ export function SignInPage() {
             <AlertCircle className="text-primary" />
           </AlertIcon>
           <AlertTitle className="text-accent-foreground">
-            Use <strong>demo@kt.com</strong> username and {` `}
+            Use <strong>sarac@kbth.com</strong> username and {` `}
             <strong>demo123</strong> password for demo access.
           </AlertTitle>
         </Alert>
