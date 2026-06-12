@@ -157,4 +157,16 @@ export const mamacareApi = {
     if (!res.ok) throw new Error('Failed to fetch analytics data');
     return res.json();
   },
+
+  async fetchNotifications() {
+    const res = await fetch(`${API_BASE}/notifications`);
+    if (!res.ok) throw new Error('Failed to fetch notifications');
+    return res.json();
+  },
+
+  async markNotificationAsRead(id: string) {
+    const res = await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PATCH' });
+    if (!res.ok) throw new Error('Failed to mark notification as read');
+    return res.json();
+  }
 };

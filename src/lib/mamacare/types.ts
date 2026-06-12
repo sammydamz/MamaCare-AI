@@ -90,3 +90,12 @@ export interface ZoneSummary {
   pendingVisits: number
   unresolvedDanger: number
 }
+ 
+export interface AppNotification {
+  id: string;
+  uiType: string;
+  payload: any;
+  isRead: boolean;
+  timestamp: string;
+  pathway: string;
+}

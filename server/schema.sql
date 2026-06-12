@@ -69,6 +69,16 @@ CREATE TABLE IF NOT EXISTS action_logs (
     performed_by VARCHAR(255) NOT NULL
 );
 
+-- Notifications
+CREATE TABLE IF NOT EXISTS notifications (
+    id VARCHAR(50) PRIMARY KEY,
+    ui_type VARCHAR(50) NOT NULL,
+    payload JSONB NOT NULL,
+    is_read BOOLEAN DEFAULT false,
+    timestamp VARCHAR(50) NOT NULL,
+    pathway VARCHAR(50) NOT NULL
+);
+
 -- CHW Performance
 CREATE TABLE IF NOT EXISTS chw_performance (
     chw_name VARCHAR(255) PRIMARY KEY,
@@ -170,6 +180,21 @@ INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed
     ('a008', 'p006', 'Outcome', 'Quarterly review - coping index improved to 8/10, sleep quality rated Good. Transitioning to quarterly check-ins', '2026-05-22T09:00:00Z', 'Mercy Owusu'),
     ('a009', 'p001', 'Vitals', 'Blood pressure reading: 150/95 mmHg - above normal range', '2026-05-27T09:25:00Z', 'System'),
     ('a010', 'p004', 'Registration', 'Patient registered for MamaCare programme - high-risk pregnancy, age 34', '2025-09-15T08:00:00Z', 'Comfort Asante')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO notifications (id, ui_type, payload, is_read, timestamp, pathway) VALUES
+    ('n1', 'Item1', '{"userName": "Joe Lincoln", "avatar": "300-4.png", "description": "mentioned you in", "link": "Latest Trends", "label": "topic", "time": "18 mins ago", "specialist": "Web Design 2024", "text": "For an expert opinion, check out what Mike has to say on this topic!"}', false, '2026-06-12T08:00:00Z', 'Pregnancy'),
+    ('n2', 'Item2', '{}', false, '2026-06-12T07:30:00Z', 'Pregnancy'),
+    ('n3', 'Item3', '{"userName": "Guy Hawkins", "avatar": "300-27.png", "badgeColor": "offline", "description": "requested access to", "link": "AirSpace", "day": "project", "date": "14 hours ago", "info": "Dev Team"}', false, '2026-06-11T18:00:00Z', 'Pregnancy'),
+    ('n4', 'Item4', '{}', false, '2026-06-11T16:00:00Z', 'Pregnancy'),
+    ('n5', 'Item5', '{"userName": "Raymond Pawell", "avatar": "300-11.png", "badgeColor": "online", "description": "posted a new article", "link": "2024 Roadmap", "day": "", "date": "1 hour ago", "info": "Roadmap"}', false, '2026-06-12T07:00:00Z', 'Pregnancy'),
+    ('n6', 'Item6', '{}', false, '2026-06-11T10:00:00Z', 'Pregnancy'),
+    ('n7', 'Item13', '{}', false, '2026-06-12T08:00:00Z', 'Post-Loss'),
+    ('n8', 'Item14', '{}', false, '2026-06-12T07:30:00Z', 'Post-Loss'),
+    ('n9', 'Item15', '{}', false, '2026-06-11T18:00:00Z', 'Post-Loss'),
+    ('n10', 'Item16', '{}', false, '2026-06-11T16:00:00Z', 'Post-Loss'),
+    ('n11', 'Item3', '{"userName": "Benjamin Harris", "avatar": "300-30.png", "badgeColor": "offline", "description": "requested to upgrade plan", "link": "", "day": "", "date": "4 days ago", "info": "Marketing"}', false, '2026-06-08T10:00:00Z', 'Post-Loss'),
+    ('n12', 'Item5', '{"userName": "Isaac Morgan", "avatar": "300-24.png", "badgeColor": "online", "description": "mentioned you in", "link": "Data Transmission", "day": "topic", "date": "6 days ago", "info": "Dev Team"}', false, '2026-06-06T10:00:00Z', 'Post-Loss')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO chw_performance (chw_name, total_cases, follow_up_rate, resolved_cases, active_cases) VALUES

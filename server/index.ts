@@ -668,6 +668,39 @@ app.get('/api/action-logs', async (req, res) => {
   }
 });
 
+// Notifications
+app.get('/api/notifications', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM notifications ORDER BY timestamp DESC');
+    res.json(result.rows.map((row) => ({
+      id: row.id,
+      uiType: row.ui_type,
+      payload: row.payload,
+      isRead: row.is_read,
+      timestamp: row.timestamp,
+      pathway: row.pathway
+    })));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('/api/notifications/:id/read', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      'UPDATE notifications SET is_read = true WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+    res.json({ success: true, notification: result.rows[0] });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/analytics
 // GET /api/analytics
 app.get('/api/analytics', async (req, res) => {

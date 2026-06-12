@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import { Calendar, Settings, Settings2, Shield, Users } from 'lucide-react';
+import { ReactNode, useEffect, useState } from 'react';
+import { Calendar, Settings, Settings2, Shield, Users, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +23,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import Item1 from './notifications/item-1';
 import Item2 from './notifications/item-2';
 import Item3 from './notifications/item-3';
@@ -40,14 +41,69 @@ import Item18 from './notifications/item-18';
 import Item19 from './notifications/item-19';
 import Item20 from './notifications/item-20';
 
+import { usePathway } from '@/providers/pathway-provider';
+import api from '@/lib/mamacare/api';
+import { AppNotification } from '@/lib/mamacare/types';
+import { cn } from '@/lib/utils';
+
+const COMPONENT_MAP: Record<string, any> = {
+  Item1, Item2, Item3, Item4, Item5, Item6,
+  Item10, Item11, Item13, Item14, Item15,
+  Item16, Item17, Item18, Item19, Item20
+};
+
 export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
+  const { activePathway } = usePathway();
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = async () => {
+    try {
+      const data = await api.fetchNotifications();
+      setNotifications(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await api.markNotificationAsRead(id);
+      setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    for (const notif of notifications) {
+      if (!notif.isRead) await handleMarkAsRead(notif.id);
+    }
+  };
+
+  const filteredNotifs = notifications.filter(n => n.pathway === activePathway);
+  const unreadCount = filteredNotifs.filter(n => !n.isRead).length;
+
   return (
     <Sheet>
-      <SheetTrigger asChild>{trigger}</SheetTrigger>
+      <SheetTrigger asChild>
+        <div className="relative inline-block cursor-pointer">
+          {trigger}
+          {unreadCount > 0 && (
+            <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-background" />
+          )}
+        </div>
+      </SheetTrigger>
       <SheetContent className="p-0 gap-0 sm:w-[500px] sm:max-w-none inset-5 start-auto h-auto rounded-lg p-0 sm:max-w-none [&_[data-slot=sheet-close]]:top-4.5 [&_[data-slot=sheet-close]]:end-5">
         <SheetHeader className="mb-0">
           <SheetTitle className="p-3">
-            Notifications
+            Notifications {unreadCount > 0 && `(${unreadCount} unread)`}
           </SheetTitle>
         </SheetHeader>
         <SheetBody className="grow p-0">
@@ -55,12 +111,6 @@ export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
             <Tabs defaultValue="all" className="w-full relative">
               <TabsList variant="line" className="w-full px-5 mb-5">
                 <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="inbox" className="relative">
-                  Inbox
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 absolute top-1 -end-1" />
-                </TabsTrigger>
-                <TabsTrigger value="team">Team</TabsTrigger>
-                <TabsTrigger value="following">Following</TabsTrigger>
                 <div className="grow flex items-center justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -73,11 +123,7 @@ export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
                         <Settings className="size-4.5!" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="w-44"
-                      side="bottom"
-                      align="end"
-                    >
+                    <DropdownMenuContent className="w-44" side="bottom" align="end">
                       <DropdownMenuItem asChild>
                         <Link to="/account/members/teams">
                           <Users /> Invite Users
@@ -119,159 +165,36 @@ export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
                 </div>
               </TabsList>
 
-              {/* All Tab */}
               <TabsContent value="all" className="mt-0">
                 <div className="flex flex-col gap-5 overflow-y-auto">
-                  <Item1
-                    userName="Joe Lincoln"
-                    avatar="300-4.png"
-                    description="mentioned you in"
-                    link="Latest Trends"
-                    label="topic"
-                    time="18 mins ago"
-                    specialist="Web Design 2024"
-                    text="For an expert opinion, check out what Mike has to say on this topic!"
-                  />
-                  <div className="border-b border-b-border"></div>
-                  <Item2 />
-                  <div className="border-b border-b-border"></div>
-                  <Item3
-                    userName="Guy Hawkins"
-                    avatar="300-27.png"
-                    badgeColor="offline"
-                    description="requested access to"
-                    link="AirSpace"
-                    day="project"
-                    date="14 hours ago"
-                    info="Dev Team"
-                  />
-                  <div className="border-b border-b-border"></div>
-                  <Item4 />
-                  <div className="border-b border-b-border"></div>
-                  <Item5
-                    userName="Raymond Pawell"
-                    avatar="300-11.png"
-                    badgeColor="online"
-                    description="posted a new article"
-                    link="2024 Roadmap"
-                    day=""
-                    date="1 hour ago"
-                    info="Roadmap"
-                  />
-                  <div className="border-b border-b-border"></div>
-                  <Item6 />
-                </div>
-              </TabsContent>
-
-              {/* Inbox Tab */}
-              <TabsContent value="inbox" className="mt-0">
-                <div className="flex flex-col gap-5">
-                  <Item13 />
-                  <div className="border-b border-b-border"></div>
-                  <Item14 />
-                  <div className="border-b border-b-border"></div>
-                  <Item15 />
-                  <div className="border-b border-b-border"></div>
-                  <Item16 />
-                  <div className="border-b border-b-border"></div>
-                  <Item3
-                    userName="Benjamin Harris"
-                    avatar="300-30.png"
-                    badgeColor="offline"
-                    description="requested to upgrade plan"
-                    link=""
-                    day=""
-                    date="4 days ago"
-                    info="Marketing"
-                  />
-                  <div className="border-b border-b-border"></div>
-                  <Item5
-                    userName="Isaac Morgan"
-                    avatar="300-24.png"
-                    badgeColor="online"
-                    description="mentioned you in"
-                    link="Data Transmission"
-                    day="topic"
-                    date="6 days ago"
-                    info="Dev Team"
-                  />
-                </div>
-              </TabsContent>
-
-              {/* Team Tab */}
-              <TabsContent value="team" className="mt-0">
-                <div className="flex flex-col gap-5">
-                  <Item10 />
-                  <div className="border-b border-b-border"></div>
-                  <Item5
-                    userName="Adrian Vale"
-                    avatar="300-6.png"
-                    badgeColor="offline"
-                    description="posted a new article"
-                    link="Marketing"
-                    day="to 13 May"
-                    date="2 days ago"
-                    info="Marketing"
-                  />
-                  <div className="border-b border-b-border"></div>
-                  <Item11 />
-                  <div className="border-b border-b-border"></div>
-                  <Item1
-                    userName="Selene Silverleaf"
-                    avatar="300-21.png"
-                    description="commented on"
-                    link="SiteSculpt"
-                    label=""
-                    time="4 days ago"
-                    specialist="Manager"
-                    text="This design is simply stunning! From layout to color, it's a work of art!"
-                  />
-                  <div className="border-b border-b-border"></div>
-                  <Item3
-                    userName="Thalia Fox"
-                    avatar="300-13.png"
-                    badgeColor="online"
-                    description="has invited you to join"
-                    link="Design Research"
-                    day=""
-                    date="4 days ago"
-                    info="Dev Team"
-                  />
-                </div>
-              </TabsContent>
-
-              {/* Following Tab */}
-              <TabsContent value="following" className="mt-0">
-                <div className="flex flex-col gap-5">
-                  <Item18 />
-                  <div className="border-b border-b-border"></div>
-                  <Item17 />
-                  <div className="border-b border-b-border"></div>
-                  <Item19 />
-                  <div className="border-b border-b-border"></div>
-                  <Item5
-                    userName="Chloe Morgan"
-                    avatar="300-34.png"
-                    badgeColor="online"
-                    description="posted a new article"
-                    link="User Experience"
-                    day=""
-                    date="1 day ago"
-                    info="Nexus"
-                  />
-                  <div className="border-b border-b-border"></div>
-                  <Item20 />
-                  <div className="border-b border-b-border"></div>
-                  <Item3
-                    userName="Thalia Fox"
-                    avatar="300-13.png"
-                    badgeColor="offline"
-                    description="has invited you to join"
-                    link="Design Research"
-                    day=""
-                    date="4 days ago"
-                    info="Dev Team"
-                  />
+                  {loading ? (
+                    <div className="p-5 text-center text-muted-foreground">Loading notifications...</div>
+                  ) : filteredNotifs.length === 0 ? (
+                    <div className="p-5 text-center text-muted-foreground">No notifications for {activePathway} pathway.</div>
+                  ) : (
+                    filteredNotifs.map((notif, index) => {
+                      const Component = COMPONENT_MAP[notif.uiType] || Item1;
+                      return (
+                        <div key={notif.id}>
+                          <div className={cn("relative group", notif.isRead ? "opacity-75" : "")}>
+                            <Component {...notif.payload} />
+                            {!notif.isRead && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleMarkAsRead(notif.id)}
+                              >
+                                <Check className="size-4 mr-1 text-green-500" />
+                                Mark read
+                              </Button>
+                            )}
+                          </div>
+                          {index < filteredNotifs.length - 1 && <div className="border-b border-b-border mt-5"></div>}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
@@ -279,7 +202,7 @@ export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
         </SheetBody>
         <SheetFooter className="border-t border-border p-5 grid grid-cols-2 gap-2.5">
           <Button variant="outline">Archive all</Button>
-          <Button variant="outline">Mark all as read</Button>
+          <Button variant="outline" onClick={markAllAsRead}>Mark all as read</Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
