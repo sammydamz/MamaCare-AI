@@ -93,7 +93,7 @@ export async function processRecordedSession(audioPath: string, patientId: strin
       if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set in .env");
       
       const genAI = getGeminiClient();
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig: { responseMimeType: "application/json" } });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
       
       // Dynamic import to support ES modules if needed, or just require
       const { buildTriagePrompt } = await import('./prompts.js');
