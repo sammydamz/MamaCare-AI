@@ -4,7 +4,7 @@ import { toAbsoluteUrl } from '@/lib/helpers';
 export function ClassicLayout() {
   return (
     <div className="flex min-h-screen w-full">
-      {/* Left — Login Form */}
+      {/* Left - Login Form */}
       <div className="flex flex-col justify-center items-center w-full lg:w-[45%] px-8 py-12 bg-background">
         <div className="w-full max-w-[380px]">
           <div className="mb-8 text-center">
@@ -23,7 +23,7 @@ export function ClassicLayout() {
         </div>
       </div>
 
-      {/* Right — Branded Panel */}
+      {/* Right - Branded Panel */}
       <div
         className="hidden lg:flex flex-col justify-between w-[55%] p-12 relative overflow-hidden"
         style={{
@@ -74,7 +74,7 @@ export function ClassicLayout() {
           <p className="text-sm leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.55)' }}>
             MamaCare AI keeps frontline health workers informed with
             real-time risk scores, AI-assisted consultations, and
-            automated referral tracking — all in local languages.
+            automated referral tracking - all in local languages.
           </p>
 
           {/* Feature grid */}

@@ -19,10 +19,10 @@ import {
 import { Switch } from '@/components/ui/switch';
 
 export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
 
-  const displayAvatar = 'https://images.unsplash.com/photo-1677195063105-276fd4b95b21?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+  const displayAvatar = user?.pic || 'https://images.unsplash.com/photo-1677195063105-276fd4b95b21?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
   const handleThemeToggle = (checked: boolean) => {
     setTheme(checked ? 'dark' : 'light');
@@ -35,16 +35,16 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
         <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-2">
             <img
-              className="size-9 rounded-full border-2 border-green-500"
+              className="size-9 rounded-full border-2 border-green-500 object-cover"
               src={displayAvatar}
               alt="User avatar"
             />
             <div className="flex flex-col">
               <span className="text-sm text-mono font-semibold">
-                {MOCK_USER.name}
+                {user?.fullname || user?.username || MOCK_USER.name}
               </span>
-              <span className="text-xs text-muted-foreground">
-                {MOCK_USER.email}
+              <span className="text-xs text-muted-foreground truncate w-32">
+                {user?.email || MOCK_USER.email}
               </span>
             </div>
           </div>

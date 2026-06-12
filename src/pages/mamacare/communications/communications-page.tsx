@@ -12,10 +12,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useMamaCare } from '@/providers/mamacare-provider';
 import { usePathway } from '@/providers/pathway-provider';
 import { toast } from 'sonner';
-import { Send, Users, User, AlertCircle, CalendarClock, Plus, Calendar, Clock } from 'lucide-react';
+import { Send, Users, User, CalendarClock, Plus, Calendar, Clock } from 'lucide-react';
 
 export function CommunicationsPage() {
   const { patients } = useMamaCare();
@@ -26,7 +29,14 @@ export function CommunicationsPage() {
   const [template, setTemplate] = useState('');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  
+  // Appointment Scheduler State
   const [isScheduling, setIsScheduling] = useState(false);
+  const [apptDate, setApptDate] = useState('');
+  const [apptTime, setApptTime] = useState('');
+  const [apptPatients, setApptPatients] = useState<string[]>([]);
+  const [apptReminder, setApptReminder] = useState('1day');
+  const [apptMessage, setApptMessage] = useState('Reminder: You have an upcoming appointment scheduled. Please contact us if you need to reschedule.');
 
   const filteredPatients = patients.filter(p => p.pathway === activePathway);
 
@@ -91,21 +101,33 @@ export function CommunicationsPage() {
       toast.success(`SMS successfully sent to ${recipientText} via Africa's Talking API`);
       setMessage('');
       setTemplate('');
-    } catch (error: any) {
-      toast.error(`Error sending SMS: ${error.message}`);
+    } catch (error: unknown) {
+      toast.error(`Error sending SMS: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsSending(false);
     }
   };
 
   const handleCreateSchedule = async () => {
+    if (!apptDate || !apptTime) {
+      toast.error('Please select an appointment date and time');
+      return;
+    }
+    if (apptPatients.length === 0) {
+      toast.error('Please select at least one patient');
+      return;
+    }
+    
     setIsScheduling(true);
     
-    // Extract actual phone numbers for the schedule
-    const recipientPhones = filteredPatients.map(p => p.phone).filter(Boolean) as string[];
+    // Extract actual phone numbers for the selected patients
+    const recipientPhones = filteredPatients
+      .filter(p => apptPatients.includes(p.id))
+      .map(p => p.phone)
+      .filter(Boolean) as string[];
 
     if (recipientPhones.length === 0) {
-      toast.error('No valid phone numbers found for the schedule target.');
+      toast.error('No valid phone numbers found for the selected patients.');
       setIsScheduling(false);
       return;
     }
@@ -116,7 +138,7 @@ export function CommunicationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: recipientPhones,
-          message: 'This is a scheduled automated reminder via MamaCare.'
+          message: apptMessage
         })
       });
 
@@ -126,9 +148,12 @@ export function CommunicationsPage() {
         throw new Error(data.error || 'Failed to create schedule');
       }
 
-      toast.success(`Automated schedule created successfully. It will execute via Africa's Talking API.`);
-    } catch (error: any) {
-      toast.error(`Error scheduling: ${error.message}`);
+      toast.success(`Appointment reminder schedule created successfully for ${recipientPhones.length} patient(s).`);
+      setApptDate('');
+      setApptTime('');
+      setApptPatients([]);
+    } catch (error: unknown) {
+      toast.error(`Error scheduling: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsScheduling(false);
     }
@@ -238,11 +263,7 @@ export function CommunicationsPage() {
                   </div>
 
                 </CardContent>
-                <CardFooter className="flex justify-between bg-muted/50 py-4 border-t">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <AlertCircle className="size-4" />
-                    <span>Currently in {activePathway} pathway context</span>
-                  </div>
+                <CardFooter className="flex justify-end bg-muted/50 py-4 border-t">
                   <Button onClick={handleSend} disabled={isSending}>
                     {isSending ? 'Sending...' : 'Send SMS'}
                     {!isSending && <Send className="size-4 ml-2" />}
@@ -276,59 +297,99 @@ export function CommunicationsPage() {
             <div className="grid lg:grid-cols-2 gap-7.5">
               <Card>
                 <CardHeader>
-                  <CardTitle>Create Scheduled Alert</CardTitle>
+                  <CardTitle>Create Appointment Reminders</CardTitle>
                   <CardDescription>
-                    Set up automated recurring or future SMS messages (e.g. Appointment Reminders).
+                    Schedule an appointment and set up automated SMS reminders for patients.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    <Label>Schedule Type</Label>
-                    <Select defaultValue="appointment">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select trigger..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="appointment">Pre-Appointment Reminder</SelectItem>
-                        <SelectItem value="recurring">Recurring Check-in</SelectItem>
-                        <SelectItem value="trimester">Stage/Trimester Based</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label>Appointment Date</Label>
+                      <Input 
+                        type="date" 
+                        value={apptDate}
+                        onChange={(e) => setApptDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label>Appointment Time</Label>
+                      <Input 
+                        type="time" 
+                        value={apptTime}
+                        onChange={(e) => setApptTime(e.target.value)}
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-3">
-                    <Label>Timing</Label>
-                    <Select defaultValue="2days">
+                    <Label>Select Patients</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-left font-normal">
+                          {apptPatients.length === 0 ? "Select patients..." : `${apptPatients.length} patient(s) selected`}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <div className="p-4 space-y-4 max-h-[300px] overflow-y-auto">
+                          <div className="flex items-center space-x-2 pb-2 border-b">
+                            <Checkbox 
+                              id="select-all" 
+                              checked={apptPatients.length === filteredPatients.length && filteredPatients.length > 0}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setApptPatients(filteredPatients.map(p => p.id));
+                                } else {
+                                  setApptPatients([]);
+                                }
+                              }}
+                            />
+                            <Label htmlFor="select-all" className="font-semibold">Select All</Label>
+                          </div>
+                          {filteredPatients.map(patient => (
+                            <div key={patient.id} className="flex items-center space-x-2">
+                              <Checkbox 
+                                id={`patient-${patient.id}`} 
+                                checked={apptPatients.includes(patient.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setApptPatients([...apptPatients, patient.id]);
+                                  } else {
+                                    setApptPatients(apptPatients.filter(id => id !== patient.id));
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={`patient-${patient.id}`}>{patient.name} ({patient.phone || 'No phone'})</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Reminder Timing</Label>
+                    <Select value={apptReminder} onValueChange={setApptReminder}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select timing..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="2days">2 Days Before Appointment</SelectItem>
-                        <SelectItem value="1day">1 Day Before Appointment</SelectItem>
-                        <SelectItem value="morning">Morning of Appointment</SelectItem>
+                        <SelectItem value="none">No Reminder</SelectItem>
+                        <SelectItem value="1hour">1 Hour Before</SelectItem>
+                        <SelectItem value="1day">1 Day Before</SelectItem>
+                        <SelectItem value="2days">2 Days Before</SelectItem>
+                        <SelectItem value="1week">1 Week Before</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-3">
-                    <Label>Target Audience</Label>
-                    <Select defaultValue="all">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select audience..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All {activePathway} Mothers</SelectItem>
-                        <SelectItem value="high">High Risk Mothers Only</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Message Template</Label>
+                    <Label>Reminder Message</Label>
                     <Textarea 
                       placeholder="Type your scheduled SMS message here..." 
                       className="min-h-[100px]"
-                      defaultValue="Reminder: You have an upcoming appointment scheduled. Please contact us if you need to reschedule."
+                      value={apptMessage}
+                      onChange={(e) => setApptMessage(e.target.value)}
                     />
                   </div>
                 </CardContent>
@@ -357,11 +418,11 @@ export function CommunicationsPage() {
                         <CalendarClock className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <h4 className="text-sm font-semibold">Appointment Reminders</h4>
-                        <p className="text-xs text-muted-foreground">Sends 2 days before any scheduled appointment to all mothers.</p>
+                        <h4 className="text-sm font-semibold">Appointment Reminders (High Risk Group)</h4>
+                        <p className="text-xs text-muted-foreground">Sends 1 day before the scheduled appointment on Oct 24th, 10:00 AM.</p>
                         <div className="flex items-center gap-4 mt-2">
                           <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
-                          <span className="text-xs text-muted-foreground">Next run: Tomorrow 08:00 AM</span>
+                          <span className="text-xs text-muted-foreground">Next run: Oct 23rd 10:00 AM</span>
                         </div>
                       </div>
                     </div>
@@ -371,11 +432,11 @@ export function CommunicationsPage() {
                         <Calendar className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <h4 className="text-sm font-semibold">Weekly Nutrition Tips</h4>
-                        <p className="text-xs text-muted-foreground">Sends every Monday at 9:00 AM to High Risk mothers.</p>
+                        <h4 className="text-sm font-semibold">Check-up Reminders (Routine Group)</h4>
+                        <p className="text-xs text-muted-foreground">Sends 2 days before the scheduled appointment on Nov 2nd, 02:00 PM.</p>
                         <div className="flex items-center gap-4 mt-2">
                           <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
-                          <span className="text-xs text-muted-foreground">Next run: Monday 09:00 AM</span>
+                          <span className="text-xs text-muted-foreground">Next run: Oct 31st 02:00 PM</span>
                         </div>
                       </div>
                     </div>

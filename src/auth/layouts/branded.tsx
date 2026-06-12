@@ -4,7 +4,7 @@ import { toAbsoluteUrl } from '@/lib/helpers';
 export function BrandedLayout() {
   return (
     <div className="flex min-h-screen w-full bg-background">
-      {/* Left — Login Form */}
+      {/* Left - Login Form */}
       <div className="flex flex-col justify-center items-center w-full lg:w-[45%] px-8 py-12">
         <div className="w-full max-w-[380px]">
           <div className="mb-8 text-center">
@@ -23,7 +23,7 @@ export function BrandedLayout() {
         </div>
       </div>
 
-      {/* Right — Branded Panel (rounded card with margin) */}
+      {/* Right - Branded Panel (rounded card with margin) */}
       <div className="hidden lg:flex items-stretch w-[55%] p-6">
         <div
           className="flex flex-col justify-between w-full rounded-2xl p-10 relative overflow-hidden"
@@ -53,7 +53,7 @@ export function BrandedLayout() {
               />
             </div>
 
-            {/* Badges — hidden for now */}
+            {/* Badges - hidden for now */}
 
             {/* Headline */}
             <h2 className="text-white text-[28px] font-bold leading-snug mb-5">

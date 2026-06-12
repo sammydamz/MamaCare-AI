@@ -14,9 +14,16 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/audio', express.static(path.join(__dirname, '../public/audio')));
 
 const PORT = process.env.PORT || 5000;
 const isProd = process.env.NODE_ENV === 'production';
+
+import { processRecordedSession } from './voice-agent.js';
+import multer from 'multer';
+
+const upload = multer({ dest: 'uploads/' });
 
 // DB Pool configuration
 const pool = new pg.Pool({
@@ -55,6 +62,28 @@ pool.connect((err, client, release) => {
 });
 
 // --- API ENDPOINTS ---
+
+// POST /api/voice/upload-recording/:patientId
+app.post('/api/voice/upload-recording/:patientId', upload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file uploaded' });
+    }
+    const result = await processRecordedSession(req.file.path, req.params.patientId as string, pool);
+    
+    // Clean up temp file
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.json(result);
+  } catch (err: any) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // POST /api/login
 app.post('/api/login', async (req, res) => {
@@ -185,6 +214,7 @@ app.get('/api/patients', async (req, res) => {
       copingIndex: row.coping_index,
       sleepQuality: row.sleep_quality,
       bleedingStatus: row.bleeding_status,
+      phone: row.phone,
     })));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -193,16 +223,16 @@ app.get('/api/patients', async (req, res) => {
 
 // POST /api/patients (Register Patient)
 app.post('/api/patients', async (req, res) => {
-  const { name, age, pathway, language, assignedChw, stage } = req.body;
+  const { name, age, pathway, language, assignedChw, stage, phone } = req.body;
   const id = 'p' + Math.floor(100 + Math.random() * 900);
   const regDate = new Date().toISOString().split('T')[0];
   const initialHistory = JSON.stringify([{ date: regDate, level: 'LOW' }]);
 
   try {
     await pool.query(
-      `INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, registration_date, risk_history) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [id, name, age, pathway, 'LOW', language, assignedChw || 'Unassigned', stage, regDate, initialHistory]
+      `INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, registration_date, risk_history, phone) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [id, name, age, pathway, 'LOW', language, assignedChw || 'Unassigned', stage, regDate, initialHistory, phone || null]
     );
 
     // Insert to action log
@@ -210,14 +240,14 @@ app.post('/api/patients', async (req, res) => {
     await pool.query(
       `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) 
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [logId, id, 'Registration', `Patient registered for MamaCare programme — ${pathway} pathway`, new Date().toISOString(), assignedChw || 'System']
+      [logId, id, 'Registration', `Patient registered for MamaCare programme - ${pathway} pathway`, new Date().toISOString(), assignedChw || 'System']
     );
 
     // Update KPI
     await pool.query("UPDATE kpis SET value = value + 1 WHERE key = 'total_mothers'");
     await pool.query("UPDATE kpis SET value = value + 1 WHERE key = 'caseload'");
 
-    res.status(201).json({ id, name, age, pathway, riskLevel: 'LOW', language, assignedChw, stage });
+    res.status(201).json({ id, name, age, pathway, riskLevel: 'LOW', language, assignedChw, stage, phone });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -744,6 +774,7 @@ app.post('/api/sms/send', async (req, res) => {
   
   try {
     // Dynamic import to avoid issues with ES modules and CommonJS
+    // @ts-ignore
     const africastalking = (await import('africastalking')).default;
     const AT = africastalking({
       apiKey: process.env.AFRICASTALKING_API_KEY || '',

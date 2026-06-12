@@ -81,7 +81,7 @@ function OverviewTab({ patient }: { patient: Patient }) {
     {
       label: 'Registration',
       date: patient.registrationDate,
-      note: `Registered for MamaCare — ${patient.pathway} pathway`,
+      note: `Registered for MamaCare - ${patient.pathway} pathway`,
     },
     ...sortedActions
       .filter((a) => a.type !== 'Registration')

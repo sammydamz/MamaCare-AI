@@ -70,6 +70,7 @@ interface MamaCareContextType {
     language: string;
     assignedChw?: string;
     stage: string;
+    phone: string;
   }) => Promise<void>;
   recordVitals: (
     patientId: string,
@@ -152,6 +153,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
     language: string;
     assignedChw?: string;
     stage: string;
+    phone: string;
   }) => {
     try {
       await mamacareApi.registerPatient(data);

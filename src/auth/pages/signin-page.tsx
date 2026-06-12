@@ -230,16 +230,6 @@ export function SignInPage() {
             'Sign In'
           )}
         </Button>
-
-        <div className="text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <Link
-            to="/auth/signup"
-            className="text-sm font-semibold text-foreground hover:text-primary"
-          >
-            Sign Up
-          </Link>
-        </div>
       </form>
     </Form>
   );

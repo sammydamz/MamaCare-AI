@@ -38,8 +38,9 @@ export interface Consultation {
   symptoms: string[]
   riskLevel: RiskLevel
   aiSummary: string
-  transcript: { speaker: 'AI' | 'Mother'; text: string }[]
+  transcript: { speaker: 'AI' | 'Mother' | 'Full Audio'; text: string }[]
   triggeredReferral: boolean
+  audioUrl?: string
 }
 
 export interface Referral {
