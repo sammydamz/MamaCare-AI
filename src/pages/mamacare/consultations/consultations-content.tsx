@@ -16,20 +16,26 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useMamaCare } from '@/providers/mamacare-provider';
+import { usePathway } from '@/providers/pathway-provider';
 import { RISK_COLORS } from '@/lib/mamacare/constants';
 import type { Consultation } from '@/lib/mamacare/types';
 import { ConsultationDetail } from './components/consultation-detail';
-import { SimulateConsultationDialog } from './components/simulate-consultation-dialog';
 
 export function ConsultationsContent() {
-  const { consultations } = useMamaCare();
+  const { consultations, patients } = useMamaCare();
+  const { activePathway } = usePathway();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [patientFilter, setPatientFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
 
-  const patientNames = Array.from(new Set(consultations.map((c) => c.patientName)));
+  const pathwayConsultations = consultations.filter(c => {
+    const patient = patients.find(p => p.id === c.patientId);
+    return patient?.pathway === activePathway;
+  });
 
-  const filtered = consultations.filter((c) => {
+  const patientNames = Array.from(new Set(pathwayConsultations.map((c) => c.patientName)));
+
+  const filtered = pathwayConsultations.filter((c) => {
     if (patientFilter !== 'all' && c.patientName !== patientFilter) return false;
     if (riskFilter !== 'all' && c.riskLevel !== riskFilter) return false;
     return true;
@@ -68,8 +74,7 @@ export function ConsultationsContent() {
           </SelectContent>
         </Select>
 
-        <div className="ml-auto">
-          <SimulateConsultationDialog />
+        <div className="flex gap-2">
         </div>
       </div>
 
@@ -109,27 +114,38 @@ function ConsultationRow({
   onToggle: (id: string) => void;
 }) {
   const riskVariant = RISK_COLORS[consultation.riskLevel] as 'destructive' | 'warning' | 'secondary';
+  const isHighRisk = consultation.riskLevel === 'HIGH';
+  const isMediumRisk = consultation.riskLevel === 'MEDIUM';
 
   return (
     <>
       <TableRow
-        className="cursor-pointer"
+        className={`cursor-pointer ${isHighRisk ? 'bg-red-50/50 hover:bg-red-50' : isMediumRisk ? 'bg-amber-50/50 hover:bg-amber-50' : ''}`}
         onClick={() => onToggle(consultation.id)}
       >
         <TableCell className="whitespace-nowrap">{consultation.date}</TableCell>
-        <TableCell className="font-medium">{consultation.patientName}</TableCell>
+        <TableCell className="font-medium">
+          <div className="flex items-center gap-2">
+            {consultation.patientName}
+            {isHighRisk && <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">ALERT</Badge>}
+          </div>
+        </TableCell>
         <TableCell>{consultation.language}</TableCell>
         <TableCell>
           <div className="flex flex-wrap gap-1">
-            {consultation.symptoms.map((symptom) => (
-              <Badge key={symptom} variant="outline" size="sm">
-                {symptom}
-              </Badge>
-            ))}
+            {consultation.symptoms?.length > 0 ? (
+              consultation.symptoms.map((symptom) => (
+                <Badge key={symptom} variant="outline" size="sm" className="capitalize text-xs bg-white">
+                  {symptom}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-muted-foreground text-xs">None</span>
+            )}
           </div>
         </TableCell>
         <TableCell>
-          <Badge variant={riskVariant} appearance="light" size="sm">
+          <Badge variant={riskVariant} appearance={isHighRisk || isMediumRisk ? 'default' : 'light'} size="sm" className={isHighRisk ? 'animate-pulse' : ''}>
             {consultation.riskLevel}
           </Badge>
         </TableCell>

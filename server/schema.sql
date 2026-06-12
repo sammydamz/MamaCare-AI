@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS consultations (
     risk_level VARCHAR(20) NOT NULL,
     ai_summary TEXT NOT NULL,
     transcript JSONB NOT NULL DEFAULT '[]'::jsonb,
-    triggered_referral BOOLEAN NOT NULL DEFAULT FALSE
+    triggered_referral BOOLEAN NOT NULL DEFAULT FALSE,
+    audio_url TEXT
 );
 
 -- Referrals
@@ -151,15 +152,6 @@ INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw
     ('p006', 'Esi Naadu', 29, 'Post-Loss', 'LOW', 'English', 'Mercy Owusu', 'Post-loss: 8 months', '2026-05-22', '2025-10-05', '[{"date": "2025-10-05", "level": "HIGH"}, {"date": "2025-12-15", "level": "MEDIUM"}, {"date": "2026-03-01", "level": "LOW"}]'::jsonb, 8)
 ON CONFLICT DO NOTHING;
 
-INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral) VALUES
-    ('c001', 'p001', 'Abena Osei', '2026-05-27', 'Twi', ARRAY['severe headache', 'blurred vision', 'swollen feet'], 'HIGH', 'Patient reports severe headache persisting for 3 days, blurred vision, and noticeable swelling in both feet. Blood pressure reading at 150/95 mmHg. These symptoms are consistent with pre-eclampsia warning signs. Immediate referral recommended.', '[{"text": "Mema wo akye Abena, wo ho te sen nnɛ? Masan ate sɛ wo ti pae wo.", "speaker": "AI"}, {"text": "Me ho nnye koraa. Minya ti pae yi nnansa ni, ɛnna m''ani so repupuw me.", "speaker": "Mother"}, {"text": "Wahu sɛ wo nan ahome/akuku anaa?", "speaker": "AI"}, {"text": "Aane, me nan abobow koraa.", "speaker": "Mother"}, {"text": "Mate aseɛ. Ɛsɛ sɛ wokɔ asopiti ntɛmara na yɛahwɛ wo ne wo ba no yie.", "speaker": "AI"}]'::jsonb, TRUE),
-    ('c002', 'p002', 'Efua Mensah', '2026-05-26', 'Fante', ARRAY['difficulty sleeping', 'persistent sadness', 'low appetite'], 'MEDIUM', 'Patient continues to experience grief-related symptoms 4 months post-loss. Sleep quality has slightly improved from Poor to Fair. Coping index remains at 5/10. Recommend continued counselling sessions and community support group referral.', '[{"text": "Ibotae Efua? Wo ho te dɛn?", "speaker": "AI"}, {"text": "Hom nnye koraa. Menda yie, ɛnna medidi mpo a mempɛ.", "speaker": "Mother"}, {"text": "Mate ase. Ɛnnɛ wotumi kɔɔ counselling afahyɛ no bi?", "speaker": "AI"}, {"text": "Nyew, naaso nkabom no nnuru baabiara.", "speaker": "Mother"}]'::jsonb, FALSE),
-    ('c003', 'p003', 'Akosua Addo', '2026-05-25', 'Twi', ARRAY['mild nausea', 'normal fatigue'], 'LOW', 'Patient reports mild nausea and normal pregnancy-related fatigue at 18 weeks. Blood pressure stable at 118/76 mmHg. Baby kick count is within normal range. No danger signs identified. Continue routine ANC schedule.', '[{"text": "Maakye Akosua, wo ho te sen?", "speaker": "AI"}, {"text": "Me ho yɛ, nanso me bo repupuw me kakra.", "speaker": "Mother"}, {"text": "Ɛyɛ. Wo ba no tutu nso wote ne nka?", "speaker": "AI"}, {"text": "Aane, outubro yie paa.", "speaker": "Mother"}]'::jsonb, FALSE),
-    ('c004', 'p004', 'Ama Serwaa', '2026-05-28', 'Twi', ARRAY['reduced fetal movement', 'severe abdominal pain', 'dizziness'], 'HIGH', 'Patient at 36 weeks reports significantly reduced fetal movement (kick count: 4), severe abdominal pain, and episodes of dizziness. Blood pressure at 160/100 mmHg is critically elevated. URGENT: Immediate emergency referral activated for possible placental abruption.', '[{"text": "Ama, wo ho te dɛn? Ɛyɛ ya paa?", "speaker": "AI"}, {"text": "Me yam repae me paa. Bio nso, me ba no ntutu koraa te sɛ daa no.", "speaker": "Mother"}, {"text": "Ntɛmara, ɛsɛ sɛ wokɔ asopiti sesiaa. Mɛbɔ dawur ama ambulance abɛfa wo.", "speaker": "AI"}]'::jsonb, TRUE),
-    ('c005', 'p005', 'Yaa Ansah', '2026-05-24', 'Ga', ARRAY['mild back pain', 'occasional headaches'], 'MEDIUM', 'Patient at 24 weeks reports mild back pain and occasional headaches. Blood pressure slightly elevated at 135/88 mmHg, warranting closer monitoring. No proteinuria detected. Scheduled for follow-up in 1 week.', '[{"text": "Teekpa Yaa, te oye tɛŋ?", "speaker": "AI"}, {"text": "Minaa hejɔlɛ yɛ mikwɛŋ, eye mipaŋ fioo nso.", "speaker": "Mother"}, {"text": "Eye kpakpa. Hɛɛ mɔ mɛni okyɛɛ kɛbashi otsi nyɛŋma loo?", "speaker": "AI"}, {"text": "Hɛɛ, mɛba dɛŋŋ otsi ni baa lɛ mli.", "speaker": "Mother"}]'::jsonb, FALSE),
-    ('c006', 'p006', 'Esi Naadu', '2026-05-22', 'Ewe', ARRAY['improved mood', 'better sleep'], 'LOW', 'Patient shows continued improvement 8 months post-loss. Coping index increased to 8/10. Sleep quality improved to Good. Actively participating in community support group. Recommend transitioning to quarterly check-ins.', '[{"text": "Ŋdi na wò Esi. Ɛfoa?", "speaker": "AI"}, {"text": "Mefo nyuie. Medɔ alɔ̃ nyuie, eye nye dzi nɔ fa fifia.", "speaker": "Mother"}, {"text": "Eyo, edze na wò! Míado go le ɣleti gbɔgbɔ mli.", "speaker": "AI"}]'::jsonb, FALSE)
-ON CONFLICT DO NOTHING;
-
 INSERT INTO referrals (id, patient_id, patient_name, risk_level, status, facility_id, facility_name, assigned_chw, outcome, reason, created_at, timeline) VALUES
     ('r001', 'p001', 'Abena Osei', 'HIGH', 'In Transit', 'f001', 'Korle-Bu Teaching Hospital', 'Grace Mensah', NULL, 'Pre-eclampsia warning signs detected', '2026-05-27T09:30:00Z', '[{"note": "Pre-eclampsia warning signs detected", "stage": "Referral Created", "timestamp": "2026-05-27T09:30:00Z"}, {"stage": "Ambulance Dispatched", "timestamp": "2026-05-27T09:45:00Z"}, {"note": "ETA 25 minutes", "stage": "In Transit", "timestamp": "2026-05-27T10:00:00Z"}]'::jsonb),
     ('r002', 'p004', 'Ama Serwaa', 'HIGH', 'Pending', 'f002', 'Komfo Anokye Teaching Hospital', 'Comfort Asante', NULL, 'Emergency: possible placental abruption at 36 weeks', '2026-05-28T08:15:00Z', '[{"note": "Emergency: possible placental abruption at 36 weeks", "stage": "Referral Created", "timestamp": "2026-05-28T08:15:00Z"}]'::jsonb),
@@ -168,16 +160,16 @@ INSERT INTO referrals (id, patient_id, patient_name, risk_level, status, facilit
 ON CONFLICT DO NOTHING;
 
 INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES
-    ('a001', 'p001', 'Alert', 'Risk level escalated to HIGH — pre-eclampsia warning signs detected during AI consultation', '2026-05-27T09:28:00Z', 'System'),
+    ('a001', 'p001', 'Alert', 'Risk level escalated to HIGH - pre-eclampsia warning signs detected during AI consultation', '2026-05-27T09:28:00Z', 'System'),
     ('a002', 'p001', 'Referral', 'Emergency referral created to Korle-Bu Teaching Hospital', '2026-05-27T09:30:00Z', 'Grace Mensah'),
-    ('a003', 'p004', 'Alert', 'Risk level escalated to HIGH — reduced fetal movement and critically elevated blood pressure (160/100)', '2026-05-28T08:12:00Z', 'System'),
-    ('a004', 'p004', 'Referral', 'Emergency referral created to Komfo Anokye Teaching Hospital — possible placental abruption', '2026-05-28T08:15:00Z', 'Comfort Asante'),
-    ('a005', 'p002', 'Call', 'Follow-up call completed — patient reports continued grief symptoms, coping index unchanged at 5/10', '2026-05-26T10:00:00Z', 'Comfort Asante'),
-    ('a006', 'p003', 'Visit', 'Routine ANC visit completed — all vitals normal, pregnancy progressing well at 18 weeks', '2026-05-25T14:00:00Z', 'Grace Mensah'),
-    ('a007', 'p005', 'Vitals', 'Blood pressure slightly elevated at 135/88 mmHg during routine check — scheduled follow-up in 1 week', '2026-05-24T11:30:00Z', 'Mercy Owusu'),
-    ('a008', 'p006', 'Outcome', 'Quarterly review — coping index improved to 8/10, sleep quality rated Good. Transitioning to quarterly check-ins', '2026-05-22T09:00:00Z', 'Mercy Owusu'),
-    ('a009', 'p001', 'Vitals', 'Blood pressure reading: 150/95 mmHg — above normal range', '2026-05-27T09:25:00Z', 'System'),
-    ('a010', 'p004', 'Registration', 'Patient registered for MamaCare programme — high-risk pregnancy, age 34', '2025-09-15T08:00:00Z', 'Comfort Asante')
+    ('a003', 'p004', 'Alert', 'Risk level escalated to HIGH - reduced fetal movement and critically elevated blood pressure (160/100)', '2026-05-28T08:12:00Z', 'System'),
+    ('a004', 'p004', 'Referral', 'Emergency referral created to Komfo Anokye Teaching Hospital - possible placental abruption', '2026-05-28T08:15:00Z', 'Comfort Asante'),
+    ('a005', 'p002', 'Call', 'Follow-up call completed - patient reports continued grief symptoms, coping index unchanged at 5/10', '2026-05-26T10:00:00Z', 'Comfort Asante'),
+    ('a006', 'p003', 'Visit', 'Routine ANC visit completed - all vitals normal, pregnancy progressing well at 18 weeks', '2026-05-25T14:00:00Z', 'Grace Mensah'),
+    ('a007', 'p005', 'Vitals', 'Blood pressure slightly elevated at 135/88 mmHg during routine check - scheduled follow-up in 1 week', '2026-05-24T11:30:00Z', 'Mercy Owusu'),
+    ('a008', 'p006', 'Outcome', 'Quarterly review - coping index improved to 8/10, sleep quality rated Good. Transitioning to quarterly check-ins', '2026-05-22T09:00:00Z', 'Mercy Owusu'),
+    ('a009', 'p001', 'Vitals', 'Blood pressure reading: 150/95 mmHg - above normal range', '2026-05-27T09:25:00Z', 'System'),
+    ('a010', 'p004', 'Registration', 'Patient registered for MamaCare programme - high-risk pregnancy, age 34', '2025-09-15T08:00:00Z', 'Comfort Asante')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO chw_performance (chw_name, total_cases, follow_up_rate, resolved_cases, active_cases) VALUES

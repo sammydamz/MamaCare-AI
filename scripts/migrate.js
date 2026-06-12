@@ -1,23 +1,12 @@
+import dotenv from 'dotenv';
 import pg from 'pg';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const sql = fs.readFileSync(path.join(__dirname, '../server/schema.sql'), 'utf8');
-
-const dbUrl = process.env.DATABASE_URL || 
-  'postgresql://postgres:QNYhUlhnvFIcbJqCmExqdtFbcvbjdnfv@acela.proxy.rlwy.net:17503/railway';
-
-const pool = new pg.Pool({
-  connectionString: dbUrl,
-  ssl: dbUrl.includes('railway.internal') ? { rejectUnauthorized: false } : false,
-});
-
-pool.query(sql).then(() => {
-  console.log('✅ Migration complete.');
-  process.exit(0);
-}).catch((err) => {
-  console.error('❌ Migration failed:', err.message);
-  process.exit(1);
-});
+const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+async function run() {
+  await client.connect();
+  await client.query('ALTER TABLE consultations ADD COLUMN IF NOT EXISTS audio_url TEXT;');
+  console.log('Added audio_url');
+  await client.end();
+}
+run();

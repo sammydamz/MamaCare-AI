@@ -7,10 +7,6 @@ import { useMamaCare } from '@/providers/mamacare-provider';
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { RiskTrendChart } from './risk-trend-chart';
 import { ActionLog } from './action-log';
-import { LogVisitDialog } from './log-visit-dialog';
-import { CreateReferralDialog } from './create-referral-dialog';
-import { RecordVitalsDialog } from './record-vitals-dialog';
-import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -36,32 +32,6 @@ function RiskTrendArrow({ history }: { history: { level: RiskLevel }[] }) {
 
 export function PatientDetail({ patient }: { patient: Patient }) {
   const { consultations, actionLogs } = useMamaCare();
-  const [isCalling, setIsCalling] = useState(false);
-
-  const handleTriggerCall = async () => {
-    if (!patient.phone) {
-      toast.error('Patient does not have a phone number registered.');
-      return;
-    }
-    
-    setIsCalling(true);
-    try {
-      const res = await fetch('/api/voice/call', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patientId: patient.id })
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to initiate call');
-      
-      toast.success(`Voice agent is now calling ${patient.phone}`);
-    } catch (err: unknown) {
-      toast.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    } finally {
-      setIsCalling(false);
-    }
-  };
 
   const initials = patient.name
     .split(' ')
@@ -110,14 +80,30 @@ export function PatientDetail({ patient }: { patient: Patient }) {
 
         {latestConsultation && (
           <div>
-            <h3 className="text-sm font-medium mb-2">Latest Consultation</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium">Latest Consultation</h3>
+              {(latestConsultation.riskLevel === 'HIGH' || latestConsultation.riskLevel === 'MEDIUM') && (
+                <Badge variant={latestConsultation.riskLevel === 'HIGH' ? 'destructive' : 'secondary'} className={latestConsultation.riskLevel === 'MEDIUM' ? 'bg-amber-100 text-amber-800 hover:bg-amber-100' : ''}>
+                  Triage Alert: {latestConsultation.riskLevel}
+                </Badge>
+              )}
+            </div>
             <div className="rounded-lg border p-3">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                 <span>{new Date(latestConsultation.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 <span className="text-border">·</span>
                 <span>{latestConsultation.language}</span>
               </div>
-              <p className="text-sm">{latestConsultation.aiSummary}</p>
+              <p className="text-sm mb-3">{latestConsultation.aiSummary}</p>
+              {latestConsultation.symptoms && latestConsultation.symptoms.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {latestConsultation.symptoms.map((s, i) => (
+                    <Badge key={i} variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200 capitalize">
+                      {s}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -127,19 +113,46 @@ export function PatientDetail({ patient }: { patient: Patient }) {
           <ActionLog entries={patientActions} />
         </div>
 
-        <div className="flex items-center gap-2 pt-2">
-          <LogVisitDialog patientId={patient.id} />
-          <CreateReferralDialog patientId={patient.id} />
-          <RecordVitalsDialog patientId={patient.id} pathway={patient.pathway} />
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleTriggerCall} 
-            disabled={isCalling || !patient.phone}
-            className="ml-auto bg-primary/5 hover:bg-primary/10 text-primary border-primary/20"
-          >
-            {isCalling ? 'Calling...' : 'Trigger AI Call'}
-          </Button>
+        <div className="flex flex-wrap items-center gap-2 pt-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept="audio/*"
+              className="hidden"
+              id={`upload-audio-${patient.id}`}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                
+                toast.loading('Uploading and processing audio...', { id: 'upload-audio' });
+                const formData = new FormData();
+                formData.append('audio', file);
+                
+                try {
+                  const res = await fetch(`/api/voice/upload-recording/${patient.id}`, {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error || 'Failed to process audio');
+                  
+                  toast.success('Audio processed successfully! Refresh to see consultation.', { id: 'upload-audio' });
+                } catch (err: unknown) {
+                  const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+                  toast.error(`Error: ${errorMessage}`, { id: 'upload-audio' });
+                }
+              }}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById(`upload-audio-${patient.id}`)?.click()}
+              className="bg-primary/5 hover:bg-primary/10 text-primary border-primary/20"
+            >
+              Upload Recording
+            </Button>
+          </div>
         </div>
       </div>
     </ScrollArea>

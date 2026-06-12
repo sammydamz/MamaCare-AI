@@ -60,7 +60,7 @@ export function ReferralTable({
             <TableCell>{referral.facilityName}</TableCell>
             <TableCell>{referral.assignedChw}</TableCell>
             <TableCell className="text-muted-foreground">
-              {referral.outcome ?? '—'}
+              {referral.outcome ?? '-'}
             </TableCell>
           </TableRow>
         ))}

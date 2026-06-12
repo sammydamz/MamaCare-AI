@@ -3,229 +3,191 @@ import { ElevenLabsClient } from 'elevenlabs';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import https from 'https';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const minimax = new OpenAI({ 
-  apiKey: process.env.MINIMAX_API_KEY,
-  baseURL: 'https://api.minimax.io/v1'
-});
-const elevenlabs = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY });
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// In-memory state for calls
-// Map sessionId -> CallState
-interface Turn {
-  speaker: 'AI' | 'Mother';
-  text: string;
+let geminiClient: GoogleGenerativeAI;
+
+function getGeminiClient() {
+  if (!geminiClient) {
+    geminiClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
+  }
+  return geminiClient;
 }
+const elevenlabs = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY || 'dummy_key' });
 
-interface CallState {
-  step: number; // 1: greeting sent, waiting for coping. 2: symptom check sent, waiting for symptoms. 3: ended
-  patientId?: string;
-  transcript: Turn[];
-}
+import * as Minio from 'minio';
 
-const activeCalls: Record<string, CallState> = {};
+let minioClient: Minio.Client;
+let bucketName: string;
 
-// Helper to generate speech using ElevenLabs and return a URL
-// Since we need to provide a public URL to AT, we must serve the file
-async function generateSpeechAndSave(text: string, filename: string): Promise<string> {
-  try {
-    const audioStream = await elevenlabs.generate({
-      voice: "9Dbo4hEvXQ5l7MXGZFQA", // Olufunmilola (African/Nigerian female accent)
-      text: text,
-      model_id: "eleven_monolingual_v1"
+function getMinioClient() {
+  if (!minioClient) {
+    minioClient = new Minio.Client({
+      endPoint: process.env.AWS_ENDPOINT_URL_S3 ? process.env.AWS_ENDPOINT_URL_S3.replace('https://', '').replace('http://', '').split(':')[0] : (process.env.MINIO_ENDPOINT || 'localhost'),
+      port: parseInt(process.env.MINIO_PORT || '443'),
+      useSSL: process.env.MINIO_USE_SSL !== 'false',
+      accessKey: process.env.AWS_ACCESS_KEY_ID || process.env.MINIO_ACCESS_KEY || 'minioadmin',
+      secretKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.MINIO_SECRET_KEY || 'minioadmin'
     });
-
-    const publicDir = path.join(__dirname, '../public/audio');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
-    }
-
-    const filepath = path.join(publicDir, filename);
-    const fileStream = fs.createWriteStream(filepath);
-
-    // Stream the audio response to a file
-    for await (const chunk of audioStream) {
-      fileStream.write(chunk);
-    }
-    fileStream.end();
-
-    // Wait for the stream to finish
-    await new Promise((resolve) => fileStream.on('finish', () => resolve(undefined)));
-
-    // Return the relative URL we can serve (assumes server is hosted at process.env.PUBLIC_URL or we just use a generic path)
-    // For demo, we might need a tunneling service like ngrok if testing locally with AT
-    const baseUrl = process.env.PUBLIC_URL || 'http://localhost:5000';
-    return `${baseUrl}/audio/${filename}`;
-  } catch (err) {
-    console.error("ElevenLabs error:", err);
-    throw err;
+    bucketName = process.env.AWS_S3_BUCKET || process.env.MINIO_BUCKET || 'mamacare-audio';
   }
+  return { client: minioClient, bucket: bucketName };
 }
 
-// Transcribe audio from URL using Whisper
-async function transcribeAudio(audioUrl: string): Promise<string> {
+export async function processRecordedSession(audioPath: string, patientId: string, pool: any) {
   try {
-    // Download the audio file from AT
-    const response = await fetch(audioUrl);
-    const buffer = await response.arrayBuffer();
-    
-    // Save temporarily
-    const tmpPath = path.join(__dirname, `tmp_${Date.now()}.wav`);
-    fs.writeFileSync(tmpPath, Buffer.from(buffer));
-
-    const transcription = await minimax.audio.transcriptions.create({
-      file: fs.createReadStream(tmpPath),
-      model: "minimax-asr", // Use a generic model name since we are routing to MiniMax
-    });
-
-    fs.unlinkSync(tmpPath); // cleanup
-    return transcription.text;
-  } catch (err) {
-    console.error("Transcription error:", err);
-    return "";
-  }
-}
-
-export async function handleVoiceCallback(req: any, res: any, pool: any) {
-  const { sessionId, isActive, callerNumber, recordingUrl } = req.body;
-
-  if (isActive === '0') {
-    // Call ended. We should save the transcript to DB.
-    const state = activeCalls[sessionId];
-    if (state) {
-      console.log("Call ended. Transcript:", state.transcript);
-      try {
-        let phoneStr = callerNumber;
-        if (phoneStr && !phoneStr.startsWith('+')) {
-          phoneStr = '+' + phoneStr;
-        }
-        const patientRes = await pool.query('SELECT * FROM patients WHERE phone = $1 OR phone = $2', [callerNumber, phoneStr]);
-        if (patientRes.rows.length > 0) {
-          const patient = patientRes.rows[0];
-          const id = 'c' + Math.floor(100 + Math.random() * 900);
-          const date = new Date().toISOString().split('T')[0];
-          
-          const triggeredReferral = state.transcript.some(t => t.text.includes('feedback') && t.speaker === 'AI');
-          
-          await pool.query(
-            `INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-            [id, patient.id, patient.name, date, patient.language, [], patient.risk_level, 'Automated Voice Agent Call', JSON.stringify(state.transcript), triggeredReferral]
-          );
-        }
-      } catch (err) {
-        console.error('Failed saving voice transcript:', err);
-      }
-      delete activeCalls[sessionId];
+    // 1. Upload to MinIO
+    const { client, bucket } = getMinioClient();
+    const objectName = `audio_${Date.now()}.wav`;
+    const exists = await client.bucketExists(bucket).catch(() => false);
+    if (!exists) {
+      await client.makeBucket(bucket, 'us-east-1').catch(console.error);
     }
-    return res.send(`<?xml version="1.0" encoding="UTF-8"?><Response></Response>`);
-  }
+    await client.fPutObject(bucket, objectName, audioPath, {});
+    // Get presigned URL
+    const audioUrl = await client.presignedGetObject(bucket, objectName, 7 * 24 * 60 * 60); // 7 days
 
-  // Initialize state if new call
-  if (!activeCalls[sessionId]) {
-    activeCalls[sessionId] = { step: 0, transcript: [] };
-  }
+    // 2. Transcribe the audio via ElevenLabs Speech-to-Text (Scribe)
+    let fullTranscript = '';
+    try {
+      const audioData = fs.readFileSync(audioPath);
+      const blob = new Blob([audioData], { type: 'audio/wav' });
+      const formData = new FormData();
+      formData.append('file', blob, `audio_${Date.now()}.wav`);
+      formData.append('model_id', 'scribe_v1');
 
-  const state = activeCalls[sessionId];
-
-  try {
-    let responseText = "";
-    
-    if (state.step === 0) {
-      // Step 0: Initial Greeting
-      responseText = "Hello, this is your MamaCare assistant. How are you doing today? On a scale of 1 to 10, how well are you coping with your pregnancy?";
-      state.step = 1;
-    } else if (state.step === 1 && recordingUrl) {
-      // Step 1: Processing coping index response
-      const userText = await transcribeAudio(recordingUrl);
-      state.transcript.push({ speaker: 'Mother', text: userText });
-
-      responseText = "Thank you for sharing. Are you experiencing any physical symptoms right now, such as headaches, bleeding, or reduced baby movement?";
-      state.step = 2;
-    } else if (state.step === 2 && recordingUrl) {
-      // Step 2: Processing symptom response
-      const userText = await transcribeAudio(recordingUrl);
-      state.transcript.push({ speaker: 'Mother', text: userText });
-
-      // Call LLM to evaluate if there are symptoms
-      const completion = await minimax.chat.completions.create({
-        model: "abab6.5-chat",
-        messages: [
-          { role: "system", content: "You are evaluating a prenatal mother's response about her symptoms. If she mentions any negative symptoms (headache, bleeding, pain, fatigue, etc), reply exactly with 'SYMPTOM'. If she says she is fine or no symptoms, reply exactly with 'CLEAR'." },
-          { role: "user", content: userText }
-        ]
+      const res = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+        method: 'POST',
+        headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY || '' },
+        body: formData
       });
-
-      const llmResult = completion.choices[0].message.content?.trim();
       
-      if (llmResult === 'SYMPTOM') {
-        responseText = "Thank you for sharing. I've noted your symptoms, and a healthcare provider will contact you shortly with feedback. Take care.";
-      } else {
-        responseText = "I'm glad to hear you are doing well. Keep up the great work, and we will check in on you again soon. Goodbye.";
+      if (!res.ok) {
+        throw new Error(`ElevenLabs API error: ${res.status} ${await res.text()}`);
       }
-      state.step = 3;
+      
+      const result = await res.json();
+      fullTranscript = result.text || '';
+    } catch (e) {
+      console.error("ElevenLabs ASR error:", e);
+      throw e;
     }
 
-    if (responseText) {
-      state.transcript.push({ speaker: 'AI', text: responseText });
+    // 4. Extract Symptoms, Summary, Risk Level, and Transcript via Gemini
+    let symptoms: string[] = [];
+    let aiSummary = 'No summary generated.';
+    let riskLevel = 'Low';
+    let structuredTranscript = [{ role: 'system', message: fullTranscript }];
+    
+    try {
+      if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set in .env");
       
-      const audioFilename = `resp_${sessionId}_${state.step}.mp3`;
-      const audioUrl = await generateSpeechAndSave(responseText, audioFilename);
-
-      let xmlResponse = `<?xml version="1.0" encoding="UTF-8"?><Response>`;
-      xmlResponse += `<Play url="${audioUrl}" />`;
+      const genAI = getGeminiClient();
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
       
-      if (state.step < 3) {
-        xmlResponse += `<Record finishOnKey="#" maxLength="15" playBeep="true" />`;
-      }
-      xmlResponse += `</Response>`;
-
-      res.setHeader('Content-Type', 'application/xml');
-      return res.send(xmlResponse);
+      const prompt = `
+        Analyze the following raw transcript from a maternal health assistant.
+        The text is a single block containing both the AI agent and the mother's responses mixed together.
+        
+        Please return a JSON object with the following fields:
+        1. "symptoms": A JSON array of strings containing any physical or medical symptoms reported by the mother (e.g. ["headache", "swollen feet"]). If none, return [].
+        2. "summary": A brief 1-2 sentence clinical summary of the conversation.
+        3. "structuredTranscript": Parse the mixed text into an array of alternating messages between the AI and the Mother. Format each message as an object: {"speaker": "AI" | "Mother", "text": "..."}. The assistant is "AI", the mother is "Mother".
+        
+        Transcript: ${fullTranscript}
+      `;
+      
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      const parsed = JSON.parse(responseText);
+      
+      if (Array.isArray(parsed.symptoms)) symptoms = parsed.symptoms;
+      if (typeof parsed.summary === 'string') aiSummary = parsed.summary;
+      if (Array.isArray(parsed.structuredTranscript)) structuredTranscript = parsed.structuredTranscript;
+      
+    } catch (error) {
+      console.error("Gemini AI failed to process transcript:", error);
     }
 
-  } catch (error) {
-    console.error("Voice pipeline error:", error);
-    const fallbackXml = `<?xml version="1.0" encoding="UTF-8"?>
-      <Response>
-        <Say>Sorry, I am having trouble connecting right now. Goodbye.</Say>
-      </Response>`;
-    res.setHeader('Content-Type', 'application/xml');
-    return res.send(fallbackXml);
-  }
-}
+    if (symptoms.length > 0) {
+      try {
+        const postData = JSON.stringify({ inputs: symptoms.join(", ") });
+        const tmpFile = path.join(__dirname, '..', `tmp_hf_${Date.now()}.json`);
+        fs.writeFileSync(tmpFile, postData);
 
-export async function initiateAICall(req: any, res: any, pool: any) {
-  const { patientId } = req.body;
-  
-  try {
+        const { exec } = await import('child_process');
+        const util = await import('util');
+        const execPromise = util.promisify(exec);
+
+        const curlCmd = `curl.exe -s -X POST -H "Authorization: Bearer ${process.env.HF_TOKEN}" -H "Content-Type: application/json" -d "@${tmpFile}" https://api-inference.huggingface.co/models/sammydamz/mamacare-triage-model`;
+        
+        const { stdout } = await execPromise(curlCmd);
+        if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+        
+        const hfData = JSON.parse(stdout);
+        const topLabel = (Array.isArray(hfData[0]) ? hfData[0][0]?.label : hfData[0]?.label) || "LABEL_0";
+        if (topLabel === "LABEL_2") riskLevel = "High";
+        else if (topLabel === "LABEL_1") riskLevel = "Medium";
+        else riskLevel = "Low";
+      } catch (e) {
+        console.error("HF Inference error:", e);
+        throw new Error("HuggingFace Triage API failed: " + (e instanceof Error ? e.message : String(e)));
+      }
+    }
+
+    const transcriptJson = JSON.stringify(structuredTranscript);
+    let triggeredReferral = (riskLevel === 'High' || riskLevel === 'Medium');
+
+    // 4. Get Patient Info to save to database correctly
     const patientRes = await pool.query('SELECT * FROM patients WHERE id = $1', [patientId]);
     if (patientRes.rows.length === 0) {
-      return res.status(404).json({ error: 'Patient not found' });
+      throw new Error('Patient not found');
     }
-    
     const patient = patientRes.rows[0];
-    if (!patient.phone) {
-      return res.status(400).json({ error: 'Patient has no phone number' });
+
+    // 5. Save to database
+    const id = 'c' + Math.floor(1000 + Math.random() * 9000);
+    const date = new Date().toISOString().split('T')[0];
+
+    await pool.query(
+      `INSERT INTO consultations 
+      (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral, audio_url)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        id, 
+        patientId, 
+        patient.name, 
+        date, 
+        patient.language, 
+        symptoms, 
+        riskLevel, 
+        aiSummary, 
+        transcriptJson,
+        triggeredReferral,
+        audioUrl
+      ]
+    );
+
+    // Update patient risk level if high or medium
+    if (riskLevel === 'High' || riskLevel === 'Medium') {
+      await pool.query('UPDATE patients SET risk_level = $1 WHERE id = $2', [riskLevel, patientId]);
     }
 
-    const africastalking = (await import('africastalking')).default;
-    const AT = africastalking({
-      apiKey: process.env.AFRICASTALKING_API_KEY || '',
-      username: process.env.AFRICASTALKING_USERNAME || 'sandbox'
-    });
+    if (fs.existsSync(audioPath)) {
+      fs.unlinkSync(audioPath);
+    }
 
-    const voice = AT.VOICE;
-    const callRes = await voice.call({
-      callFrom: process.env.AFRICASTALKING_PHONE_NUMBER || '+254711082000',
-      callTo: [patient.phone]
-    });
-
-    res.json({ success: true, message: 'Call initiated', callRes });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return { success: true, transcript: fullTranscript, symptoms, riskLevel, audioUrl };
+  } catch (error) {
+    if (fs.existsSync(audioPath)) {
+      fs.unlinkSync(audioPath);
+    }
+    console.error("Error processing recorded session:", error);
+    throw error;
   }
 }

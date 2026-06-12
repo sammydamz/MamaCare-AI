@@ -20,7 +20,10 @@ app.use('/audio', express.static(path.join(__dirname, '../public/audio')));
 const PORT = process.env.PORT || 5000;
 const isProd = process.env.NODE_ENV === 'production';
 
-import { handleVoiceCallback, initiateAICall } from './voice-agent.js';
+import { processRecordedSession } from './voice-agent.js';
+import multer from 'multer';
+
+const upload = multer({ dest: 'uploads/' });
 
 // DB Pool configuration
 const pool = new pg.Pool({
@@ -60,14 +63,26 @@ pool.connect((err, client, release) => {
 
 // --- API ENDPOINTS ---
 
-// POST /api/voice/callback
-app.post('/api/voice/callback', async (req, res) => {
-  await handleVoiceCallback(req, res, pool);
-});
-
-// POST /api/voice/call
-app.post('/api/voice/call', async (req, res) => {
-  await initiateAICall(req, res, pool);
+// POST /api/voice/upload-recording/:patientId
+app.post('/api/voice/upload-recording/:patientId', upload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file uploaded' });
+    }
+    const result = await processRecordedSession(req.file.path, req.params.patientId as string, pool);
+    
+    // Clean up temp file
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.json(result);
+  } catch (err: any) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+    }
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /api/login
@@ -225,7 +240,7 @@ app.post('/api/patients', async (req, res) => {
     await pool.query(
       `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) 
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [logId, id, 'Registration', `Patient registered for MamaCare programme — ${pathway} pathway`, new Date().toISOString(), assignedChw || 'System']
+      [logId, id, 'Registration', `Patient registered for MamaCare programme - ${pathway} pathway`, new Date().toISOString(), assignedChw || 'System']
     );
 
     // Update KPI
@@ -759,6 +774,7 @@ app.post('/api/sms/send', async (req, res) => {
   
   try {
     // Dynamic import to avoid issues with ES modules and CommonJS
+    // @ts-ignore
     const africastalking = (await import('africastalking')).default;
     const AT = africastalking({
       apiKey: process.env.AFRICASTALKING_API_KEY || '',
