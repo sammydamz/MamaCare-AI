@@ -26,10 +26,12 @@ import { Breadcrumb } from './breadcrumb';
 import { SidebarMenu } from './sidebar-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { usePathway } from '@/providers/pathway-provider';
+import { useAuth } from '@/auth/context/auth-context';
 
 export function Header() {
   const [isSidebarSheetOpen, setIsSidebarSheetOpen] = useState(false);
   const { activePathway, setActivePathway } = usePathway();
+  const { user } = useAuth();
 
   const { pathname } = useLocation();
   const mobileMode = useIsMobile();
@@ -133,8 +135,8 @@ export function Header() {
           <UserDropdownMenu
             trigger={
               <img
-                className="size-9 rounded-full border-2 border-green-500 shrink-0 cursor-pointer"
-                src="https://images.unsplash.com/photo-1677195063105-276fd4b95b21?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                className="size-9 rounded-full border-2 border-green-500 shrink-0 cursor-pointer object-cover"
+                src={user?.pic || "https://images.unsplash.com/photo-1677195063105-276fd4b95b21?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                 alt="User Avatar"
               />
             }

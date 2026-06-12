@@ -734,6 +734,35 @@ app.get('/api/export/analytics', async (req, res) => {
   }
 });
 
+// POST /api/sms/send
+app.post('/api/sms/send', async (req, res) => {
+  const { to, message } = req.body;
+  if (!to || !message) {
+    res.status(400).json({ error: 'Missing required fields: to, message' });
+    return;
+  }
+  
+  try {
+    // Dynamic import to avoid issues with ES modules and CommonJS
+    const africastalking = (await import('africastalking')).default;
+    const AT = africastalking({
+      apiKey: process.env.AFRICASTALKING_API_KEY || '',
+      username: process.env.AFRICASTALKING_USERNAME || ''
+    });
+    
+    const options = {
+      to: Array.isArray(to) ? to : [to],
+      message: message
+    };
+    
+    const response = await AT.SMS.send(options);
+    res.json({ success: true, response });
+  } catch (error: any) {
+    console.error('Error sending SMS:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Serve frontend in production
 if (isProd) {
   const distPath = path.join(__dirname, '../dist');

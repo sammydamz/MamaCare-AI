@@ -16,6 +16,7 @@ export interface Patient {
   riskLevel: RiskLevel
   language: Language
   assignedChw: string
+  phone?: string
   avatarUrl?: string
   stage?: string
   lastCallDate: string

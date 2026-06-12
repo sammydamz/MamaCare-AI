@@ -26,6 +26,7 @@ export function CommunicationsPage() {
   const [template, setTemplate] = useState('');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
 
   const filteredPatients = patients.filter(p => p.pathway === activePathway);
 
@@ -44,7 +45,7 @@ export function CommunicationsPage() {
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!message) {
       toast.error('Message cannot be empty');
       return;
@@ -52,18 +53,85 @@ export function CommunicationsPage() {
     
     setIsSending(true);
     
-    // Simulate API call to Africa's Talking
-    setTimeout(() => {
+    // Extract actual phone numbers
+    let recipientPhones: string[] = [];
+    if (recipientType === 'all') {
+      recipientPhones = filteredPatients.map(p => p.phone).filter(Boolean) as string[];
+    } else {
+      const sp = filteredPatients.find(p => p.id === selectedPatient);
+      if (sp?.phone) recipientPhones.push(sp.phone);
+    }
+
+    if (recipientPhones.length === 0) {
+      toast.error('No valid phone numbers found for the selected recipients.');
       setIsSending(false);
-      
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/sms/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: recipientPhones,
+          message: message
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send SMS');
+      }
+
       const recipientText = recipientType === 'all' 
         ? `all ${filteredPatients.length} mothers in the ${activePathway} pathway`
         : `patient ${filteredPatients.find(p => p.id === selectedPatient)?.name || 'Unknown'}`;
         
-      toast.success(`SMS successfully sent to ${recipientText} via Africa's Talking API (Demo)`);
+      toast.success(`SMS successfully sent to ${recipientText} via Africa's Talking API`);
       setMessage('');
       setTemplate('');
-    }, 1500);
+    } catch (error: any) {
+      toast.error(`Error sending SMS: ${error.message}`);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleCreateSchedule = async () => {
+    setIsScheduling(true);
+    
+    // Extract actual phone numbers for the schedule
+    const recipientPhones = filteredPatients.map(p => p.phone).filter(Boolean) as string[];
+
+    if (recipientPhones.length === 0) {
+      toast.error('No valid phone numbers found for the schedule target.');
+      setIsScheduling(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/sms/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: recipientPhones,
+          message: 'This is a scheduled automated reminder via MamaCare.'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create schedule');
+      }
+
+      toast.success(`Automated schedule created successfully. It will execute via Africa's Talking API.`);
+    } catch (error: any) {
+      toast.error(`Error scheduling: ${error.message}`);
+    } finally {
+      setIsScheduling(false);
+    }
   };
 
   return (
@@ -269,8 +337,10 @@ export function CommunicationsPage() {
                     <Clock className="size-4" />
                     <span>Executes automatically</span>
                   </div>
-                  <Button onClick={() => toast.success('Schedule created successfully!')}>
-                    <Plus className="size-4 mr-2" /> Create Schedule
+                  <Button onClick={handleCreateSchedule} disabled={isScheduling}>
+                    {isScheduling ? 'Creating Schedule...' : (
+                      <><Plus className="size-4 mr-2" /> Create Schedule</>
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

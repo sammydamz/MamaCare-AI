@@ -41,13 +41,14 @@ export const REFERRAL_STATUS_COLORS: Record<ReferralStatus, string> = {
   'Lost to Follow-up': 'muted',
 }
 
-export type UserRole = 'CHW' | 'Provider'
+export type UserRole = 'CHW' | 'Provider' | 'Admin'
 
 export const currentUserRole: UserRole = 'Provider'
 
 export const ROLE_BADGE_VARIANT: Record<UserRole, string> = {
   CHW: 'primary',
   Provider: 'success',
+  Admin: 'destructive',
 }
 
 export const MOCK_USER = {
