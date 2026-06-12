@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS consultations (
     ai_summary TEXT NOT NULL,
     transcript JSONB NOT NULL DEFAULT '[]'::jsonb,
     triggered_referral BOOLEAN NOT NULL DEFAULT FALSE,
-    audio_url TEXT
+    audio_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Referrals

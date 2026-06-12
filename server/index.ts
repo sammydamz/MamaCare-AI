@@ -371,7 +371,7 @@ app.post('/api/patients/:id/visits', async (req, res) => {
 // GET /api/consultations
 app.get('/api/consultations', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM consultations ORDER BY date DESC');
+    const result = await pool.query('SELECT * FROM consultations ORDER BY created_at DESC');
     res.json(result.rows.map((row) => ({
       id: row.id,
       patientId: row.patient_id,
