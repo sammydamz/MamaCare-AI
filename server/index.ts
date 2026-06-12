@@ -418,7 +418,7 @@ app.post('/api/consultations', async (req, res) => {
 
     try {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig: { responseMimeType: "application/json" } });
       
       const fullTranscript = Array.isArray(transcript) ? transcript.map((t: any) => `${t.speaker}: ${t.text}`).join('\n') : '';
       const prompt = buildTriagePrompt(fullTranscript);
