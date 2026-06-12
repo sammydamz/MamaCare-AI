@@ -16,3 +16,8 @@ Thumbs.db
 .codegraph/
 .agent/
 node_modules
+
+# Presentation and submission materials
+sumbission-docs/
+graphify-out/
+final presentation/
