@@ -44,7 +44,7 @@ Please return a strictly formatted JSON object with the following schema:
   "structuredTranscript": [ // Array of alternating messages
     { "speaker": "AI" | "Mother", "text": "string" }
   ],
-  "riskLevel": "High" | "Medium" | "Low", // Determined ONLY by mapping the extracted symptoms to the highest matching risk label in the Triage Anchor Rules.
+  "riskLevel": "HIGH" | "MEDIUM" | "LOW", // Determined ONLY by mapping the extracted symptoms to the highest matching risk label in the Triage Anchor Rules.
   "triageReason": "string" // Quote the specific "Rule" from the Triage Anchor Rules used to make the riskLevel decision. If Low risk, say "Routine check-in or common symptoms".
 }
 

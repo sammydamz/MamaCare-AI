@@ -102,7 +102,9 @@ export async function processRecordedSession(audioPath: string, patientId: strin
       if (Array.isArray(parsed.symptoms)) symptoms = parsed.symptoms;
       if (typeof parsed.summary === 'string') aiSummary = parsed.summary;
       if (Array.isArray(parsed.structuredTranscript)) structuredTranscript = parsed.structuredTranscript;
-      if (['High', 'Medium', 'Low'].includes(parsed.riskLevel)) riskLevel = parsed.riskLevel;
+      if (['HIGH', 'MEDIUM', 'LOW'].includes(String(parsed.riskLevel).toUpperCase())) {
+        riskLevel = String(parsed.riskLevel).toUpperCase();
+      }
       if (typeof parsed.triageReason === 'string') triageReason = parsed.triageReason;
       
       console.log(`Triage completed by Gemini. Risk: ${riskLevel}. Reason: ${triageReason}`);
@@ -111,7 +113,7 @@ export async function processRecordedSession(audioPath: string, patientId: strin
     }
 
     const transcriptJson = JSON.stringify(structuredTranscript);
-    let triggeredReferral = (riskLevel === 'High' || riskLevel === 'Medium');
+    let triggeredReferral = (riskLevel === 'HIGH' || riskLevel === 'MEDIUM');
 
     // 4. Get Patient Info to save to database correctly
     const patientRes = await pool.query('SELECT * FROM patients WHERE id = $1', [patientId]);
