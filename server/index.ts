@@ -763,6 +763,26 @@ app.post('/api/sms/send', async (req, res) => {
   }
 });
 
+// GET /api/health
+app.get('/api/health', async (req, res) => {
+  try {
+    // Check DB connection
+    await pool.query('SELECT 1');
+    res.json({
+      status: 'UP',
+      timestamp: new Date().toISOString(),
+      database: 'connected'
+    });
+  } catch (error: any) {
+    res.status(503).json({
+      status: 'DOWN',
+      timestamp: new Date().toISOString(),
+      database: 'disconnected',
+      error: error.message
+    });
+  }
+});
+
 // Serve frontend in production
 if (isProd) {
   const distPath = path.join(__dirname, '../dist');
