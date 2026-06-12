@@ -25,7 +25,11 @@ import multer from 'multer';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { buildTriagePrompt } from './prompts.js';
 
-const upload = multer({ dest: 'uploads/' });
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+const upload = multer({ dest: uploadDir });
 
 // DB Pool configuration
 const pool = new pg.Pool({
