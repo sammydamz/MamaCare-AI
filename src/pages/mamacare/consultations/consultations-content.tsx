@@ -149,8 +149,17 @@ function ConsultationRow({
             {consultation.riskLevel}
           </Badge>
         </TableCell>
-        <TableCell className="max-w-xs truncate text-muted-foreground text-sm">
-          {consultation.aiSummary}
+        <TableCell className="max-w-xs">
+          <div className="flex flex-col items-start gap-1">
+            <span className={`text-sm ${isExpanded ? 'text-foreground whitespace-normal' : 'text-muted-foreground truncate w-full'}`}>
+              {consultation.aiSummary}
+            </span>
+            {!isExpanded && (
+              <span className="text-xs text-primary font-medium hover:underline cursor-pointer">
+                Read more...
+              </span>
+            )}
+          </div>
         </TableCell>
       </TableRow>
       {isExpanded && (
