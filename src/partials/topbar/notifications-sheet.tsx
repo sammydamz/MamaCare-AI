@@ -42,7 +42,7 @@ import Item19 from './notifications/item-19';
 import Item20 from './notifications/item-20';
 
 import { usePathway } from '@/providers/pathway-provider';
-import api from '@/lib/mamacare/api';
+import { mamacareApi as api } from '@/lib/mamacare/api';
 import { AppNotification } from '@/lib/mamacare/types';
 import { cn } from '@/lib/utils';
 
