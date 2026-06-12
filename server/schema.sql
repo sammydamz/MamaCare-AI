@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS patients (
     last_call_date VARCHAR(50),
     registration_date VARCHAR(50) NOT NULL,
     risk_history JSONB NOT NULL DEFAULT '[]'::jsonb,
-    coping_index INT
+    coping_index INT,
+    phone VARCHAR(50)
 );
 
 -- Consultations

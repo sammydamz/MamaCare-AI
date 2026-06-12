@@ -10,6 +10,9 @@ import { ActionLog } from './action-log';
 import { LogVisitDialog } from './log-visit-dialog';
 import { CreateReferralDialog } from './create-referral-dialog';
 import { RecordVitalsDialog } from './record-vitals-dialog';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 const RISK_BADGE_VARIANT: Record<RiskLevel, BadgeProps['variant']> = {
   HIGH: RISK_COLORS.HIGH as BadgeProps['variant'],
@@ -33,6 +36,32 @@ function RiskTrendArrow({ history }: { history: { level: RiskLevel }[] }) {
 
 export function PatientDetail({ patient }: { patient: Patient }) {
   const { consultations, actionLogs } = useMamaCare();
+  const [isCalling, setIsCalling] = useState(false);
+
+  const handleTriggerCall = async () => {
+    if (!patient.phone) {
+      toast.error('Patient does not have a phone number registered.');
+      return;
+    }
+    
+    setIsCalling(true);
+    try {
+      const res = await fetch('/api/voice/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId: patient.id })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to initiate call');
+      
+      toast.success(`Voice agent is now calling ${patient.phone}`);
+    } catch (err: unknown) {
+      toast.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setIsCalling(false);
+    }
+  };
 
   const initials = patient.name
     .split(' ')
@@ -102,6 +131,15 @@ export function PatientDetail({ patient }: { patient: Patient }) {
           <LogVisitDialog patientId={patient.id} />
           <CreateReferralDialog patientId={patient.id} />
           <RecordVitalsDialog patientId={patient.id} pathway={patient.pathway} />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleTriggerCall} 
+            disabled={isCalling || !patient.phone}
+            className="ml-auto bg-primary/5 hover:bg-primary/10 text-primary border-primary/20"
+          >
+            {isCalling ? 'Calling...' : 'Trigger AI Call'}
+          </Button>
         </div>
       </div>
     </ScrollArea>

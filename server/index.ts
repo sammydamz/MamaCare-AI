@@ -14,9 +14,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/audio', express.static(path.join(__dirname, '../public/audio')));
 
 const PORT = process.env.PORT || 5000;
 const isProd = process.env.NODE_ENV === 'production';
+
+import { handleVoiceCallback, initiateAICall } from './voice-agent.js';
 
 // DB Pool configuration
 const pool = new pg.Pool({
@@ -55,6 +59,16 @@ pool.connect((err, client, release) => {
 });
 
 // --- API ENDPOINTS ---
+
+// POST /api/voice/callback
+app.post('/api/voice/callback', async (req, res) => {
+  await handleVoiceCallback(req, res, pool);
+});
+
+// POST /api/voice/call
+app.post('/api/voice/call', async (req, res) => {
+  await initiateAICall(req, res, pool);
+});
 
 // POST /api/login
 app.post('/api/login', async (req, res) => {
@@ -185,6 +199,7 @@ app.get('/api/patients', async (req, res) => {
       copingIndex: row.coping_index,
       sleepQuality: row.sleep_quality,
       bleedingStatus: row.bleeding_status,
+      phone: row.phone,
     })));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -193,16 +208,16 @@ app.get('/api/patients', async (req, res) => {
 
 // POST /api/patients (Register Patient)
 app.post('/api/patients', async (req, res) => {
-  const { name, age, pathway, language, assignedChw, stage } = req.body;
+  const { name, age, pathway, language, assignedChw, stage, phone } = req.body;
   const id = 'p' + Math.floor(100 + Math.random() * 900);
   const regDate = new Date().toISOString().split('T')[0];
   const initialHistory = JSON.stringify([{ date: regDate, level: 'LOW' }]);
 
   try {
     await pool.query(
-      `INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, registration_date, risk_history) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [id, name, age, pathway, 'LOW', language, assignedChw || 'Unassigned', stage, regDate, initialHistory]
+      `INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, registration_date, risk_history, phone) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [id, name, age, pathway, 'LOW', language, assignedChw || 'Unassigned', stage, regDate, initialHistory, phone || null]
     );
 
     // Insert to action log
@@ -217,7 +232,7 @@ app.post('/api/patients', async (req, res) => {
     await pool.query("UPDATE kpis SET value = value + 1 WHERE key = 'total_mothers'");
     await pool.query("UPDATE kpis SET value = value + 1 WHERE key = 'caseload'");
 
-    res.status(201).json({ id, name, age, pathway, riskLevel: 'LOW', language, assignedChw, stage });
+    res.status(201).json({ id, name, age, pathway, riskLevel: 'LOW', language, assignedChw, stage, phone });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

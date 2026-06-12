@@ -22,6 +22,7 @@ export const mamacareApi = {
     language: string;
     assignedChw?: string;
     stage: string;
+    phone: string;
   }): Promise<Patient> {
     const res = await fetch(`${API_BASE}/patients`, {
       method: 'POST',

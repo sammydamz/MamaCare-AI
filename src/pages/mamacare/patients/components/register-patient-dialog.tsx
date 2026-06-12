@@ -24,12 +24,13 @@ export function RegisterPatientDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
+  const [phone, setPhone] = useState('');
   const [language, setLanguage] = useState('');
   const [pathway, setPathway] = useState<Pathway | ''>('');
   const { registerPatient } = useMamaCare();
 
   const handleSubmit = async () => {
-    if (!name || !age || !language || !pathway) return;
+    if (!name || !age || !phone || !language || !pathway) return;
     try {
       const defaultStage = pathway === 'Pregnancy' ? '12 weeks' : 'Post-loss: 1 month';
       await registerPatient({
@@ -38,10 +39,12 @@ export function RegisterPatientDialog() {
         pathway,
         language,
         stage: defaultStage,
+        phone,
       });
       setOpen(false);
       setName('');
       setAge('');
+      setPhone('');
       setLanguage('');
       setPathway('');
     } catch (err) {
@@ -49,7 +52,7 @@ export function RegisterPatientDialog() {
     }
   };
 
-  const isFormValid = name && age && language && pathway;
+  const isFormValid = name && age && phone && language && pathway;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -81,6 +84,15 @@ export function RegisterPatientDialog() {
               placeholder="Enter age"
               value={age}
               onChange={(e) => setAge(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium">Phone Number</label>
+            <Input
+              type="tel"
+              placeholder="+233..."
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
             />
           </div>
           <div className="flex flex-col gap-1.5">
