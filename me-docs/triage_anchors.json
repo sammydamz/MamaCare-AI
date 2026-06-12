@@ -1,0 +1,170 @@
+[
+  {
+    "symptom_name": "Bleeding from the vagina",
+    "text": "I just noticed some blood in my underwear.",
+    "label": 2,
+    "guideline_rule": "Bleeding from the vagina is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Bleeding from the vagina",
+    "text": "I have started bleeding heavily from my vagina.",
+    "label": 2,
+    "guideline_rule": "Bleeding from the vagina is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Bleeding from the vagina",
+    "text": "There is red blood coming out of me this morning.",
+    "label": 2,
+    "guideline_rule": "Bleeding from the vagina is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Absence of fetal movements",
+    "text": "My baby has not moved at all today.",
+    "label": 2,
+    "guideline_rule": "Absence of fetal movements is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Absence of fetal movements",
+    "text": "I am worried because I have not felt any kicks since yesterday.",
+    "label": 2,
+    "guideline_rule": "Absence of fetal movements is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Absence of fetal movements",
+    "text": "The baby stopped moving completely in my belly.",
+    "label": 2,
+    "guideline_rule": "Absence of fetal movements is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Severe headache or blurred vision",
+    "text": "I have a pounding headache that will not go away.",
+    "label": 2,
+    "guideline_rule": "Severe headache or blurred vision is a danger sign. It may indicate severe pre-eclampsia."
+  },
+  {
+    "symptom_name": "Severe headache or blurred vision",
+    "text": "My vision is getting really blurry and I see flashing lights.",
+    "label": 2,
+    "guideline_rule": "Severe headache or blurred vision is a danger sign. It may indicate severe pre-eclampsia."
+  },
+  {
+    "symptom_name": "Severe headache or blurred vision",
+    "text": "My head hurts severely and my eyes are failing to focus.",
+    "label": 2,
+    "guideline_rule": "Severe headache or blurred vision is a danger sign. It may indicate severe pre-eclampsia."
+  },
+  {
+    "symptom_name": "Swelling of feet, hands, or face",
+    "text": "My rings will not fit because my hands are completely swollen.",
+    "label": 2,
+    "guideline_rule": "Swelling of feet, hands, or face is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Swelling of feet, hands, or face",
+    "text": "My face looks puffed up and my hands are very tight.",
+    "label": 2,
+    "guideline_rule": "Swelling of feet, hands, or face is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Swelling of feet, hands, or face",
+    "text": "My hands and face became suddenly very swollen today.",
+    "label": 2,
+    "guideline_rule": "Swelling of feet, hands, or face is a danger sign during pregnancy."
+  },
+  {
+    "symptom_name": "Urinary Tract Infection (UTI)",
+    "text": "It burns when I urinate and I feel a bit hot.",
+    "label": 1,
+    "guideline_rule": "Fever plus frequent urination, painful urination and urgency may indicate a Urinary Tract Infection."
+  },
+  {
+    "symptom_name": "Urinary Tract Infection (UTI)",
+    "text": "I have a mild fever and I need to urinate constantly, which hurts.",
+    "label": 1,
+    "guideline_rule": "Fever plus frequent urination, painful urination and urgency may indicate a Urinary Tract Infection."
+  },
+  {
+    "symptom_name": "Urinary Tract Infection (UTI)",
+    "text": "Peeing is really painful and I think I am running a temperature.",
+    "label": 1,
+    "guideline_rule": "Fever plus frequent urination, painful urination and urgency may indicate a Urinary Tract Infection."
+  },
+  {
+    "symptom_name": "Nausea or vomiting",
+    "text": "I throw up every morning when I wake up.",
+    "label": 0,
+    "guideline_rule": "Nausea or vomiting most commonly occurs during the 1st trimester due to hormonal effect on the upper GI tract."
+  },
+  {
+    "symptom_name": "Nausea or vomiting",
+    "text": "I have been feeling sick to my stomach lately.",
+    "label": 0,
+    "guideline_rule": "Nausea or vomiting most commonly occurs during the 1st trimester due to hormonal effect on the upper GI tract."
+  },
+  {
+    "symptom_name": "Nausea or vomiting",
+    "text": "Certain food smells make me extremely nauseous.",
+    "label": 0,
+    "guideline_rule": "Nausea or vomiting most commonly occurs during the 1st trimester due to hormonal effect on the upper GI tract."
+  },
+  {
+    "symptom_name": "Fatigue or sleeplessness",
+    "text": "I am just so tired all the time.",
+    "label": 0,
+    "guideline_rule": "Fatigue or sleeplessness most commonly occurs during the 1st trimester due to decreased metabolism."
+  },
+  {
+    "symptom_name": "Fatigue or sleeplessness",
+    "text": "I cannot seem to get enough sleep no matter what.",
+    "label": 0,
+    "guideline_rule": "Fatigue or sleeplessness most commonly occurs during the 1st trimester due to decreased metabolism."
+  },
+  {
+    "symptom_name": "Fatigue or sleeplessness",
+    "text": "I feel completely exhausted halfway through the day.",
+    "label": 0,
+    "guideline_rule": "Fatigue or sleeplessness most commonly occurs during the 1st trimester due to decreased metabolism."
+  },
+  {
+    "symptom_name": "Abdominal and groin pain",
+    "text": "I get these sharp pulling pains on the sides of my stomach.",
+    "label": 0,
+    "guideline_rule": "Abdominal and groin pain, twinges, or pulling sensations most commonly occur during 2nd-3rd trimester as enlarging uterus stretches ligaments."
+  },
+  {
+    "symptom_name": "Abdominal and groin pain",
+    "text": "My groin aches a little bit when I stand up.",
+    "label": 0,
+    "guideline_rule": "Abdominal and groin pain, twinges, or pulling sensations most commonly occur during 2nd-3rd trimester as enlarging uterus stretches ligaments."
+  },
+  {
+    "symptom_name": "Abdominal and groin pain",
+    "text": "I feel sudden twinges in my lower belly when I stretch.",
+    "label": 0,
+    "guideline_rule": "Abdominal and groin pain, twinges, or pulling sensations most commonly occur during 2nd-3rd trimester as enlarging uterus stretches ligaments."
+  },
+  {
+    "symptom_name": "Normal Check-in",
+    "text": "I feel completely fine and healthy today.",
+    "label": 0,
+    "guideline_rule": "Routine check-in with no warning signs or danger signs reported. Maintain scheduled antenatal care visits."
+  },
+  {
+    "symptom_name": "Normal Check-in",
+    "text": "I don't have any pain or bleeding, everything is fine.",
+    "label": 0,
+    "guideline_rule": "Routine check-in with no warning signs or danger signs reported. Maintain scheduled antenatal care visits."
+  },
+  {
+    "symptom_name": "Normal Check-in",
+    "text": "Everything is going well with my pregnancy and I have no complaints.",
+    "label": 0,
+    "guideline_rule": "Routine check-in with no warning signs or danger signs reported. Maintain scheduled antenatal care visits."
+  },
+  {
+    "symptom_name": "Normal Check-in",
+    "text": "I am fine no issues.",
+    "label": 0,
+    "guideline_rule": "Routine check-in with no warning signs or danger signs reported. Maintain scheduled antenatal care visits."
+  }
+]
