@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import {
   Toolbar,
   ToolbarDescription,
@@ -17,6 +17,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { useMamaCare } from '@/providers/mamacare-provider';
 import { usePathway } from '@/providers/pathway-provider';
+import { mamacareApi as api } from '@/lib/mamacare/api';
+import { Communication, Schedule } from '@/lib/mamacare/types';
 import { toast } from 'sonner';
 import { Send, Users, User, CalendarClock, Plus, Calendar, Clock } from 'lucide-react';
 
@@ -38,7 +40,25 @@ export function CommunicationsPage() {
   const [apptReminder, setApptReminder] = useState('1day');
   const [apptMessage, setApptMessage] = useState('Reminder: You have an upcoming appointment scheduled. Please contact us if you need to reschedule.');
 
+  const [communications, setCommunications] = useState<Communication[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+
   const filteredPatients = patients.filter(p => p.pathway === activePathway);
+
+  const loadData = async () => {
+    try {
+      const comms = await api.fetchCommunications(activePathway);
+      const scheds = await api.fetchSchedules(activePathway);
+      setCommunications(comms);
+      setSchedules(scheds);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [activePathway]);
 
   const handleTemplateChange = (val: string) => {
     setTemplate(val);
@@ -84,7 +104,11 @@ export function CommunicationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: recipientPhones,
-          message: message
+          message: message,
+          pathway: activePathway,
+          recipientType: recipientType,
+          recipientCount: recipientPhones.length,
+          type: 'direct'
         })
       });
 
@@ -101,6 +125,7 @@ export function CommunicationsPage() {
       toast.success(`SMS successfully sent to ${recipientText} via Africa's Talking API`);
       setMessage('');
       setTemplate('');
+      await loadData();
     } catch (error: unknown) {
       toast.error(`Error sending SMS: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
@@ -138,7 +163,13 @@ export function CommunicationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: recipientPhones,
-          message: apptMessage
+          message: apptMessage,
+          pathway: activePathway,
+          appointmentDate: apptDate,
+          appointmentTime: apptTime,
+          reminderTiming: apptReminder,
+          recipientCount: recipientPhones.length,
+          type: 'schedule'
         })
       });
 
@@ -152,6 +183,7 @@ export function CommunicationsPage() {
       setApptDate('');
       setApptTime('');
       setApptPatients([]);
+      await loadData();
     } catch (error: unknown) {
       toast.error(`Error scheduling: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
@@ -278,15 +310,35 @@ export function CommunicationsPage() {
                     <CardDescription>History of sent messages in this pathway</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-4">
-                        <Send className="size-6" />
+                    {communications.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-4">
+                          <Send className="size-6" />
+                        </div>
+                        <h3 className="text-lg font-medium">No messages sent yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-sm mt-1">
+                          Sent messages and their delivery statuses will appear here once you send your first SMS.
+                        </p>
                       </div>
-                      <h3 className="text-lg font-medium">No messages sent yet</h3>
-                      <p className="text-sm text-muted-foreground max-w-sm mt-1">
-                        Sent messages and their delivery statuses will appear here once you send your first SMS.
-                      </p>
-                    </div>
+                    ) : (
+                      <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                        {communications.map(comm => (
+                          <div key={comm.id} className="flex items-start gap-4 p-4 rounded-lg border">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 shrink-0">
+                              <Send className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex flex-col gap-1 w-full">
+                              <h4 className="text-sm font-semibold">Message to {comm.recipientType === 'all' ? 'All Patients' : 'Individual'} ({comm.recipientCount} recipient{comm.recipientCount !== 1 ? 's' : ''})</h4>
+                              <p className="text-xs text-muted-foreground line-clamp-2">{comm.message}</p>
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full capitalize">{comm.status}</span>
+                                <span className="text-xs text-muted-foreground">{new Date(comm.sentAt).toLocaleString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -412,34 +464,26 @@ export function CommunicationsPage() {
                     <CardTitle>Active Schedules</CardTitle>
                     <CardDescription>Currently running automated alerts</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-start gap-4 p-4 rounded-lg border">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 shrink-0">
-                        <CalendarClock className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <h4 className="text-sm font-semibold">Appointment Reminders (High Risk Group)</h4>
-                        <p className="text-xs text-muted-foreground">Sends 1 day before the scheduled appointment on Oct 24th, 10:00 AM.</p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
-                          <span className="text-xs text-muted-foreground">Next run: Oct 23rd 10:00 AM</span>
+                  <CardContent className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                    {schedules.length === 0 ? (
+                      <div className="p-4 text-center text-muted-foreground">No active schedules.</div>
+                    ) : (
+                      schedules.map(sched => (
+                        <div key={sched.id} className="flex items-start gap-4 p-4 rounded-lg border">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 shrink-0">
+                            <CalendarClock className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex flex-col gap-1 w-full">
+                            <h4 className="text-sm font-semibold">Appointment Reminders ({sched.patientsCount} patient{sched.patientsCount !== 1 ? 's' : ''})</h4>
+                            <p className="text-xs text-muted-foreground">Sends {sched.reminderTiming} before the scheduled appointment on {sched.appointmentDate}, {sched.appointmentTime}.</p>
+                            <div className="flex items-center gap-4 mt-2">
+                              <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full capitalize">{sched.status}</span>
+                              <span className="text-xs text-muted-foreground">Created: {new Date(sched.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4 p-4 rounded-lg border">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 shrink-0">
-                        <Calendar className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <h4 className="text-sm font-semibold">Check-up Reminders (Routine Group)</h4>
-                        <p className="text-xs text-muted-foreground">Sends 2 days before the scheduled appointment on Nov 2nd, 02:00 PM.</p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
-                          <span className="text-xs text-muted-foreground">Next run: Oct 31st 02:00 PM</span>
-                        </div>
-                      </div>
-                    </div>
+                      ))
+                    )}
                   </CardContent>
                 </Card>
               </div>

@@ -99,3 +99,25 @@ export interface AppNotification {
   timestamp: string;
   pathway: string;
 }
+ 
+export interface Communication {
+  id: string;
+  pathway: string;
+  recipientType: string;
+  recipientCount: number;
+  message: string;
+  status: string;
+  sentAt: string;
+}
+
+export interface Schedule {
+  id: string;
+  pathway: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  reminderTiming: string;
+  message: string;
+  patientsCount: number;
+  status: string;
+  createdAt: string;
+}

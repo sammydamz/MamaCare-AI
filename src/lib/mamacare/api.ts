@@ -168,5 +168,17 @@ export const mamacareApi = {
     const res = await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PATCH' });
     if (!res.ok) throw new Error('Failed to mark notification as read');
     return res.json();
+  },
+
+  async fetchCommunications(pathway: string) {
+    const res = await fetch(`${API_BASE}/communications/${encodeURIComponent(pathway)}`);
+    if (!res.ok) throw new Error('Failed to fetch communications');
+    return res.json();
+  },
+
+  async fetchSchedules(pathway: string) {
+    const res = await fetch(`${API_BASE}/schedules/${encodeURIComponent(pathway)}`);
+    if (!res.ok) throw new Error('Failed to fetch schedules');
+    return res.json();
   }
 };

@@ -797,35 +797,95 @@ app.get('/api/export/analytics', async (req, res) => {
   }
 });
 
-// POST /api/sms/send
-app.post('/api/sms/send', async (req, res) => {
-  const { to, message } = req.body;
-  if (!to || !message) {
-    res.status(400).json({ error: 'Missing required fields: to, message' });
-    return;
-  }
-  
-  try {
-    // Dynamic import to avoid issues with ES modules and CommonJS
-    // @ts-ignore
-    const africastalking = (await import('africastalking')).default;
-    const AT = africastalking({
-      apiKey: process.env.AFRICASTALKING_API_KEY || '',
-      username: process.env.AFRICASTALKING_USERNAME || ''
-    });
+  // POST /api/sms/send
+  app.post('/api/sms/send', async (req, res) => {
+    const { to, message, pathway, recipientType, recipientCount, type, appointmentDate, appointmentTime, reminderTiming } = req.body;
+    if (!to || !message) {
+      res.status(400).json({ error: 'Missing required fields: to, message' });
+      return;
+    }
     
-    const options = {
-      to: Array.isArray(to) ? to : [to],
-      message: message
-    };
-    
-    const response = await AT.SMS.send(options);
-    res.json({ success: true, response });
-  } catch (error: any) {
-    console.error('Error sending SMS:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+    try {
+      if (type === 'direct') {
+        // Dynamic import to avoid issues with ES modules and CommonJS
+        // @ts-ignore
+        const africastalking = (await import('africastalking')).default;
+        const AT = africastalking({
+          apiKey: process.env.AFRICASTALKING_API_KEY || '',
+          username: process.env.AFRICASTALKING_USERNAME || ''
+        });
+        
+        const options = {
+          to: Array.isArray(to) ? to : [to],
+          message: message
+        };
+        
+        const response = await AT.SMS.send(options);
+
+        // Log to database
+        const id = 'c' + Date.now();
+        await pool.query(
+          'INSERT INTO communications (id, pathway, recipient_type, recipient_count, message, status, sent_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [id, pathway || 'Unknown', recipientType || 'unknown', recipientCount || to.length, message, 'sent', new Date().toISOString()]
+        );
+
+        res.json({ success: true, response });
+      } else if (type === 'schedule') {
+        // For scheduling, we just log it to the schedules table
+        const id = 's' + Date.now();
+        await pool.query(
+          'INSERT INTO schedules (id, pathway, appointment_date, appointment_time, reminder_timing, message, patients_count, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+          [id, pathway || 'Unknown', appointmentDate || '', appointmentTime || '', reminderTiming || 'none', message, recipientCount || to.length, 'active', new Date().toISOString()]
+        );
+        res.json({ success: true, status: 'scheduled' });
+      } else {
+        res.status(400).json({ error: 'Invalid type parameter. Use direct or schedule.' });
+      }
+    } catch (error: any) {
+      console.error('Error sending SMS:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // GET /api/communications/:pathway
+  app.get('/api/communications/:pathway', async (req, res) => {
+    try {
+      const { pathway } = req.params;
+      const result = await pool.query('SELECT * FROM communications WHERE pathway = $1 ORDER BY sent_at DESC', [pathway]);
+      res.json(result.rows.map((row) => ({
+        id: row.id,
+        pathway: row.pathway,
+        recipientType: row.recipient_type,
+        recipientCount: row.recipient_count,
+        message: row.message,
+        status: row.status,
+        sentAt: row.sent_at
+      })));
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /api/schedules/:pathway
+  app.get('/api/schedules/:pathway', async (req, res) => {
+    try {
+      const { pathway } = req.params;
+      const result = await pool.query('SELECT * FROM schedules WHERE pathway = $1 ORDER BY created_at DESC', [pathway]);
+      res.json(result.rows.map((row) => ({
+        id: row.id,
+        pathway: row.pathway,
+        appointmentDate: row.appointment_date,
+        appointmentTime: row.appointment_time,
+        reminderTiming: row.reminder_timing,
+        message: row.message,
+        patientsCount: row.patients_count,
+        status: row.status,
+        createdAt: row.created_at
+      })));
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 // GET /api/health
 app.get('/api/health', async (req, res) => {

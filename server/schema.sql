@@ -79,6 +79,30 @@ CREATE TABLE IF NOT EXISTS notifications (
     pathway VARCHAR(50) NOT NULL
 );
 
+-- Communications
+CREATE TABLE IF NOT EXISTS communications (
+    id VARCHAR(50) PRIMARY KEY,
+    pathway VARCHAR(50) NOT NULL,
+    recipient_type VARCHAR(50) NOT NULL,
+    recipient_count INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    sent_at VARCHAR(50) NOT NULL
+);
+
+-- Schedules
+CREATE TABLE IF NOT EXISTS schedules (
+    id VARCHAR(50) PRIMARY KEY,
+    pathway VARCHAR(50) NOT NULL,
+    appointment_date VARCHAR(50) NOT NULL,
+    appointment_time VARCHAR(50) NOT NULL,
+    reminder_timing VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    patients_count INTEGER NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    created_at VARCHAR(50) NOT NULL
+);
+
 -- CHW Performance
 CREATE TABLE IF NOT EXISTS chw_performance (
     chw_name VARCHAR(255) PRIMARY KEY,
@@ -195,6 +219,17 @@ INSERT INTO notifications (id, ui_type, payload, is_read, timestamp, pathway) VA
     ('n10', 'Item16', '{}', false, '2026-06-11T16:00:00Z', 'Post-Loss'),
     ('n11', 'Item3', '{"userName": "Benjamin Harris", "avatar": "300-30.png", "badgeColor": "offline", "description": "requested to upgrade plan", "link": "", "day": "", "date": "4 days ago", "info": "Marketing"}', false, '2026-06-08T10:00:00Z', 'Post-Loss'),
     ('n12', 'Item5', '{"userName": "Isaac Morgan", "avatar": "300-24.png", "badgeColor": "online", "description": "mentioned you in", "link": "Data Transmission", "day": "topic", "date": "6 days ago", "info": "Dev Team"}', false, '2026-06-06T10:00:00Z', 'Post-Loss')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO communications (id, pathway, recipient_type, recipient_count, message, status, sent_at) VALUES
+    ('c1', 'Pregnancy', 'all', 12, 'Hello, this is a wellness check-in from MamaCare. We are thinking of you. Please reply with how you are feeling today.', 'sent', '2026-06-11T09:00:00Z'),
+    ('c2', 'Pregnancy', 'individual', 1, 'URGENT: If you are experiencing severe pain, heavy bleeding, or difficulty breathing, please visit the nearest facility immediately.', 'sent', '2026-06-10T14:30:00Z'),
+    ('c3', 'Post-Loss', 'all', 5, 'MamaCare Tip: Make sure to stay hydrated today and eat iron-rich foods like spinach and beans.', 'sent', '2026-06-09T11:15:00Z')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO schedules (id, pathway, appointment_date, appointment_time, reminder_timing, message, patients_count, status, created_at) VALUES
+    ('s1', 'Pregnancy', '2026-06-15', '10:00', '1day', 'Reminder: You have an upcoming appointment scheduled. Please contact us if you need to reschedule.', 3, 'active', '2026-06-12T08:00:00Z'),
+    ('s2', 'Post-Loss', '2026-06-20', '14:00', '2days', 'Reminder: You have a scheduled follow-up. We are looking forward to seeing you.', 1, 'active', '2026-06-11T10:00:00Z')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO chw_performance (chw_name, total_cases, follow_up_rate, resolved_cases, active_cases) VALUES
