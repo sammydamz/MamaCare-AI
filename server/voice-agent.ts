@@ -78,10 +78,11 @@ export async function processRecordedSession(audioPath: string, patientId: strin
       throw e;
     }
 
-    // 4. Extract Symptoms, Summary, Risk Level, and Transcript via Gemini
+    // 4. Extract Symptoms, Summary, Risk Level, and Transcript via Gemini using new sophisticated prompt
     let symptoms: string[] = [];
     let aiSummary = 'No summary generated.';
     let riskLevel = 'Low';
+    let triageReason = 'Routine check-in or common symptoms';
     let structuredTranscript = [{ role: 'system', message: fullTranscript }];
     
     try {
@@ -90,17 +91,9 @@ export async function processRecordedSession(audioPath: string, patientId: strin
       const genAI = getGeminiClient();
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
       
-      const prompt = `
-        Analyze the following raw transcript from a maternal health assistant.
-        The text is a single block containing both the AI agent and the mother's responses mixed together.
-        
-        Please return a JSON object with the following fields:
-        1. "symptoms": A JSON array of strings containing any physical or medical symptoms reported by the mother (e.g. ["headache", "swollen feet"]). If none, return [].
-        2. "summary": A brief 1-2 sentence clinical summary of the conversation.
-        3. "structuredTranscript": Parse the mixed text into an array of alternating messages between the AI and the Mother. Format each message as an object: {"speaker": "AI" | "Mother", "text": "..."}. The assistant is "AI", the mother is "Mother".
-        
-        Transcript: ${fullTranscript}
-      `;
+      // Dynamic import to support ES modules if needed, or just require
+      const { buildTriagePrompt } = await import('./prompts.js');
+      const prompt = buildTriagePrompt(fullTranscript);
       
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
@@ -109,35 +102,12 @@ export async function processRecordedSession(audioPath: string, patientId: strin
       if (Array.isArray(parsed.symptoms)) symptoms = parsed.symptoms;
       if (typeof parsed.summary === 'string') aiSummary = parsed.summary;
       if (Array.isArray(parsed.structuredTranscript)) structuredTranscript = parsed.structuredTranscript;
+      if (['High', 'Medium', 'Low'].includes(parsed.riskLevel)) riskLevel = parsed.riskLevel;
+      if (typeof parsed.triageReason === 'string') triageReason = parsed.triageReason;
       
+      console.log(`Triage completed by Gemini. Risk: ${riskLevel}. Reason: ${triageReason}`);
     } catch (error) {
       console.error("Gemini AI failed to process transcript:", error);
-    }
-
-    if (symptoms.length > 0) {
-      try {
-        const postData = JSON.stringify({ inputs: symptoms.join(", ") });
-        const tmpFile = path.join(__dirname, '..', `tmp_hf_${Date.now()}.json`);
-        fs.writeFileSync(tmpFile, postData);
-
-        const { exec } = await import('child_process');
-        const util = await import('util');
-        const execPromise = util.promisify(exec);
-
-        const curlCmd = `curl.exe -s -X POST -H "Authorization: Bearer ${process.env.HF_TOKEN}" -H "Content-Type: application/json" -d "@${tmpFile}" https://api-inference.huggingface.co/models/sammydamz/mamacare-triage-model`;
-        
-        const { stdout } = await execPromise(curlCmd);
-        if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
-        
-        const hfData = JSON.parse(stdout);
-        const topLabel = (Array.isArray(hfData[0]) ? hfData[0][0]?.label : hfData[0]?.label) || "LABEL_0";
-        if (topLabel === "LABEL_2") riskLevel = "High";
-        else if (topLabel === "LABEL_1") riskLevel = "Medium";
-        else riskLevel = "Low";
-      } catch (e) {
-        console.error("HF Inference error:", e);
-        throw new Error("HuggingFace Triage API failed: " + (e instanceof Error ? e.message : String(e)));
-      }
     }
 
     const transcriptJson = JSON.stringify(structuredTranscript);
