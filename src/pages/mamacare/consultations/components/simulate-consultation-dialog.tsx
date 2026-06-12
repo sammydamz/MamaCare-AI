@@ -125,7 +125,7 @@ export function SimulateConsultationDialog() {
         <DialogHeader>
           <DialogTitle>Simulate AI Voice Triage Call</DialogTitle>
           <DialogDescription>
-            Simulate a patient's call transcript to assess risk using the Hugging Face model and clinical rules.
+            Simulate a patient's call transcript to assess risk using the Gemini model and clinical triage anchors.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 mt-2">

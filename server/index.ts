@@ -22,6 +22,8 @@ const isProd = process.env.NODE_ENV === 'production';
 
 import { processRecordedSession } from './voice-agent.js';
 import multer from 'multer';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { buildTriagePrompt } from './prompts.js';
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -403,80 +405,43 @@ app.post('/api/consultations', async (req, res) => {
       .filter((t: any) => t.speaker !== 'AI')
       .map((t: any) => t.text)
       .join(' ');
-    
-    // 3. Triage Classification via Hugging Face model inference
+    // 3. Triage Classification via Gemini API
     let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
-    const triageMethod = 'Machine Learning Model';
-    const matchedSymptoms: string[] = [];
-
-    const cleanText = patientTurns.trim().toLowerCase();
-
-    // Simple keyword mapping for symptoms (English only, no Twi)
-    if (/\bbleed(ing)?\b/i.test(cleanText)) {
-      matchedSymptoms.push('Vaginal Bleeding');
-    }
-    if (/\bheadache\b/i.test(cleanText) || /\bhead\b/i.test(cleanText)) {
-      matchedSymptoms.push('Severe Headache');
-    }
-    if (/\bvision\b/i.test(cleanText) || /\beye(s)?\b/i.test(cleanText)) {
-      matchedSymptoms.push('Blurred Vision');
-    }
-    if (/\bswollen\b/i.test(cleanText) || /\bswell\b/i.test(cleanText)) {
-      matchedSymptoms.push('Swelling');
-    }
-    if (/\bmovement\b/i.test(cleanText) || /\bkick\b/i.test(cleanText)) {
-      matchedSymptoms.push('Fetal Movement Loss');
-    }
-    if (/\burni(ne|nate)\b/i.test(cleanText) || /\bpeeing\b/i.test(cleanText)) {
-      matchedSymptoms.push('Urinary Pain');
-    }
+    let matchedSymptoms: string[] = [];
+    let aiSummary = 'Routine check-in.';
+    let triageReason = 'No specific reason provided.';
+    let triggeredReferral = false;
 
     try {
-      const hfResponse = await fetch(
-        'https://api-inference.huggingface.co/models/sammydamz/mamacare-triage-model',
-        {
-          headers: { 
-            'Authorization': process.env.HF_TOKEN ? `Bearer ${process.env.HF_TOKEN}` : '',
-            'Content-Type': 'application/json' 
-          },
-          method: 'POST',
-          body: JSON.stringify({ inputs: patientTurns || 'Routine check-in' }),
-        }
-      );
-
-      if (hfResponse.ok) {
-        const result = await hfResponse.json();
-        if (Array.isArray(result) && Array.isArray(result[0])) {
-          const scores = result[0];
-          const topPred = scores.reduce((prev: any, current: any) => (prev.score > current.score) ? prev : current);
-          
-          if (topPred.label === 'LABEL_2' || topPred.label === 'HIGH') {
-            riskLevel = 'HIGH';
-          } else if (topPred.label === 'LABEL_1' || topPred.label === 'MEDIUM') {
-            riskLevel = 'MEDIUM';
-          } else {
-            riskLevel = 'LOW';
-          }
-        }
-      } else {
-        console.warn('Hugging Face inference failed, falling back to database default evaluation rules.');
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
+      
+      const fullTranscript = Array.isArray(transcript) ? transcript.map((t: any) => `${t.speaker}: ${t.text}`).join('\n') : '';
+      const prompt = buildTriagePrompt(fullTranscript);
+      
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      const parsed = JSON.parse(responseText);
+      
+      if (Array.isArray(parsed.symptoms)) matchedSymptoms = parsed.symptoms;
+      if (typeof parsed.summary === 'string') aiSummary = parsed.summary;
+      if (['HIGH', 'MEDIUM', 'LOW'].includes(String(parsed.riskLevel).toUpperCase())) {
+        riskLevel = String(parsed.riskLevel).toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH';
       }
-    } catch (hfErr) {
-      console.error('Error contacting HF API:', hfErr);
+      if (typeof parsed.triageReason === 'string') triageReason = parsed.triageReason;
+
+      console.log(`Demo Triage completed by Gemini. Risk: ${riskLevel}. Reason: ${triageReason}`);
+    } catch (error) {
+      console.error("Gemini AI failed to process demo transcript:", error);
     }
 
-    if (matchedSymptoms.length === 0) {
-      matchedSymptoms.push(riskLevel === 'LOW' ? 'Healthy Check-in' : 'General Symptoms');
-    }
-
-    // 4. Generate AI Summary
-    const aiSummary = `Risk assessed as ${riskLevel} using ${triageMethod}. Symptoms identified: ${matchedSymptoms.join(', ')}. Details: Patient completed automated prenatal triage dialog in ${language}.`;
+    triggeredReferral = (riskLevel === 'HIGH' || riskLevel === 'MEDIUM');
 
     // 5. Insert Consultation Record
     await pool.query(
       `INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [id, patientId, patient.name, timestamp.split('T')[0], language, matchedSymptoms, riskLevel, aiSummary, JSON.stringify(transcript), false]
+      [id, patientId, patient.name, timestamp.split('T')[0], language, matchedSymptoms, riskLevel, aiSummary, JSON.stringify(transcript), triggeredReferral]
     );
 
     if (riskLevel !== patient.risk_level) {
