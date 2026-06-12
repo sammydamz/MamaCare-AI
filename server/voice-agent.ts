@@ -117,7 +117,7 @@ export async function processRecordedSession(audioPath: string, patientId: strin
     }
 
     const transcriptJson = JSON.stringify(structuredTranscript);
-    let triggeredReferral = (riskLevel === 'HIGH' || riskLevel === 'MEDIUM');
+    let triggeredReferral = false;
 
     // 4. Get Patient Info to save to database correctly
     const patientRes = await pool.query('SELECT * FROM patients WHERE id = $1', [patientId]);

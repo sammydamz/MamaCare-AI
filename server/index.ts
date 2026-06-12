@@ -439,7 +439,7 @@ app.post('/api/consultations', async (req, res) => {
       console.error("Gemini AI failed to process demo transcript:", error);
     }
 
-    triggeredReferral = (riskLevel === 'HIGH' || riskLevel === 'MEDIUM');
+    triggeredReferral = false;
 
     // 5. Insert Consultation Record
     await pool.query(
