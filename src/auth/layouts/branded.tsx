@@ -57,23 +57,22 @@ export function BrandedLayout() {
 
             {/* Headline */}
             <h2 className="text-white text-[28px] font-bold leading-snug mb-5">
-              AI-powered maternal care
+              Voice-first maternal care,
               <br />
-              for CHWs, patients, and
+              reaching mothers
               <br />
-              every call in between.
+              where they are.
             </h2>
 
             {/* Description */}
             <p className="text-sm leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.5)' }}>
               MamaCare AI monitors pregnant and post-loss mothers through automated voice calls,
-              surfacing real-time risk scores and alerts so CHWs can focus on the patients who
-              need them most.
+              triaging risk in real time so healthcare providers can act when it matters most.
             </p>
 
             {/* Feature grid */}
             <div className="grid grid-cols-2 gap-3">
-              {['Risk escalation feed', 'Referral tracking', 'CHW performance', 'Analytics dashboard'].map(
+              {['AI risk triage', 'Referral tracking', 'Multilingual voice calls', 'Post-loss monitoring'].map(
                 (feature) => (
                   <div
                     key={feature}
@@ -93,7 +92,7 @@ export function BrandedLayout() {
 
           {/* Footer */}
           <p className="text-xs mt-10 relative z-10" style={{ color: 'rgba(255,255,255,0.25)' }}>
-            {new Date().getFullYear()} MamaCare AI. Empowering maternal health with technology.
+            © {new Date().getFullYear()} MamaCare AI · Kasalite · Built for Sub-Saharan Africa
           </p>
         </div>
       </div>
