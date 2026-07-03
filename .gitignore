@@ -27,3 +27,6 @@ test_files/
 .me
 me-docs/
 .graphify*
+.agents/
+CHALLENGES/
+scripts/
