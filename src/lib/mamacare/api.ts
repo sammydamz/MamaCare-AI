@@ -152,8 +152,9 @@ export const mamacareApi = {
     return res.json();
   },
 
-  async fetchAnalytics() {
-    const res = await fetch(`${API_BASE}/analytics`);
+  async fetchAnalytics(pathway?: string) {
+    const query = pathway ? `?pathway=${encodeURIComponent(pathway)}` : '';
+    const res = await fetch(`${API_BASE}/analytics${query}`);
     if (!res.ok) throw new Error('Failed to fetch analytics data');
     return res.json();
   },

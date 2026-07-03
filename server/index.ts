@@ -733,6 +733,12 @@ app.patch('/api/notifications/:id/read', async (req, res) => {
 // GET /api/analytics
 app.get('/api/analytics', async (req, res) => {
   try {
+    const pathway = req.query.pathway as string | undefined;
+    const pathwayFilter = pathway ? `WHERE pathway = '${pathway.replace(/'/g, "''")}'` : '';
+    const pathwayJoin = pathway
+      ? `JOIN patients ON patients.id = consultations.patient_id AND patients.pathway = '${pathway.replace(/'/g, "''")}'`
+      : '';
+
     // KPI values
     const kpisResult = await pool.query('SELECT * FROM kpis');
     const kpisMap: Record<string, number> = {};
@@ -775,13 +781,24 @@ app.get('/api/analytics', async (req, res) => {
     // CHW performance
     const chwRes = await pool.query('SELECT * FROM chw_performance');
 
-    // Referral counts
-    const referralsCount = await pool.query('SELECT COUNT(*) FROM referrals');
-    const resolvedCount = await pool.query("SELECT COUNT(*) FROM referrals WHERE status = 'Resolved'");
-    const activeCount = await pool.query("SELECT COUNT(*) FROM patients WHERE risk_level = 'HIGH'");
+    // Referral counts filtered by pathway
+    const referralsCount = pathway
+      ? await pool.query(`SELECT COUNT(*) FROM referrals r JOIN patients p ON p.id = r.patient_id AND p.pathway = $1`, [pathway])
+      : await pool.query('SELECT COUNT(*) FROM referrals');
+    const resolvedCount = pathway
+      ? await pool.query(`SELECT COUNT(*) FROM referrals r JOIN patients p ON p.id = r.patient_id WHERE r.status = 'Resolved' AND p.pathway = $1`, [pathway])
+      : await pool.query("SELECT COUNT(*) FROM referrals WHERE status = 'Resolved'");
+    const activeCount = pathway
+      ? await pool.query(`SELECT COUNT(*) FROM patients WHERE risk_level = 'HIGH' AND pathway = $1`, [pathway])
+      : await pool.query("SELECT COUNT(*) FROM patients WHERE risk_level = 'HIGH'");
     const totalReferrals = parseInt(referralsCount.rows[0].count);
     const resolvedReferrals = parseInt(resolvedCount.rows[0].count);
     const resolutionRate = totalReferrals > 0 ? Math.round((resolvedReferrals / totalReferrals) * 100) : 0;
+
+    // Patient counts by pathway
+    const patientCount = pathway
+      ? await pool.query('SELECT COUNT(*) FROM patients WHERE pathway = $1', [pathway])
+      : await pool.query('SELECT COUNT(*) FROM patients');
 
     res.json({
       kpis: {
@@ -790,6 +807,7 @@ app.get('/api/analytics', async (req, res) => {
         followUpRate,
         resolutionRate,
         emergencyEscalations: activeCount.rows[0].count,
+        totalPatients: parseInt(patientCount.rows[0].count),
       },
       chwPerformance: chwRes.rows.map((row) => ({
         chwName: row.chw_name,

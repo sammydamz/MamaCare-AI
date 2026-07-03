@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, Clock, CheckCircle } from 'lucide-react';
 import { useMamaCare } from '@/providers/mamacare-provider';
+import { usePathway } from '@/providers/pathway-provider';
 import { useEffect, useState } from 'react';
 
 export function MelPrimaryOutcomes() {
   const { consultations, referrals } = useMamaCare();
+  const { activePathway } = usePathway();
   const [metrics, setMetrics] = useState({
     dangerSigns: 0,
     medianTime: '14 mins',
@@ -20,7 +22,6 @@ export function MelPrimaryOutcomes() {
     const completedReferrals = referrals.filter(r => r.status === 'Resolved' || r.status === 'Admitted').length;
     const completionRate = totalReferrals > 0 ? Math.round((completedReferrals / totalReferrals) * 100) : 0;
 
-    // Static median time for prototype, in a real app this would be computed from action logs
     setMetrics({
       dangerSigns: dangerSignsCount,
       medianTime: '12 mins',
@@ -31,7 +32,7 @@ export function MelPrimaryOutcomes() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Primary Outcome Metrics (SCDA MEL)</CardTitle>
+        <CardTitle>Primary Outcome Metrics — {activePathway}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
