@@ -936,9 +936,10 @@ app.get('/api/health', async (req, res) => {
 });
 
 // import services
-import { voice } from './services/africas-talking';
-import { triageSymptoms } from './services/triage';
-import { transcribeAudio } from './services/khaya';
+import { processPostCallWebhook } from './services/webhook-processor.js';
+import { voice } from './services/africas-talking.js';
+import { triageSymptoms } from './services/triage.js';
+import { transcribeAudio } from './services/khaya.js';
 
 // POST /api/ivr/outbound
 app.post('/api/ivr/outbound', async (req, res) => {
@@ -1019,6 +1020,17 @@ app.post('/api/ivr/callback', async (req, res) => {
   } else {
     // Default fallback
     res.send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
+  }
+});
+
+// POST /api/elevenlabs/webhook — ElevenLabs post-call webhook
+app.post('/api/elevenlabs/webhook', async (req, res) => {
+  try {
+    await processPostCallWebhook(req.body, pool);
+    res.status(200).json({ received: true });
+  } catch (err: any) {
+    console.error('Webhook error:', err);
+    res.status(200).json({ received: true }); // Always 200 to prevent retries
   }
 });
 

@@ -33,6 +33,7 @@ import {
   Monitor,
   Network,
   Users as PeopleIcon,
+  Phone,
   Plug,
   Settings,
   Share2,
@@ -92,6 +93,11 @@ export const MENU_SIDEBAR: MenuConfig = [
     icon: Settings,
     path: '/settings',
   },
+  {
+    title: 'Voice Triage Demo',
+    icon: Phone,
+    path: '/voice-triage-demo',
+  },
 ];
 export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
   {
@@ -128,6 +134,11 @@ export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
     title: 'Settings',
     icon: Settings,
     path: '/settings',
+  },
+  {
+    title: 'Voice Triage Demo',
+    icon: Phone,
+    path: '/voice-triage-demo',
   },
 ];
 
