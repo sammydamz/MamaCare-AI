@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { Phone, PhoneOff, Mic, AlertCircle, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { cn } from '@/lib/utils';
+
 const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
 
 function TriageCallPanel() {
@@ -53,62 +55,70 @@ function TriageCallPanel() {
   const s = statusMap[status] || { label: status, variant: 'secondary' };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5" />
-                Voice Triage
-              </CardTitle>
-              <CardDescription className="mt-1">
-                Speak with the AI agent to report symptoms.
-              </CardDescription>
-            </div>
-            <Badge variant={s.variant}>{s.label}</Badge>
+    <Card className="shadow-lg">
+      <CardHeader className="text-center pb-4">
+        <div className="mx-auto mb-3">
+          <div className={cn(
+            'w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-colors',
+            status === 'connected' ? 'bg-green-100 animate-pulse' : status === 'connecting' ? 'bg-yellow-100' : 'bg-muted'
+          )}>
+            <Phone className={cn(
+              'h-7 w-7',
+              status === 'connected' ? 'text-green-600' : status === 'connecting' ? 'text-yellow-600' : 'text-muted-foreground'
+            )} />
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex gap-3">
-              <Button
-                onClick={handleStart}
-                disabled={status === 'connected' || status === 'connecting'}
-                className="gap-2"
-              >
-                <Mic className="h-4 w-4" />
-                Start Call
-              </Button>
-              <Button
-                variant="outline"
-                onClick={endSession}
-                disabled={status !== 'connected'}
-                className="gap-2"
-              >
-                <PhoneOff className="h-4 w-4" />
-                End Call
-              </Button>
-            </div>
-
-            {callEnded && (
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Call complete. Results will appear in{' '}
-                <Link to="/consultations" className="underline font-medium">Consultations</Link>.
-              </div>
-            )}
-
-            {status === 'error' && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" />
-                Failed to connect. Make sure you have microphone access enabled.
-              </div>
-            )}
+        </div>
+        <CardTitle>Voice Triage</CardTitle>
+        <CardDescription>Speak with the AI agent to report symptoms.</CardDescription>
+        <div className="flex justify-center pt-2">
+          <Badge variant={s.variant}>{s.label}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              onClick={handleStart}
+              disabled={status === 'connected' || status === 'connecting'}
+              className="gap-2"
+              size="lg"
+            >
+              <Mic className="h-4 w-4" />
+              Start Call
+            </Button>
+            <Button
+              variant="outline"
+              onClick={endSession}
+              disabled={status !== 'connected'}
+              className="gap-2"
+              size="lg"
+            >
+              <PhoneOff className="h-4 w-4" />
+              End Call
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          {callEnded && (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 shrink-0" />
+              <span>
+                Call complete. Results in{' '}
+                <Link to="/consultations" className="underline font-medium">Consultations</Link>
+                {' '}and{' '}
+                <Link to="/referrals" className="underline font-medium">Notifications</Link>.
+              </span>
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Failed to connect. Enable microphone access.
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -129,11 +139,12 @@ export function VoiceTriageDemo() {
   }
 
   return (
-    <div className="container mx-auto py-6 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Voice Triage</h1>
-      <ConversationProvider agentId={AGENT_ID}>
-        <TriageCallPanel />
-      </ConversationProvider>
+    <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
+      <div className="w-full max-w-lg px-4">
+        <ConversationProvider agentId={AGENT_ID}>
+          <TriageCallPanel />
+        </ConversationProvider>
+      </div>
     </div>
   );
 }

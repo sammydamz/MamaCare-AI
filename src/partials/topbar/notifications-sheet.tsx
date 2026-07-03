@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { Calendar, Settings, Settings2, Shield, Users, Check } from 'lucide-react';
+import { Calendar, Settings, Settings2, Shield, Users, Check, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,6 +40,7 @@ import Item17 from './notifications/item-17';
 import Item18 from './notifications/item-18';
 import Item19 from './notifications/item-19';
 import Item20 from './notifications/item-20';
+import ItemVoiceTriage from './notifications/item-voice-triage';
 
 import { usePathway } from '@/providers/pathway-provider';
 import { mamacareApi as api } from '@/lib/mamacare/api';
@@ -49,13 +50,17 @@ import { cn } from '@/lib/utils';
 const COMPONENT_MAP: Record<string, any> = {
   Item1, Item2, Item3, Item4, Item5, Item6,
   Item10, Item11, Item13, Item14, Item15,
-  Item16, Item17, Item18, Item19, Item20
+  Item16, Item17, Item18, Item19, Item20,
+  'voice-triage': ItemVoiceTriage,
 };
+
+type RiskFilter = 'ALL' | 'HIGH' | 'MEDIUM' | 'LOW';
 
 export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
   const { activePathway } = usePathway();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [riskFilter, setRiskFilter] = useState<RiskFilter>('ALL');
 
   const fetchNotifications = async () => {
     try {
@@ -70,6 +75,8 @@ export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
 
   useEffect(() => {
     fetchNotifications();
+    const interval = setInterval(fetchNotifications, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleMarkAsRead = async (id: string) => {
@@ -87,8 +94,13 @@ export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
     }
   };
 
-  const filteredNotifs = notifications.filter(n => n.pathway === activePathway);
-  const unreadCount = filteredNotifs.filter(n => !n.isRead).length;
+  const filteredNotifs = notifications
+    .filter(n => n.pathway === activePathway)
+    .filter(n => riskFilter === 'ALL' || n.payload?.riskLevel === riskFilter);
+
+  const unreadCount = notifications
+    .filter(n => n.pathway === activePathway)
+    .filter(n => !n.isRead).length;
 
   return (
     <Sheet>
@@ -111,57 +123,23 @@ export function NotificationsSheet({ trigger }: { trigger: ReactNode }) {
             <Tabs defaultValue="all" className="w-full relative">
               <TabsList variant="line" className="w-full px-5 mb-5">
                 <TabsTrigger value="all">All</TabsTrigger>
-                <div className="grow flex items-center justify-end">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        mode="icon"
-                        className="mb-1"
-                      >
-                        <Settings className="size-4.5!" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-44" side="bottom" align="end">
-                      <DropdownMenuItem asChild>
-                        <Link to="/account/members/teams">
-                          <Users /> Invite Users
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                          <Settings2 />
-                          <span>Team Settings</span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                          <DropdownMenuSubContent className="w-44">
-                            <DropdownMenuItem asChild>
-                              <Link to="/account/members/import-members">
-                                <Shield />
-                                Find Members
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link to="/account/members/import-members">
-                                <Calendar /> Meetings
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link to="/account/members/import-members">
-                                <Shield /> Group Settings
-                              </Link>
-                            </DropdownMenuItem>
-                          </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                      </DropdownMenuSub>
-                      <DropdownMenuItem asChild>
-                        <Link to="/account/security/privacy-settings">
-                          <Shield /> Group Settings
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <div className="grow flex items-center justify-end gap-1">
+                  {(['ALL', 'HIGH', 'MEDIUM', 'LOW'] as RiskFilter[]).map(level => (
+                    <Button
+                      key={level}
+                      variant={riskFilter === level ? 'primary' : 'ghost'}
+                      size="sm"
+                      className={cn(
+                        'text-[10px] px-2 h-6',
+                        level === 'HIGH' && riskFilter === level && 'bg-red-500 text-white',
+                        level === 'MEDIUM' && riskFilter === level && 'bg-yellow-500 text-white',
+                        level === 'LOW' && riskFilter === level && 'bg-green-500 text-white',
+                      )}
+                      onClick={() => setRiskFilter(level)}
+                    >
+                      {level === 'ALL' ? 'All' : level}
+                    </Button>
+                  ))}
                 </div>
               </TabsList>
 
