@@ -73,6 +73,27 @@ pool.connect((err, client, release) => {
 
 // --- API ENDPOINTS ---
 
+// POST /api/voice/upload-recording/:patientId
+app.post('/api/voice/upload-recording/:patientId', upload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file uploaded' });
+    }
+    const result = await processRecordedSession(req.file.path, req.params.patientId as string, pool);
+    
+    // Clean up temp file
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.json(result);
+  } catch (err: any) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
 // POST /api/login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
