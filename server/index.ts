@@ -73,28 +73,6 @@ pool.connect((err, client, release) => {
 
 // --- API ENDPOINTS ---
 
-// POST /api/voice/upload-recording/:patientId
-app.post('/api/voice/upload-recording/:patientId', upload.single('audio'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No audio file uploaded' });
-    }
-    const result = await processRecordedSession(req.file.path, req.params.patientId as string, pool);
-    
-    // Clean up temp file
-    if (fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-    
-    res.json(result);
-  } catch (err: any) {
-    if (req.file && fs.existsSync(req.file.path)) {
-      try { fs.unlinkSync(req.file.path); } catch (e) {}
-    }
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // POST /api/login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
@@ -933,6 +911,93 @@ app.get('/api/health', async (req, res) => {
       database: 'disconnected',
       error: error.message
     });
+  }
+});
+
+// import services
+import { voice } from './services/africas-talking';
+import { triageSymptoms } from './services/triage';
+import { transcribeAudio } from './services/khaya';
+
+// POST /api/ivr/outbound
+app.post('/api/ivr/outbound', async (req, res) => {
+  try {
+    const { patientId, to } = req.body;
+    
+    // Fetch patient language
+    const patientRes = await pool.query('SELECT language, care_stage FROM patients WHERE id = $1', [patientId]);
+    if (patientRes.rows.length === 0) {
+       res.status(404).json({ error: 'Patient not found' });
+       return;
+    }
+    
+    // Initiate call via Africa's Talking
+    const result = await voice.call({
+      callFrom: process.env.AT_CALLER_ID || '+23312345678', // Need a registered AT number
+      callTo: [to]
+    });
+    
+    res.json({ message: 'Call initiated', result });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/ivr/callback
+app.post('/api/ivr/callback', async (req, res) => {
+  // Africa's Talking will post here when a call connects, and after a recording is done.
+  const { isActive, callerNumber, recordingUrl } = req.body;
+
+  if (isActive === '1' && !recordingUrl) {
+    // Initial call connection - Instruct AT to record a response
+    const responseXml = `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Record finishOnKey="#" maxLength="15" playBeep="true">
+          <Say>Welcome to MamaCare. Please describe how you are feeling today.</Say>
+        </Record>
+      </Response>`;
+    res.set('Content-Type', 'text/plain');
+    res.send(responseXml);
+  } else if (isActive === '0' && recordingUrl) {
+    // Call ended and recording is available
+    res.send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>'); // Acknowledge
+
+    // Process the recording asynchronously
+    try {
+      // 1. Find patient by phone number
+      const patientRes = await pool.query('SELECT id, care_stage, language FROM patients WHERE phone = $1 OR phone = $2', [callerNumber, '+' + callerNumber.replace('+', '')]);
+      if (patientRes.rows.length === 0) {
+        console.error('Patient not found for number:', callerNumber);
+        return;
+      }
+      const patient = patientRes.rows[0];
+
+      // 2. Transcribe audio using Khaya AI
+      const transcript = await transcribeAudio(recordingUrl, patient.language || 'Twi');
+
+      // 3. Triage symptoms
+      const triage = await triageSymptoms(patient.care_stage || 'PRENATAL', transcript);
+
+      // 4. Update risk level if necessary
+      if (triage.riskLevel === 'HIGH' || triage.riskLevel === 'MEDIUM') {
+         await pool.query('UPDATE patients SET risk_level = $1 WHERE id = $2', [triage.riskLevel, patient.id]);
+         // Here we could send SMS to assigned CHW using Africa's Talking SMS API.
+      }
+
+      // 5. Log the interaction
+      const logId = 'log_' + Math.floor(1000 + Math.random() * 9000);
+      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      await pool.query(
+        'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES ($1, $2, $3, $4, $5, $6)',
+        [logId, patient.id, 'Call', 'IVR Report: ' + transcript + ' -> ' + triage.riskLevel, timestamp, 'System']
+      );
+
+    } catch (err) {
+      console.error('Error processing IVR callback:', err);
+    }
+  } else {
+    // Default fallback
+    res.send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
   }
 });
 
