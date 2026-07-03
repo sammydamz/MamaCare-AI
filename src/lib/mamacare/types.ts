@@ -19,6 +19,7 @@ export interface Patient {
   phone?: string
   avatarUrl?: string
   stage?: string
+  careStage?: 'prenatal' | 'postpartum' | 'bereavement'
   lastCallDate: string
   registrationDate: string
   riskHistory: { date: string; level: RiskLevel }[]
@@ -120,4 +121,13 @@ export interface Schedule {
   patientsCount: number;
   status: string;
   createdAt: string;
+}
+
+export interface Outcome {
+  id: string;
+  patientId: string;
+  metricType: string;
+  value?: string;
+  timestamp: string;
+  recordedBy: string;
 }

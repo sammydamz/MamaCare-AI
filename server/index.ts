@@ -216,6 +216,7 @@ app.get('/api/patients', async (req, res) => {
       language: row.language,
       assignedChw: row.assigned_chw,
       stage: row.stage,
+      careStage: row.care_stage,
       lastCallDate: row.last_call_date,
       registrationDate: row.registration_date,
       riskHistory: row.risk_history,
@@ -233,16 +234,16 @@ app.get('/api/patients', async (req, res) => {
 
 // POST /api/patients (Register Patient)
 app.post('/api/patients', async (req, res) => {
-  const { name, age, pathway, language, assignedChw, stage, phone } = req.body;
+  const { name, age, pathway, language, assignedChw, stage, careStage, phone } = req.body;
   const id = 'p' + Math.floor(100 + Math.random() * 900);
   const regDate = new Date().toISOString().split('T')[0];
   const initialHistory = JSON.stringify([{ date: regDate, level: 'LOW' }]);
+  const resolvedCareStage = careStage || 'prenatal';
 
   try {
     await pool.query(
-      `INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, registration_date, risk_history, phone) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [id, name, age, pathway, 'LOW', language, assignedChw || 'Unassigned', stage, regDate, initialHistory, phone || null]
+      'INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, care_stage, registration_date, risk_history, phone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      [id, name, age, pathway, 'LOW', language, assignedChw || 'Unassigned', stage, resolvedCareStage, regDate, initialHistory, phone || null]
     );
 
     // Insert to action log
@@ -258,6 +259,61 @@ app.post('/api/patients', async (req, res) => {
     await pool.query("UPDATE kpis SET value = value + 1 WHERE key = 'caseload'");
 
     res.status(201).json({ id, name, age, pathway, riskLevel: 'LOW', language, assignedChw, stage, phone });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/patients/:id/care-stage
+app.patch('/api/patients/:id/care-stage', async (req, res) => {
+  const { id } = req.params;
+  const { careStage } = req.body;
+
+  try {
+    await pool.query('UPDATE patients SET care_stage = $1 WHERE id = $2', [careStage, id]);
+
+    const logId = 'a' + Math.floor(100 + Math.random() * 900);
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    await pool.query(
+      'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      [logId, id, 'CareStage', 'Care stage transitioned to ' + careStage, timestamp, 'System']
+    );
+
+    res.json({ message: 'Care stage updated successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/outcomes
+app.get('/api/outcomes', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM outcomes ORDER BY timestamp DESC');
+    res.json(result.rows.map((row) => ({
+      id: row.id,
+      patientId: row.patient_id,
+      metricType: row.metric_type,
+      value: row.value,
+      timestamp: row.timestamp,
+      recordedBy: row.recorded_by
+    })));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/outcomes
+app.post('/api/outcomes', async (req, res) => {
+  const { patientId, metricType, value, recordedBy } = req.body;
+  const id = 'o' + Math.floor(100 + Math.random() * 900);
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  
+  try {
+    await pool.query(
+      'INSERT INTO outcomes (id, patient_id, metric_type, value, timestamp, recorded_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      [id, patientId, metricType, value, timestamp, recordedBy || 'System']
+    );
+    res.status(201).json({ id, patientId, metricType, value, timestamp, recordedBy });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

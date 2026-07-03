@@ -26,6 +26,7 @@ export function PatientQueue({
   const [tab, setTab] = useState('all');
   const [search, setSearch] = useState('');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [stageFilter, setStageFilter] = useState<string>('all');
 
   const filtered = patients
     .filter((p) => {
@@ -37,6 +38,7 @@ export function PatientQueue({
       p.name.toLowerCase().includes(search.toLowerCase()),
     )
     .filter((p) => riskFilter === 'all' || p.riskLevel === riskFilter)
+    .filter((p) => stageFilter === 'all' || p.careStage === stageFilter)
     .sort(
       (a, b) => RISK_ORDER[a.riskLevel] - RISK_ORDER[b.riskLevel],
     );
@@ -60,6 +62,17 @@ export function PatientQueue({
             <SelectItem value="HIGH">HIGH</SelectItem>
             <SelectItem value="MEDIUM">MEDIUM</SelectItem>
             <SelectItem value="LOW">LOW</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={stageFilter} onValueChange={setStageFilter}>
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="Stage" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Stages</SelectItem>
+            <SelectItem value="prenatal">Prenatal</SelectItem>
+            <SelectItem value="postpartum">Postpartum</SelectItem>
+            <SelectItem value="bereavement">Bereavement</SelectItem>
           </SelectContent>
         </Select>
         <RegisterPatientDialog />

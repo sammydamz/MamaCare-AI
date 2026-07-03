@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS patients (
     language VARCHAR(50) NOT NULL,
     assigned_chw VARCHAR(255) NOT NULL,
     stage VARCHAR(100) NOT NULL,
+    care_stage VARCHAR(50) NOT NULL DEFAULT 'prenatal',
     last_call_date VARCHAR(50),
     registration_date VARCHAR(50) NOT NULL,
     risk_history JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -268,3 +269,13 @@ INSERT INTO symptom_trend (month, headache, bleeding, fatigue, fever) VALUES
     ('Apr', 5, 1, 4, 1),
     ('May', 3, 0, 2, 0)
 ON CONFLICT DO NOTHING;
+
+-- Outcomes (MEL Framework)
+CREATE TABLE IF NOT EXISTS outcomes (
+    id VARCHAR(50) PRIMARY KEY,
+    patient_id VARCHAR(50) REFERENCES patients(id) ON DELETE CASCADE,
+    metric_type VARCHAR(100) NOT NULL,
+    value VARCHAR(255),
+    timestamp VARCHAR(50) NOT NULL,
+    recorded_by VARCHAR(255) NOT NULL
+);
