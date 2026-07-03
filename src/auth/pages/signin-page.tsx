@@ -221,6 +221,12 @@ export function SignInPage() {
             'Sign In'
           )}
         </Button>
+
+        <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/50 p-3 text-xs text-muted-foreground">
+          <p className="font-medium mb-1">Demo Credentials</p>
+          <p>Email: <code className="bg-muted px-1 py-0.5 rounded text-foreground">sarac@kbth.com</code></p>
+          <p>Password: <code className="bg-muted px-1 py-0.5 rounded text-foreground">demo123</code></p>
+        </div>
       </form>
     </Form>
   );
