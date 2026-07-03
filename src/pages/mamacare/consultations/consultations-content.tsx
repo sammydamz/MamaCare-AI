@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Select,
   SelectContent,
@@ -22,11 +22,17 @@ import type { Consultation } from '@/lib/mamacare/types';
 import { ConsultationDetail } from './components/consultation-detail';
 
 export function ConsultationsContent() {
-  const { consultations, patients } = useMamaCare();
+  const { consultations, patients, refreshAll } = useMamaCare();
   const { activePathway } = usePathway();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [patientFilter, setPatientFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+
+  // Refresh data on mount to pick up any recent webhook results
+  useEffect(() => {
+    refreshAll();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const pathwayConsultations = consultations.filter(c => {
     const patient = patients.find(p => p.id === c.patientId);
