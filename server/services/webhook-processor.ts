@@ -57,8 +57,9 @@ export async function processPostCallWebhook(
   const triage: TriageResult = await triageTranscript(fullText);
 
   // 4. Save consultation to DB
-  const consultationId = 'c_el_' + Date.now();
+  const consultationId = 'c-voice-' + Date.now();
   const today = new Date().toISOString().split('T')[0];
+  const demoPatientId = 'p-prenatal-1781234133256-0';
 
   await pool.query(
     `INSERT INTO consultations
@@ -67,8 +68,8 @@ export async function processPostCallWebhook(
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [
       consultationId,
-      'demo-patient',
-      'Demo Patient',
+      demoPatientId,
+      'Nana Yaa',
       today,
       'English',
       triage.symptoms,
@@ -83,7 +84,7 @@ export async function processPostCallWebhook(
   if (triage.riskLevel === 'HIGH' || triage.riskLevel === 'MEDIUM') {
     await pool.query(
       'UPDATE patients SET risk_level = $1 WHERE id = $2',
-      [triage.riskLevel, 'demo-patient']
+      [triage.riskLevel, demoPatientId]
     );
   }
 
@@ -93,12 +94,12 @@ export async function processPostCallWebhook(
      (id, patient_id, type, description, timestamp, performed_by)
      VALUES ($1, $2, $3, $4, $5, $6)`,
     [
-      'log_el_' + Date.now(),
-      'demo-patient',
-      'Call',
+      'log-el-' + Date.now(),
+      demoPatientId,
+      'Voice Call',
       `Voice triage: ${triage.riskLevel} — ${triage.triageReason}`,
       new Date().toISOString(),
-      'LangChain (ElevenLabs → Gemini)',
+      'LangChain (ElevenLabs to Gemini)',
     ]
   );
 

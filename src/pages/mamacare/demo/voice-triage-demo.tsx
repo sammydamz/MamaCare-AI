@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ConversationProvider,
   useConversationControls,
@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Phone, PhoneOff, Mic, AlertCircle } from 'lucide-react';
+import { Phone, PhoneOff, Mic, AlertCircle, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
 
@@ -16,13 +17,22 @@ function TriageCallPanel() {
   const { startSession, endSession } = useConversationControls();
   const { status } = useConversationStatus();
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [callEnded, setCallEnded] = useState(false);
+
+  useEffect(() => {
+    if (conversationId && status === 'disconnected') {
+      setCallEnded(true);
+      const timer = setTimeout(() => setCallEnded(false), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [conversationId, status]);
 
   const handleStart = async () => {
     try {
+      setCallEnded(false);
       await startSession({
         onConnect: ({ conversationId }) => {
           setConversationId(conversationId);
-          toast.success('Connected to MamaCare agent');
         },
         onError: (message) => {
           toast.error(message);
@@ -50,11 +60,10 @@ function TriageCallPanel() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Phone className="h-5 w-5" />
-                Voice Triage Demo
+                Voice Triage
               </CardTitle>
               <CardDescription className="mt-1">
-                Speak with the AI triage agent to report symptoms. After the call, 
-                results are processed through LangChain and saved to the dashboard.
+                Speak with the AI agent to report symptoms.
               </CardDescription>
             </div>
             <Badge variant={s.variant}>{s.label}</Badge>
@@ -82,9 +91,11 @@ function TriageCallPanel() {
               </Button>
             </div>
 
-            {conversationId && status === 'disconnected' && (
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-                Call complete. Processing triage results via LangChain...
+            {callEnded && (
+              <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Call complete. Results will appear in{' '}
+                <Link to="/consultations" className="underline font-medium">Consultations</Link>.
               </div>
             )}
 
@@ -94,42 +105,6 @@ function TriageCallPanel() {
                 Failed to connect. Make sure you have microphone access enabled.
               </div>
             )}
-
-            <div className="rounded-lg bg-muted p-4">
-              <p className="font-medium text-sm mb-2">During the call, the agent will ask:</p>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>How are you feeling today?</li>
-                <li>What symptoms are you experiencing?</li>
-                <li>How long have you had these symptoms?</li>
-                <li>Are you experiencing any bleeding or pain?</li>
-              </ul>
-              <p className="text-xs text-muted-foreground mt-3">
-                After the call ends, the transcript is processed through LangChain + Gemini 
-                for triage classification and saved to the database.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Architecture</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-xs text-muted-foreground space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px]">Frontend</Badge>
-              <span>@elevenlabs/react → WebRTC voice session</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px]">Backend</Badge>
-              <span>Post-call webhook → LangChain ChatGoogle → Gemini 2.5 Flash</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px]">Output</Badge>
-              <span>Zod-validated triage result → PostgreSQL</span>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -155,7 +130,7 @@ export function VoiceTriageDemo() {
 
   return (
     <div className="container mx-auto py-6 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Voice Triage Demo</h1>
+      <h1 className="text-2xl font-bold mb-6">Voice Triage</h1>
       <ConversationProvider agentId={AGENT_ID}>
         <TriageCallPanel />
       </ConversationProvider>
