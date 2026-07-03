@@ -64,6 +64,7 @@ interface MamaCareContextType {
   analyticsData: AnalyticsData | null;
   isLoading: boolean;
   refreshAll: () => Promise<void>;
+  refreshConsultationsOnly: () => Promise<void>;
   registerPatient: (data: {
     name: string;
     age: number;
@@ -142,6 +143,15 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
       setAnalyticsData(null);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const refreshConsultationsOnly = async () => {
+    try {
+      const cons = await mamacareApi.fetchConsultations();
+      setConsultations(cons);
+    } catch {
+      console.error('Failed to fetch consultations');
     }
   };
 
@@ -258,6 +268,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
         analyticsData,
         isLoading,
         refreshAll,
+        refreshConsultationsOnly,
         registerPatient,
         recordVitals,
         logVisit,

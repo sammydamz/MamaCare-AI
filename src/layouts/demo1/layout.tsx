@@ -6,7 +6,6 @@ import { useMenu } from '@/hooks/use-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSettings } from '@/providers/settings-provider';
 import { usePathway } from '@/providers/pathway-provider';
-import { useMamaCare } from '@/providers/mamacare-provider';
 import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { Sidebar } from './components/sidebar';
@@ -16,7 +15,6 @@ export function Demo1Layout() {
   const isMobile = useIsMobile();
   const { pathname } = useLocation();
   const { activePathway, isSwitching } = usePathway();
-  const { isLoading } = useMamaCare();
   const currentMenu = activePathway === 'Pregnancy' ? MENU_SIDEBAR : MENU_SIDEBAR_POST_LOSS;
   const { getCurrentItem } = useMenu(pathname);
   const item = getCurrentItem(currentMenu);
@@ -60,12 +58,12 @@ export function Demo1Layout() {
     };
   }, []); // Runs only once on mount
 
-  if (isSwitching || isLoading) {
+  if (isSwitching) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center space-y-4">
           <LoaderCircleIcon className="h-10 w-10 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground">Loading {activePathway}...</p>
+          <p className="text-sm text-muted-foreground animate-pulse">Loading {activePathway}...</p>
         </div>
       </div>
     );

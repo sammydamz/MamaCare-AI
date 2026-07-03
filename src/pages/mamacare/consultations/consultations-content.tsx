@@ -22,15 +22,15 @@ import type { Consultation } from '@/lib/mamacare/types';
 import { ConsultationDetail } from './components/consultation-detail';
 
 export function ConsultationsContent() {
-  const { consultations, patients, refreshAll } = useMamaCare();
+  const { patients, consultations, refreshConsultationsOnly } = useMamaCare();
   const { activePathway } = usePathway();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [patientFilter, setPatientFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
 
-  // Refresh data on mount to pick up any recent webhook results
+  // Quietly refresh consultations on mount (no global loading)
   useEffect(() => {
-    refreshAll();
+    refreshConsultationsOnly();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

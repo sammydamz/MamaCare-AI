@@ -84,6 +84,11 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/facilities',
   },
   {
+    title: 'Voice Triage',
+    icon: Phone,
+    path: '/voice-triage-demo',
+  },
+  {
     title: 'Settings',
     icon: Settings,
     path: '/settings',
