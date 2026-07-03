@@ -47,6 +47,10 @@ async function runMigrations() {
     if (fs.existsSync(schemaPath)) {
       const sql = fs.readFileSync(schemaPath, 'utf8');
       await pool.query(sql);
+      
+      // Cleanup hardcoded demo notifications that might be persisting in production DB
+      await pool.query(`DELETE FROM notifications WHERE id IN ('n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9', 'n10', 'n11', 'n12');`);
+      
       console.log('Database migrations completed successfully.');
     } else {
       console.log('schema.sql not found at default and fallback paths');
