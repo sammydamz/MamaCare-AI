@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/auth/context/auth-context';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';

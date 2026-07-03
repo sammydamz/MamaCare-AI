@@ -8,13 +8,13 @@ export function BrandedLayout() {
       <div className="flex flex-col justify-center items-center w-full lg:w-[45%] px-8 py-12">
         <div className="w-full max-w-[380px]">
           <div className="mb-8 text-center">
-            <Link to="/" className="inline-flex items-center gap-2 justify-center mb-6">
+            <Link to="/" className="inline-flex items-center gap-3 justify-center mb-6">
               <img
                 src={toAbsoluteUrl('/media/app/default-logo.svg')}
-                className="h-[44px] w-auto"
+                className="h-[64px] w-auto"
                 alt="MamaCare AI"
               />
-              <span className="text-[18px] font-bold tracking-tight text-foreground">
+              <span className="text-[24px] font-bold tracking-tight text-foreground">
                 MamaCare <span style={{ color: '#ff66c4' }}>AI</span>
               </span>
             </Link>
@@ -56,23 +56,19 @@ export function BrandedLayout() {
             {/* Badges - hidden for now */}
 
             {/* Headline */}
-            <h2 className="text-white text-[28px] font-bold leading-snug mb-5">
-              Voice-first maternal care,
-              <br />
-              reaching mothers
-              <br />
-              where they are.
+            <h2 className="text-white text-[26px] font-bold leading-snug mb-5">
+              Voice-first maternal care, reaching mothers where they are.
             </h2>
 
             {/* Description */}
             <p className="text-sm leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              MamaCare AI monitors pregnant and post-loss mothers through automated voice calls,
+              MamaCare AI monitors pregnant and perinatally bereaved mothers through automated voice calls,
               triaging risk in real time so healthcare providers can act when it matters most.
             </p>
 
             {/* Feature grid */}
             <div className="grid grid-cols-2 gap-3">
-              {['AI risk triage', 'Referral tracking', 'Multilingual voice calls', 'Post-loss monitoring'].map(
+              {['AI risk triage', 'Referral tracking', 'Multilingual voice calls', 'Pregnancy loss support'].map(
                 (feature) => (
                   <div
                     key={feature}
@@ -92,7 +88,7 @@ export function BrandedLayout() {
 
           {/* Footer */}
           <p className="text-xs mt-10 relative z-10" style={{ color: 'rgba(255,255,255,0.25)' }}>
-            © {new Date().getFullYear()} MamaCare AI · Kasalite · Built for Sub-Saharan Africa
+            © 2025 MamaCare AI by Kasalite
           </p>
         </div>
       </div>

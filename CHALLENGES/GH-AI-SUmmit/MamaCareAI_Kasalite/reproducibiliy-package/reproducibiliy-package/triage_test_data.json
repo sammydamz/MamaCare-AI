@@ -1,0 +1,92 @@
+[
+  {
+    "text": "I am feeling very strong and healthy, the baby is kicking.",
+    "expected_label": 0,
+    "expected_label_name": "LOW",
+    "description": "Healthy patient with normal fetal movement"
+  },
+  {
+    "text": "I feel tired but I can still do my daily work.",
+    "expected_label": 0,
+    "expected_label_name": "LOW",
+    "description": "Routine pregnancy fatigue"
+  },
+  {
+    "text": "Sometimes I vomit in the morning, but I am able to eat later.",
+    "expected_label": 0,
+    "expected_label_name": "LOW",
+    "description": "Standard morning sickness"
+  },
+  {
+    "text": "I have no pain or discomfort at all today.",
+    "expected_label": 0,
+    "expected_label_name": "LOW",
+    "description": "Normal healthy check-in"
+  },
+  {
+    "text": "My stomach hurts a little bit on the sides when I stand up.",
+    "expected_label": 0,
+    "expected_label_name": "LOW",
+    "description": "Standard stretching of ligaments"
+  },
+  {
+    "text": "It hurts when I urinate and I have to go very frequently.",
+    "expected_label": 1,
+    "expected_label_name": "MEDIUM",
+    "description": "Urinary Tract Infection warning sign"
+  },
+  {
+    "text": "I have a mild fever and feeling chilly.",
+    "expected_label": 1,
+    "expected_label_name": "MEDIUM",
+    "description": "Mild fever warning sign"
+  },
+  {
+    "text": "My feet are slightly swollen after standing for a long time.",
+    "expected_label": 1,
+    "expected_label_name": "MEDIUM",
+    "description": "Mild physiological swelling"
+  },
+  {
+    "text": "I have a slight headache and feel warm.",
+    "expected_label": 1,
+    "expected_label_name": "MEDIUM",
+    "description": "Mild headache with warmth warning sign"
+  },
+  {
+    "text": "I feel general body weakness and a burning sensation when peeing.",
+    "expected_label": 1,
+    "expected_label_name": "MEDIUM",
+    "description": "UTI warning sign with fatigue"
+  },
+  {
+    "text": "I am bleeding from my vagina, it started an hour ago.",
+    "expected_label": 2,
+    "expected_label_name": "HIGH",
+    "description": "Severe danger sign (Vaginal Bleeding)"
+  },
+  {
+    "text": "I have not felt my baby move since yesterday morning.",
+    "expected_label": 2,
+    "expected_label_name": "HIGH",
+    "description": "Severe danger sign (Absence of fetal movements)"
+  },
+  {
+    "text": "My head is pounding severely and my vision is blurred, I see spots.",
+    "expected_label": 2,
+    "expected_label_name": "HIGH",
+    "description": "Severe danger sign (Pre-eclampsia headache/blurred vision)"
+  },
+  {
+    "text": "My face and hands became very swollen suddenly today.",
+    "expected_label": 2,
+    "expected_label_name": "HIGH",
+    "description": "Severe danger sign (Pre-eclampsia sudden swelling)"
+  },
+  {
+    "text": "I have severe abdominal pain and I am bleeding.",
+    "expected_label": 2,
+    "expected_label_name": "HIGH",
+    "description": "Severe danger sign (Placental issues / miscarriage risk)"
+  }
+]
