@@ -26,3 +26,4 @@ GRANT-APPLCATION/
 test_files/
 .me
 me-docs/
+.graphify*
