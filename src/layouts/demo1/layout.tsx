@@ -63,7 +63,7 @@ export function Demo1Layout() {
       <div className="flex items-center justify-center h-screen w-full bg-background">
         <div className="text-center space-y-4">
           <LoaderCircleIcon className="h-10 w-10 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground animate-pulse">Loading {activePathway}...</p>
+          <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
         </div>
       </div>
     );
