@@ -7,7 +7,7 @@ import {
   Menu,
   Search,
 } from 'lucide-react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { cn } from '@/lib/utils';
@@ -30,10 +30,11 @@ import { useAuth } from '@/auth/context/auth-context';
 
 export function Header() {
   const [isSidebarSheetOpen, setIsSidebarSheetOpen] = useState(false);
-  const { activePathway, setActivePathway } = usePathway();
+  const { activePathway, setActivePathway, isSwitching } = usePathway();
   const { user } = useAuth();
 
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const mobileMode = useIsMobile();
 
   const scrollPosition = useScrollPosition();
@@ -92,7 +93,10 @@ export function Header() {
                 type="single" 
                 value={activePathway}
                 onValueChange={(val) => {
-                  if (val) setActivePathway(val as 'Pregnancy' | 'Post-Loss');
+                  if (val) {
+                    setActivePathway(val as 'Pregnancy' | 'Post-Loss');
+                    navigate('/');
+                  }
                 }}
                 className="bg-muted p-1 rounded-full border"
               >

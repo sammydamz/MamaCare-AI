@@ -79,11 +79,6 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/communications',
   },
   {
-    title: 'Analytics',
-    icon: TrendingUp,
-    path: '/analytics',
-  },
-  {
     title: 'Facilities',
     icon: Building,
     path: '/facilities',
@@ -92,11 +87,6 @@ export const MENU_SIDEBAR: MenuConfig = [
     title: 'Settings',
     icon: Settings,
     path: '/settings',
-  },
-  {
-    title: 'Voice Triage Demo',
-    icon: Phone,
-    path: '/voice-triage-demo',
   },
 ];
 export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
@@ -124,11 +114,6 @@ export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
     title: 'SMS Alerts',
     icon: Bell,
     path: '/communications',
-  },
-  {
-    title: 'Analytics',
-    icon: TrendingUp,
-    path: '/analytics',
   },
   {
     title: 'Settings',
