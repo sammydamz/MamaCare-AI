@@ -60,7 +60,7 @@ export function Demo1Layout() {
 
   if (isSwitching) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
+      <div className="flex items-center justify-center h-screen w-full bg-background">
         <div className="text-center space-y-4">
           <LoaderCircleIcon className="h-10 w-10 animate-spin mx-auto text-primary" />
           <p className="text-sm text-muted-foreground animate-pulse">Loading {activePathway}...</p>
