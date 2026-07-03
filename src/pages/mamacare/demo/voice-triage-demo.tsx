@@ -44,11 +44,13 @@ function VoiceTriageInner() {
 
   return (
     <Card className="shadow-lg">
-      <CardHeader className="text-center">
-        <Badge variant={statusBadge.variant} className="mx-auto mb-3">
-          {statusBadge.label}
-        </Badge>
-        <CardTitle>Voice Triage</CardTitle>
+      <CardHeader className="text-center relative">
+        <div className="absolute top-4 right-4">
+          <Badge variant={statusBadge.variant}>
+            {statusBadge.label}
+          </Badge>
+        </div>
+        <CardTitle className="pt-2">Voice Triage</CardTitle>
         <CardDescription>Speak with the AI agent to report symptoms.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
