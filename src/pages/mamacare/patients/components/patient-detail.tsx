@@ -9,6 +9,14 @@ import { RiskTrendChart } from './risk-trend-chart';
 import { ActionLog } from './action-log';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ChevronDown } from 'lucide-react';
+
 
 const RISK_BADGE_VARIANT: Record<RiskLevel, BadgeProps['variant']> = {
   HIGH: RISK_COLORS.HIGH as BadgeProps['variant'],
@@ -70,6 +78,59 @@ export function PatientDetail({ patient }: { patient: Patient }) {
               <span className="text-border">·</span>
               <span>CHW: {patient.assignedChw}</span>
             </div>
+          </div>
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  {patient.careStage === 'prenatal' ? 'Prenatal' : 
+                   patient.careStage === 'postpartum' ? 'Postpartum' : 
+                   patient.careStage === 'bereavement' ? 'Bereavement' : 'Care Stage'}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={async () => {
+                    toast.loading('Updating stage...', { id: 'stage-update' });
+                    try {
+                      const res = await fetch(`/api/patients/${patient.id}/care-stage`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ careStage: 'postpartum' })
+                      });
+                      if (!res.ok) throw new Error('Failed to update stage');
+                      toast.success('Patient moved to Postpartum', { id: 'stage-update' });
+                      // In a real app, we would refresh the data here.
+                    } catch (err: unknown) {
+                      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+                      toast.error(errorMessage, { id: 'stage-update' });
+                    }
+                  }}
+                >
+                  Record Delivery (Postpartum)
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={async () => {
+                    toast.loading('Updating stage...', { id: 'stage-update' });
+                    try {
+                      const res = await fetch(`/api/patients/${patient.id}/care-stage`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ careStage: 'bereavement' })
+                      });
+                      if (!res.ok) throw new Error('Failed to update stage');
+                      toast.success('Patient moved to Bereavement', { id: 'stage-update' });
+                    } catch (err: unknown) {
+                      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+                      toast.error(errorMessage, { id: 'stage-update' });
+                    }
+                  }}
+                >
+                  Record Loss (Bereavement)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 

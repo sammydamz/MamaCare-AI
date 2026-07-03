@@ -6,3 +6,4 @@ export * from './analytics';
 export * from './facilities';
 export * from './settings';
 export * from './communications';
+export * from './demo';

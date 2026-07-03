@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { mamacareApi } from '@/lib/mamacare/api';
 import type { Patient, Consultation, Referral, Facility, ActionLogEntry, Pathway } from '@/lib/mamacare/types';
+import { usePathway } from './pathway-provider';
 
 interface DashboardData {
   kpis: {
@@ -109,6 +110,8 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { activePathway } = usePathway();
+
   const refreshAll = async () => {
     setIsLoading(true);
     try {
@@ -119,7 +122,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
         mamacareApi.fetchFacilities(),
         mamacareApi.fetchActionLogs(),
         mamacareApi.fetchDashboard(),
-        mamacareApi.fetchAnalytics(),
+        mamacareApi.fetchAnalytics(activePathway),
       ]);
       setPatients(pts);
       setConsultations(cons);
@@ -144,7 +147,8 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshAll();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePathway]);
 
   const registerPatient = async (data: {
     name: string;

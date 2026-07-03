@@ -94,7 +94,6 @@ app.post('/api/voice/upload-recording/:patientId', upload.single('audio'), async
     res.status(500).json({ error: err.message });
   }
 });
-
 // POST /api/login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
@@ -216,6 +215,7 @@ app.get('/api/patients', async (req, res) => {
       language: row.language,
       assignedChw: row.assigned_chw,
       stage: row.stage,
+      careStage: row.care_stage,
       lastCallDate: row.last_call_date,
       registrationDate: row.registration_date,
       riskHistory: row.risk_history,
@@ -233,16 +233,16 @@ app.get('/api/patients', async (req, res) => {
 
 // POST /api/patients (Register Patient)
 app.post('/api/patients', async (req, res) => {
-  const { name, age, pathway, language, assignedChw, stage, phone } = req.body;
+  const { name, age, pathway, language, assignedChw, stage, careStage, phone } = req.body;
   const id = 'p' + Math.floor(100 + Math.random() * 900);
   const regDate = new Date().toISOString().split('T')[0];
   const initialHistory = JSON.stringify([{ date: regDate, level: 'LOW' }]);
+  const resolvedCareStage = careStage || 'prenatal';
 
   try {
     await pool.query(
-      `INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, registration_date, risk_history, phone) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [id, name, age, pathway, 'LOW', language, assignedChw || 'Unassigned', stage, regDate, initialHistory, phone || null]
+      'INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, care_stage, registration_date, risk_history, phone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      [id, name, age, pathway, 'LOW', language, assignedChw || 'Unassigned', stage, resolvedCareStage, regDate, initialHistory, phone || null]
     );
 
     // Insert to action log
@@ -258,6 +258,61 @@ app.post('/api/patients', async (req, res) => {
     await pool.query("UPDATE kpis SET value = value + 1 WHERE key = 'caseload'");
 
     res.status(201).json({ id, name, age, pathway, riskLevel: 'LOW', language, assignedChw, stage, phone });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/patients/:id/care-stage
+app.patch('/api/patients/:id/care-stage', async (req, res) => {
+  const { id } = req.params;
+  const { careStage } = req.body;
+
+  try {
+    await pool.query('UPDATE patients SET care_stage = $1 WHERE id = $2', [careStage, id]);
+
+    const logId = 'a' + Math.floor(100 + Math.random() * 900);
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    await pool.query(
+      'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      [logId, id, 'CareStage', 'Care stage transitioned to ' + careStage, timestamp, 'System']
+    );
+
+    res.json({ message: 'Care stage updated successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/outcomes
+app.get('/api/outcomes', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM outcomes ORDER BY timestamp DESC');
+    res.json(result.rows.map((row) => ({
+      id: row.id,
+      patientId: row.patient_id,
+      metricType: row.metric_type,
+      value: row.value,
+      timestamp: row.timestamp,
+      recordedBy: row.recorded_by
+    })));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/outcomes
+app.post('/api/outcomes', async (req, res) => {
+  const { patientId, metricType, value, recordedBy } = req.body;
+  const id = 'o' + Math.floor(100 + Math.random() * 900);
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  
+  try {
+    await pool.query(
+      'INSERT INTO outcomes (id, patient_id, metric_type, value, timestamp, recorded_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      [id, patientId, metricType, value, timestamp, recordedBy || 'System']
+    );
+    res.status(201).json({ id, patientId, metricType, value, timestamp, recordedBy });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -678,6 +733,12 @@ app.patch('/api/notifications/:id/read', async (req, res) => {
 // GET /api/analytics
 app.get('/api/analytics', async (req, res) => {
   try {
+    const pathway = req.query.pathway as string | undefined;
+    const pathwayFilter = pathway ? `WHERE pathway = '${pathway.replace(/'/g, "''")}'` : '';
+    const pathwayJoin = pathway
+      ? `JOIN patients ON patients.id = consultations.patient_id AND patients.pathway = '${pathway.replace(/'/g, "''")}'`
+      : '';
+
     // KPI values
     const kpisResult = await pool.query('SELECT * FROM kpis');
     const kpisMap: Record<string, number> = {};
@@ -720,13 +781,24 @@ app.get('/api/analytics', async (req, res) => {
     // CHW performance
     const chwRes = await pool.query('SELECT * FROM chw_performance');
 
-    // Referral counts
-    const referralsCount = await pool.query('SELECT COUNT(*) FROM referrals');
-    const resolvedCount = await pool.query("SELECT COUNT(*) FROM referrals WHERE status = 'Resolved'");
-    const activeCount = await pool.query("SELECT COUNT(*) FROM patients WHERE risk_level = 'HIGH'");
+    // Referral counts filtered by pathway
+    const referralsCount = pathway
+      ? await pool.query(`SELECT COUNT(*) FROM referrals r JOIN patients p ON p.id = r.patient_id AND p.pathway = $1`, [pathway])
+      : await pool.query('SELECT COUNT(*) FROM referrals');
+    const resolvedCount = pathway
+      ? await pool.query(`SELECT COUNT(*) FROM referrals r JOIN patients p ON p.id = r.patient_id WHERE r.status = 'Resolved' AND p.pathway = $1`, [pathway])
+      : await pool.query("SELECT COUNT(*) FROM referrals WHERE status = 'Resolved'");
+    const activeCount = pathway
+      ? await pool.query(`SELECT COUNT(*) FROM patients WHERE risk_level = 'HIGH' AND pathway = $1`, [pathway])
+      : await pool.query("SELECT COUNT(*) FROM patients WHERE risk_level = 'HIGH'");
     const totalReferrals = parseInt(referralsCount.rows[0].count);
     const resolvedReferrals = parseInt(resolvedCount.rows[0].count);
     const resolutionRate = totalReferrals > 0 ? Math.round((resolvedReferrals / totalReferrals) * 100) : 0;
+
+    // Patient counts by pathway
+    const patientCount = pathway
+      ? await pool.query('SELECT COUNT(*) FROM patients WHERE pathway = $1', [pathway])
+      : await pool.query('SELECT COUNT(*) FROM patients');
 
     res.json({
       kpis: {
@@ -735,6 +807,7 @@ app.get('/api/analytics', async (req, res) => {
         followUpRate,
         resolutionRate,
         emergencyEscalations: activeCount.rows[0].count,
+        totalPatients: parseInt(patientCount.rows[0].count),
       },
       chwPerformance: chwRes.rows.map((row) => ({
         chwName: row.chw_name,
@@ -877,6 +950,105 @@ app.get('/api/health', async (req, res) => {
       database: 'disconnected',
       error: error.message
     });
+  }
+});
+
+// import services
+import { processPostCallWebhook } from './services/webhook-processor.js';
+import { voice } from './services/africas-talking.js';
+import { triageSymptoms } from './services/triage.js';
+import { transcribeAudio } from './services/khaya.js';
+
+// POST /api/ivr/outbound
+app.post('/api/ivr/outbound', async (req, res) => {
+  try {
+    const { patientId, to } = req.body;
+    
+    // Fetch patient language
+    const patientRes = await pool.query('SELECT language, care_stage FROM patients WHERE id = $1', [patientId]);
+    if (patientRes.rows.length === 0) {
+       res.status(404).json({ error: 'Patient not found' });
+       return;
+    }
+    
+    // Initiate call via Africa's Talking
+    const result = await voice.call({
+      callFrom: process.env.AT_CALLER_ID || '+23312345678', // Need a registered AT number
+      callTo: [to]
+    });
+    
+    res.json({ message: 'Call initiated', result });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/ivr/callback
+app.post('/api/ivr/callback', async (req, res) => {
+  // Africa's Talking will post here when a call connects, and after a recording is done.
+  const { isActive, callerNumber, recordingUrl } = req.body;
+
+  if (isActive === '1' && !recordingUrl) {
+    // Initial call connection - Instruct AT to record a response
+    const responseXml = `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Record finishOnKey="#" maxLength="15" playBeep="true">
+          <Say>Welcome to MamaCare. Please describe how you are feeling today.</Say>
+        </Record>
+      </Response>`;
+    res.set('Content-Type', 'text/plain');
+    res.send(responseXml);
+  } else if (isActive === '0' && recordingUrl) {
+    // Call ended and recording is available
+    res.send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>'); // Acknowledge
+
+    // Process the recording asynchronously
+    try {
+      // 1. Find patient by phone number
+      const patientRes = await pool.query('SELECT id, care_stage, language FROM patients WHERE phone = $1 OR phone = $2', [callerNumber, '+' + callerNumber.replace('+', '')]);
+      if (patientRes.rows.length === 0) {
+        console.error('Patient not found for number:', callerNumber);
+        return;
+      }
+      const patient = patientRes.rows[0];
+
+      // 2. Transcribe audio using Khaya AI
+      const transcript = await transcribeAudio(recordingUrl, patient.language || 'Twi');
+
+      // 3. Triage symptoms
+      const triage = await triageSymptoms(patient.care_stage || 'PRENATAL', transcript);
+
+      // 4. Update risk level if necessary
+      if (triage.riskLevel === 'HIGH' || triage.riskLevel === 'MEDIUM') {
+         await pool.query('UPDATE patients SET risk_level = $1 WHERE id = $2', [triage.riskLevel, patient.id]);
+         // Here we could send SMS to assigned CHW using Africa's Talking SMS API.
+      }
+
+      // 5. Log the interaction
+      const logId = 'log_' + Math.floor(1000 + Math.random() * 9000);
+      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      await pool.query(
+        'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES ($1, $2, $3, $4, $5, $6)',
+        [logId, patient.id, 'Call', 'IVR Report: ' + transcript + ' -> ' + triage.riskLevel, timestamp, 'System']
+      );
+
+    } catch (err) {
+      console.error('Error processing IVR callback:', err);
+    }
+  } else {
+    // Default fallback
+    res.send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
+  }
+});
+
+// POST /api/elevenlabs/webhook — ElevenLabs post-call webhook
+app.post('/api/elevenlabs/webhook', async (req, res) => {
+  try {
+    await processPostCallWebhook(req.body, pool);
+    res.status(200).json({ received: true });
+  } catch (err: any) {
+    console.error('Webhook error:', err);
+    res.status(200).json({ received: true }); // Always 200 to prevent retries
   }
 });
 
