@@ -32,13 +32,13 @@ export function App() {
                     <LoadingBarContainer>
                       <BrowserRouter basename={BASE_URL}>
                         <Toaster />
-                        <MamaCareProvider>
-                          <PathwayProvider>
+                        <PathwayProvider>
+                          <MamaCareProvider>
                             <ModulesProvider>
                               <AppRouting />
                             </ModulesProvider>
-                          </PathwayProvider>
-                        </MamaCareProvider>
+                          </MamaCareProvider>
+                        </PathwayProvider>
                       </BrowserRouter>
                     </LoadingBarContainer>
                   </QueryProvider>
