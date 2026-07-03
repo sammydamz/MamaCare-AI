@@ -135,11 +135,6 @@ export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
     icon: Settings,
     path: '/settings',
   },
-  {
-    title: 'Voice Triage Demo',
-    icon: Phone,
-    path: '/voice-triage-demo',
-  },
 ];
 
 export const MENU_SIDEBAR_CUSTOM: MenuConfig = [
