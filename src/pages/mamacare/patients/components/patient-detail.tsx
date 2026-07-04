@@ -142,7 +142,7 @@ export function PatientDetail({ patient }: { patient: Patient }) {
         {latestConsultation && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium">Latest Consultation</h3>
+              <h3 className="text-sm font-medium">Latest Session</h3>
               {(latestConsultation.riskLevel === 'HIGH' || latestConsultation.riskLevel === 'MEDIUM') && (
                 <Badge variant={latestConsultation.riskLevel === 'HIGH' ? 'destructive' : 'secondary'} className={latestConsultation.riskLevel === 'MEDIUM' ? 'bg-amber-100 text-amber-800 hover:bg-amber-100' : ''}>
                   Triage Alert: {latestConsultation.riskLevel}

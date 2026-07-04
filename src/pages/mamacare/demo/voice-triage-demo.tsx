@@ -95,7 +95,7 @@ function VoiceTriageInner() {
         {callEnded && (
           <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 text-center">
             Call complete. Results in{' '}
-            <Link to="/consultations" className="underline font-medium">Consultations</Link>.
+            <Link to="/sessions" className="underline font-medium">Sessions</Link>.
           </div>
         )}
       </CardContent>

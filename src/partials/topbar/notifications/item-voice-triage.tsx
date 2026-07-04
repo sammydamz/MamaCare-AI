@@ -31,7 +31,7 @@ export default function ItemVoiceTriage({
   const Icon = config.icon;
 
   return (
-    <Link to="/consultations" className="block px-5 no-underline">
+    <Link to="/sessions" className="block px-5 no-underline">
       <div className={cn('flex gap-3 rounded-lg border p-3', config.color)}>
         <Icon className="size-5 mt-0.5 shrink-0" />
         <div className="min-w-0 flex-1">

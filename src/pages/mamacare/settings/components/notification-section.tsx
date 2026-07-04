@@ -29,7 +29,7 @@ const notificationSettings: NotificationSetting[] = [
   },
   {
     id: 'consultation-reminder',
-    label: 'Consultation Reminders',
+    label: 'Session Reminders',
     description: 'Reminders for scheduled follow-up calls',
     icon: <Phone className="size-4 text-primary" />,
     defaultEnabled: true,

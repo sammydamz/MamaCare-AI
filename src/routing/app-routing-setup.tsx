@@ -25,7 +25,7 @@ export function AppRoutingSetup() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/users" element={<PatientsPage />} />
           <Route path="/users/:id" element={<PatientProfilePage />} />
-          <Route path="/consultations" element={<ConsultationsPage />} />
+          <Route path="/sessions" element={<ConsultationsPage />} />
           <Route path="/referrals" element={<ReferralsPage />} />
           <Route path="/analytics" element={currentUserRole === 'Provider' ? <AnalyticsPage /> : <Navigate to="/" />} />
           <Route path="/facilities" element={<FacilitiesPage />} />

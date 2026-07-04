@@ -64,9 +64,9 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/users',
   },
   {
-    title: 'Consultations',
+    title: 'Sessions',
     icon: MessageSquare,
-    path: '/consultations',
+    path: '/sessions',
   },
   {
     title: 'Referrals',
@@ -108,7 +108,7 @@ export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
   {
     title: 'Wellness Check-ins',
     icon: MessageSquare,
-    path: '/consultations',
+    path: '/sessions',
   },
   {
     title: 'Counselor Referrals',

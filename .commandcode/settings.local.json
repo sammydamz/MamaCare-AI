@@ -1,0 +1,6 @@
+{
+  "disabledSkills": [
+    "a11y-debugging",
+    "debug-optimize-lcp"
+  ]
+}

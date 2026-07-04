@@ -14,9 +14,9 @@ export function ConsultationsPage() {
       <Container>
         <Toolbar>
           <ToolbarHeading>
-            <ToolbarPageTitle text="Voice Consultations" />
+            <ToolbarPageTitle text="Voice Sessions" />
             <ToolbarDescription>
-              AI-powered voice consultations and health assessments
+              AI-powered voice sessions and health assessments
             </ToolbarDescription>
           </ToolbarHeading>
         </Toolbar>

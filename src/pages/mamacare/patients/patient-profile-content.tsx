@@ -164,7 +164,7 @@ function OverviewTab({ patient }: { patient: Patient }) {
             Primary language: <span className="font-medium text-foreground">{patient.language}</span>
           </p>
           <p className="text-sm text-muted-foreground">
-            AI consultations are conducted in {patient.language}. Transcripts and summaries are translated for provider review.
+            AI sessions are conducted in {patient.language}. Transcripts and summaries are translated for provider review.
           </p>
         </CardContent>
       </Card>
@@ -304,7 +304,7 @@ function ConsultationsTab({ patient }: { patient: Patient }) {
               {patientConsultations.length === 0 && (
                 <tr>
                   <td colSpan={7} className="p-6 text-center text-muted-foreground">
-                    No consultations recorded
+                    No sessions recorded
                   </td>
                 </tr>
               )}
@@ -745,7 +745,7 @@ export function PatientProfileContent({
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList variant="line">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="consultations">Consultations</TabsTrigger>
+          <TabsTrigger value="consultations">Sessions</TabsTrigger>
           <TabsTrigger value="vitals">Vitals &amp; Recovery</TabsTrigger>
           <TabsTrigger value="referrals">Referrals</TabsTrigger>
           <TabsTrigger value="action-log">Action Log</TabsTrigger>

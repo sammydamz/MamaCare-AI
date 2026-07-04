@@ -19,14 +19,14 @@ export function LanguageSection() {
       <CardHeader>
         <CardHeading>
           <CardTitle>Language</CardTitle>
-          <CardDescription>Preferred language for consultations and AI interactions</CardDescription>
+          <CardDescription>Preferred language for sessions and AI interactions</CardDescription>
         </CardHeading>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-3">
           <Globe className="size-5 text-muted-foreground shrink-0" />
           <div className="grow">
-            <p className="text-sm font-medium mb-2">Consultation Language</p>
+            <p className="text-sm font-medium mb-2">Session Language</p>
             <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
               <SelectTrigger className="w-full max-w-xs">
                 <SelectValue placeholder="Select language" />
