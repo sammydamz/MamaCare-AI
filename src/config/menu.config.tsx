@@ -131,12 +131,6 @@ export const MENU_SIDEBAR_POSTNATAL: MenuConfig = [
     icon: Settings,
     path: '/settings',
   },
-  {
-    title: 'Voice Triage',
-    icon: Phone,
-    path: '/voice-triage-demo',
-    disabled: true,
-  },
 ];
 export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
   {
