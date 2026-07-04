@@ -31,6 +31,7 @@ export function PatientQueue({
   const filtered = patients
     .filter((p) => {
       if (tab === 'pregnancy') return p.pathway === 'Pregnancy';
+      if (tab === 'postnatal') return p.pathway === 'Postnatal';
       if (tab === 'post-loss') return p.pathway === 'Post-Loss';
       return true;
     })
@@ -83,6 +84,7 @@ export function PatientQueue({
           <TabsList variant="line" size="sm">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="pregnancy">Pregnancy</TabsTrigger>
+            <TabsTrigger value="postnatal">Postnatal</TabsTrigger>
             <TabsTrigger value="post-loss">Post-Loss</TabsTrigger>
           </TabsList>
         </div>

@@ -15,5 +15,5 @@
 - Use the p-prenatal-{timestamp}-{n} format for patient IDs instead of simple p001-n format. Confidence: 0.70
 
 # ui
-- Preserve the full voice triage UI with waveform, status ring, audio meters, transcript panel, and feedback buttons; do not strip down the ElevenLabs conversation interface. Confidence: 0.80
+- Preserve the full voice triage UI with waveform, status ring, audio meters, transcript panel, and feedback buttons; do not strip down or replace the ElevenLabs conversation interface. Confidence: 0.82
 

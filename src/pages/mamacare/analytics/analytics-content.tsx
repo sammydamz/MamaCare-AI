@@ -9,7 +9,6 @@ import { usePathway } from '@/providers/pathway-provider';
 
 export function AnalyticsContent() {
   const { activePathway } = usePathway();
-  const isPrenatal = activePathway === 'Pregnancy';
 
   return (
     <div className="flex flex-col gap-5 lg:gap-7.5">
@@ -17,13 +16,18 @@ export function AnalyticsContent() {
 
       <MelPrimaryOutcomes />
 
-      {isPrenatal ? (
+      {activePathway === 'Pregnancy' ? (
         <>
           <div className="grid lg:grid-cols-2 gap-5 lg:gap-7.5">
             <MelSecondaryOutcomes />
             <SymptomTrendChart />
           </div>
         </>
+      ) : activePathway === 'Postnatal' ? (
+        <div className="grid lg:grid-cols-2 gap-5 lg:gap-7.5">
+          <MelSecondaryOutcomes />
+          <SymptomTrendChart />
+        </div>
       ) : (
         <PostLossMetrics />
       )}

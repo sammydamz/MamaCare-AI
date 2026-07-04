@@ -13,11 +13,11 @@ export function KpiCards() {
   const totalUsers = filteredPatients.length;
   const highRisk = filteredPatients.filter(p => p.riskLevel === 'HIGH').length;
   const pendingActions = Math.floor(totalUsers * 0.4); // Mock data for demo
-  const resolutionRate = activePathway === 'Pregnancy' ? 78 : 92; // Mock data for demo
+  const resolutionRate = { Pregnancy: 78, Postnatal: 85, 'Post-Loss': 92 }[activePathway] ?? 78; // Mock data for demo
 
   const cards = [
     {
-      label: activePathway === 'Pregnancy' ? 'Total Users' : 'Total Users Supported',
+      label: { Pregnancy: 'Total Users', Postnatal: 'Total Users', 'Post-Loss': 'Total Users Supported' }[activePathway] ?? 'Total Users',
       value: totalUsers,
       icon: Users,
       format: (v: number) => String(Math.round(v)),

@@ -14,6 +14,7 @@ export const RISK_ORDER: Record<RiskLevel, number> = {
 
 export const PATHWAY_LABELS: Record<Pathway, string> = {
   Pregnancy: 'Pregnancy',
+  Postnatal: 'Postnatal',
   'Post-Loss': 'Post-Loss',
 }
 

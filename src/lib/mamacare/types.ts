@@ -1,6 +1,6 @@
 export type RiskLevel = 'HIGH' | 'MEDIUM' | 'LOW'
 
-export type Pathway = 'Pregnancy' | 'Post-Loss'
+export type Pathway = 'Pregnancy' | 'Postnatal' | 'Post-Loss'
 
 export type Language = 'Twi' | 'Ga' | 'Ewe' | 'Fante' | 'English'
 

@@ -32,7 +32,7 @@ export function RegisterPatientDialog() {
   const handleSubmit = async () => {
     if (!name || !age || !phone || !language || !pathway) return;
     try {
-      const defaultStage = pathway === 'Pregnancy' ? '12 weeks' : 'Post-loss: 1 month';
+      const defaultStage = pathway === 'Pregnancy' ? '12 weeks' : pathway === 'Postnatal' ? '6 weeks postpartum' : 'Post-loss: 1 month';
       await registerPatient({
         name,
         age: parseInt(age),

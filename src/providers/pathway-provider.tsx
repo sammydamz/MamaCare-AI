@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-export type PathwayType = 'Pregnancy' | 'Post-Loss';
+export type PathwayType = 'Pregnancy' | 'Postnatal' | 'Post-Loss';
 
 interface PathwayContextType {
   activePathway: PathwayType;

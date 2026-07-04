@@ -68,6 +68,15 @@ export function RecordVitalsDialog({ patientId, pathway }: { patientId: string; 
                 onChange={(e) => setKickCount(e.target.value)}
               />
             </div>
+          ) : pathway === 'Postnatal' ? (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">Postpartum BP Check</label>
+              <Input
+                placeholder="e.g. 120/80 mmHg"
+                value={bloodPressure}
+                onChange={(e) => setBloodPressure(e.target.value)}
+              />
+            </div>
           ) : (
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">Coping Index (1-10)</label>

@@ -94,7 +94,7 @@ export function Header() {
                 value={activePathway}
                 onValueChange={(val) => {
                   if (val) {
-                    setActivePathway(val as 'Pregnancy' | 'Post-Loss');
+                    setActivePathway(val as 'Pregnancy' | 'Postnatal' | 'Post-Loss');
                     navigate('/');
                   }
                 }}
@@ -102,6 +102,9 @@ export function Header() {
               >
                 <ToggleGroupItem value="Pregnancy" className="rounded-full px-4 py-1 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground transition-all">
                   Prenatal Care
+                </ToggleGroupItem>
+                <ToggleGroupItem value="Postnatal" className="rounded-full px-4 py-1 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground transition-all">
+                  Postnatal Care
                 </ToggleGroupItem>
                 <ToggleGroupItem value="Post-Loss" className="rounded-full px-4 py-1 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground transition-all">
                   Post-Loss Support

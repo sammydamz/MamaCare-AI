@@ -405,7 +405,32 @@ function VitalsRecoveryTab({ patient }: { patient: Patient }) {
   if (patient.pathway === 'Pregnancy') {
     return <PregnancyVitals patient={patient} />;
   }
+  if (patient.pathway === 'Postnatal') {
+    return <PostnatalVitals patient={patient} />;
+  }
   return <PostLossVitals patient={patient} />;
+}
+
+function PostnatalVitals({ patient }: { patient: Patient }) {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Postnatal Recovery Vitals</h3>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="rounded-lg border p-3 space-y-1">
+          <span className="text-xs text-muted-foreground">Blood Pressure</span>
+          <p className="text-lg font-semibold">{patient.bloodPressure || 'Not recorded'}</p>
+        </div>
+        <div className="rounded-lg border p-3 space-y-1">
+          <span className="text-xs text-muted-foreground">Bleeding Status</span>
+          <p className="text-lg font-semibold">{patient.bleedingStatus || 'Not recorded'}</p>
+        </div>
+        <div className="rounded-lg border p-3 space-y-1">
+          <span className="text-xs text-muted-foreground">Coping Index</span>
+          <p className="text-lg font-semibold">{patient.copingIndex ? `${patient.copingIndex}/10` : 'Not recorded'}</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function PregnancyVitals({ patient }: { patient: Patient }) {

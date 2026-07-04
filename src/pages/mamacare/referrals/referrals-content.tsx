@@ -8,16 +8,23 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMamaCare } from '@/providers/mamacare-provider';
+import { usePathway } from '@/providers/pathway-provider';
 import { ReferralTable } from './components/referral-table';
 import { ReferralTimeline } from './components/referral-timeline';
 import { FacilityMiniCard } from './components/facility-mini-card';
 
 export function ReferralsContent() {
-  const { referrals, facilities } = useMamaCare();
+  const { referrals, facilities, patients } = useMamaCare();
+  const { activePathway } = usePathway();
   const [selectedReferralId, setSelectedReferralId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const filtered = referrals.filter(
+  const pathwayReferrals = referrals.filter(r => {
+    const patient = patients.find(p => p.id === r.patientId);
+    return patient?.pathway === activePathway;
+  });
+
+  const filtered = pathwayReferrals.filter(
     (r) => statusFilter === 'all' || r.status === statusFilter,
   );
 

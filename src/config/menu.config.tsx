@@ -94,6 +94,44 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/settings',
   },
 ];
+export const MENU_SIDEBAR_POSTNATAL: MenuConfig = [
+  {
+    title: 'Dashboard',
+    icon: LayoutGrid,
+    path: '/',
+  },
+  {
+    title: 'Users',
+    icon: Heart,
+    path: '/users',
+  },
+  {
+    title: 'Sessions',
+    icon: MessageSquare,
+    path: '/sessions',
+  },
+  {
+    title: 'Referrals',
+    icon: Briefcase,
+    path: '/referrals',
+  },
+  {
+    title: 'Communications',
+    icon: Bell,
+    path: '/communications',
+  },
+  {
+    title: 'Settings',
+    icon: Settings,
+    path: '/settings',
+  },
+  {
+    title: 'Voice Triage',
+    icon: Phone,
+    path: '/voice-triage-demo',
+    disabled: true,
+  },
+];
 export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
   {
     title: 'Dashboard',
