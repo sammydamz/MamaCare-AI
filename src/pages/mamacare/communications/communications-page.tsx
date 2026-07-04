@@ -119,7 +119,7 @@ export function CommunicationsPage() {
       }
 
       const recipientText = recipientType === 'all' 
-        ? `all ${filteredPatients.length} mothers in the ${activePathway} pathway`
+        ? `all ${filteredPatients.length} users in the ${activePathway} pathway`
         : `patient ${filteredPatients.find(p => p.id === selectedPatient)?.name || 'Unknown'}`;
         
       toast.success(`SMS successfully sent to ${recipientText} via Africa's Talking API`);
@@ -198,7 +198,7 @@ export function CommunicationsPage() {
           <ToolbarHeading>
             <ToolbarPageTitle text="Communications & SMS" />
             <ToolbarDescription>
-              Send personalized or mass SMS alerts to mothers
+              Send personalized or mass SMS alerts to users
             </ToolbarDescription>
           </ToolbarHeading>
         </Toolbar>
@@ -271,7 +271,7 @@ export function CommunicationsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="custom">Custom Message</SelectItem>
-                        <SelectItem value="checkin">Wellness Check-in</SelectItem>
+                        <SelectItem value="checkin">Session</SelectItem>
                         <SelectItem value="appointment">Appointment Reminder</SelectItem>
                         <SelectItem value="nutrition">Health & Nutrition Tip</SelectItem>
                         <SelectItem value="emergency">Emergency Alert</SelectItem>

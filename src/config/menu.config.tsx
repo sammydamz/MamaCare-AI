@@ -101,12 +101,12 @@ export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
     path: '/',
   },
   {
-    title: 'Mothers',
+    title: 'Users',
     icon: Heart,
     path: '/users', // Reuses the same path, filtered by context
   },
   {
-    title: 'Wellness Check-ins',
+    title: 'Sessions',
     icon: MessageSquare,
     path: '/sessions',
   },

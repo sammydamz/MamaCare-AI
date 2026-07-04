@@ -10,15 +10,15 @@ export function KpiCards() {
 
   const filteredPatients = patients.filter(p => p.pathway === activePathway);
   
-  const totalMothers = filteredPatients.length;
+  const totalUsers = filteredPatients.length;
   const highRisk = filteredPatients.filter(p => p.riskLevel === 'HIGH').length;
-  const pendingActions = Math.floor(totalMothers * 0.4); // Mock data for demo
+  const pendingActions = Math.floor(totalUsers * 0.4); // Mock data for demo
   const resolutionRate = activePathway === 'Pregnancy' ? 78 : 92; // Mock data for demo
 
   const cards = [
     {
-      label: activePathway === 'Pregnancy' ? 'Total Mothers' : 'Total Mothers Supported',
-      value: totalMothers,
+      label: activePathway === 'Pregnancy' ? 'Total Users' : 'Total Users Supported',
+      value: totalUsers,
       icon: Users,
       format: (v: number) => String(Math.round(v)),
     },
