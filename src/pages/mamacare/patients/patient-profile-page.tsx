@@ -15,8 +15,8 @@ export function PatientProfilePage() {
       <Container>
         <div className="flex flex-col items-center justify-center gap-4 py-20">
           <p className="text-lg text-muted-foreground">Patient not found</p>
-          <Button variant="outline" mode="link" asChild>
-            <Link to="/patients">Back to Patients</Link>
+          <Button variant="outline" asChild>
+            <Link to="/users">Back to Users</Link>
           </Button>
         </div>
       </Container>
@@ -26,9 +26,10 @@ export function PatientProfilePage() {
   return (
     <Container>
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="sm" mode="icon" asChild>
-          <Link to="/patients">
-            <ArrowLeft className="size-4" />
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/users">
+            <ArrowLeft className="size-4 mr-2" />
+            Back to Users
           </Link>
         </Button>
         <h1 className="text-lg font-semibold">{patient.name}</h1>

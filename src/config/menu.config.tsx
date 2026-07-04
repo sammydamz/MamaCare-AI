@@ -59,9 +59,9 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/',
   },
   {
-    title: 'Patients',
+    title: 'Users',
     icon: Users,
-    path: '/patients',
+    path: '/users',
   },
   {
     title: 'Consultations',
@@ -103,7 +103,7 @@ export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
   {
     title: 'Mothers',
     icon: Heart,
-    path: '/patients', // Reuses the same path, filtered by context
+    path: '/users', // Reuses the same path, filtered by context
   },
   {
     title: 'Wellness Check-ins',
