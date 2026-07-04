@@ -371,7 +371,7 @@ function ConsultationRow({
             <div className="space-y-2">
               <p className="text-sm font-medium">Transcript</p>
               <div className="flex flex-col gap-2">
-                {consultation.transcript.map((line, i) => (
+                {consultation.transcript.filter(e => e.text.trim() !== '').map((line, i) => (
                   <div
                     key={i}
                     className={`flex gap-2 text-sm ${
