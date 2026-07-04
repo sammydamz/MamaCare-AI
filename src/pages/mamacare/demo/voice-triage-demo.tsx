@@ -44,14 +44,14 @@ function VoiceTriageInner() {
 
   return (
     <Card className="shadow-lg">
-      <CardHeader className="text-center relative">
-        <div className="absolute top-4 right-4">
-          <Badge variant={statusBadge.variant}>
-            {statusBadge.label}
-          </Badge>
+      <CardHeader className="flex flex-row items-start justify-between pb-4">
+        <div className="space-y-1.5 text-left">
+          <CardTitle>Voice Triage</CardTitle>
+          <CardDescription>Speak with the AI agent to report symptoms.</CardDescription>
         </div>
-        <CardTitle className="pt-2">Voice Triage</CardTitle>
-        <CardDescription>Speak with the AI agent to report symptoms.</CardDescription>
+        <Badge variant={statusBadge.variant} className="mt-1 shrink-0">
+          {statusBadge.label}
+        </Badge>
       </CardHeader>
       <CardContent className="space-y-4">
         {status === 'connected' && (
@@ -121,7 +121,7 @@ export function VoiceTriageDemo() {
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
-      <div className="w-full max-w-sm px-4">
+      <div className="w-full max-w-md px-4">
         <ConversationProvider agentId={AGENT_ID}>
           <VoiceTriageInner />
         </ConversationProvider>
