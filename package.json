@@ -57,6 +57,7 @@
     "embla-carousel-react": "8.6.0",
     "express": "^5.2.1",
     "formik": "^2.4.6",
+    "helmet": "^8.2.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.541.0",
     "mini-svg-data-uri": "^1.4.4",
