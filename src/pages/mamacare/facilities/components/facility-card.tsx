@@ -7,8 +7,8 @@ import type { Facility } from '@/lib/mamacare/types';
 export function FacilityCard({ facility }: { facility: Facility }) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{facility.name}</CardTitle>
+      <CardHeader className="flex flex-col items-start gap-2 pt-5 pb-3">
+        <CardTitle className="text-lg leading-tight">{facility.name}</CardTitle>
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <span>{facility.distance}</span>
           <span>{facility.hours}</span>
