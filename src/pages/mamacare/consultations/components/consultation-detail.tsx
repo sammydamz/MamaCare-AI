@@ -41,7 +41,7 @@ export function ConsultationDetail({ consultation }: { consultation: Consultatio
       <div className="space-y-3">
         <h4 className="text-sm font-medium text-muted-foreground">Transcript</h4>
         <div className="space-y-2">
-          {consultation.transcript.filter(e => e.text.trim() !== '').map((entry, index) => (
+          {consultation.transcript.filter(e => e?.text && e.text.trim() !== '').map((entry, index) => (
             <div
               key={index}
               className={`flex ${entry.speaker === 'AI' ? 'justify-start' : 'justify-end'}`}
