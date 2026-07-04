@@ -116,7 +116,7 @@ export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
     path: '/referrals',
   },
   {
-    title: 'SMS Alerts',
+    title: 'Communications',
     icon: Bell,
     path: '/communications',
   },
