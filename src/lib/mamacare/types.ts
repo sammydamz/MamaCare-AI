@@ -72,7 +72,7 @@ export interface Facility {
 export interface ActionLogEntry {
   id: string
   patientId: string
-  type: 'Visit' | 'Call' | 'Referral' | 'Alert' | 'Outcome' | 'Registration' | 'Vitals'
+  type: 'Visit' | 'Call' | 'Referral' | 'Alert' | 'Outcome' | 'Registration' | 'Vitals' | 'PathwayChange'
   description: string
   timestamp: string
   performedBy: string

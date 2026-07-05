@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RISK_COLORS } from '@/lib/mamacare/constants';
-import type { Patient, RiskLevel } from '@/lib/mamacare/types';
+import type { Patient, RiskLevel, Pathway } from '@/lib/mamacare/types';
 import { useMamaCare } from '@/providers/mamacare-provider';
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { RiskTrendChart } from './risk-trend-chart';
@@ -14,8 +14,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ArrowRight } from 'lucide-react';
 
 
 const RISK_BADGE_VARIANT: Record<RiskLevel, BadgeProps['variant']> = {
@@ -39,7 +40,7 @@ function RiskTrendArrow({ history }: { history: { level: RiskLevel }[] }) {
 }
 
 export function PatientDetail({ patient }: { patient: Patient }) {
-  const { consultations, actionLogs } = useMamaCare();
+  const { consultations, actionLogs, changePatientPathway } = useMamaCare();
 
   const initials = patient.name
     .split(' ')
@@ -129,6 +130,30 @@ export function PatientDetail({ patient }: { patient: Patient }) {
                 >
                   Record Loss (Bereavement)
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                  Change Pathway
+                </DropdownMenuItem>
+                {(['Pregnancy', 'Postnatal', 'Post-Loss'] as Pathway[])
+                  .filter(p => p !== patient.pathway)
+                  .map(targetPathway => (
+                    <DropdownMenuItem
+                      key={targetPathway}
+                      onClick={async () => {
+                        toast.loading('Changing pathway...', { id: 'pathway-change' });
+                        try {
+                          await changePatientPathway(patient.id, targetPathway);
+                          toast.success(`Patient moved to ${targetPathway}`, { id: 'pathway-change' });
+                        } catch (err: unknown) {
+                          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+                          toast.error(errorMessage, { id: 'pathway-change' });
+                        }
+                      }}
+                    >
+                      <ArrowRight className="mr-2 h-4 w-4" />
+                      Move to {targetPathway}
+                    </DropdownMenuItem>
+                  ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

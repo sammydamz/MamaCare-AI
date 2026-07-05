@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { PATHWAY_LABELS, LANGUAGE_LABELS } from '@/lib/mamacare/constants';
 import { useMamaCare } from '@/providers/mamacare-provider';
+import { usePathway } from '@/providers/pathway-provider';
 import type { Pathway } from '@/lib/mamacare/types';
 
 export function RegisterPatientDialog() {
@@ -26,8 +27,16 @@ export function RegisterPatientDialog() {
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
   const [language, setLanguage] = useState('');
-  const [pathway, setPathway] = useState<Pathway | ''>('');
+  const { activePathway } = usePathway();
+  const [pathway, setPathway] = useState<Pathway | ''>(activePathway);
   const { registerPatient } = useMamaCare();
+
+  // Reset pathway to activePathway when dialog opens
+  useEffect(() => {
+    if (open) {
+      setPathway(activePathway);
+    }
+  }, [open, activePathway]);
 
   const handleSubmit = async () => {
     if (!name || !age || !phone || !language || !pathway) return;
@@ -112,9 +121,9 @@ export function RegisterPatientDialog() {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Pathway</label>
-            <Select value={pathway} onValueChange={(v) => setPathway(v as Pathway)}>
+            <Select value={pathway} onValueChange={(v) => setPathway(v as Pathway)} disabled>
               <SelectTrigger>
-                <SelectValue placeholder="Select pathway" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(PATHWAY_LABELS).map(([value, label]) => (
@@ -124,6 +133,9 @@ export function RegisterPatientDialog() {
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              Pre-filled from active pathway. Change pathway from the patient detail panel after registration.
+            </p>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>

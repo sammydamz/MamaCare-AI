@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   UserPlus,
   Activity,
+  Shuffle,
 } from 'lucide-react';
 
 const TYPE_ICONS: Record<ActionLogEntry['type'], React.ElementType> = {
@@ -17,6 +18,7 @@ const TYPE_ICONS: Record<ActionLogEntry['type'], React.ElementType> = {
   Outcome: ClipboardCheck,
   Registration: UserPlus,
   Vitals: Activity,
+  PathwayChange: Shuffle,
 };
 
 export function ActionLog({ entries }: { entries: ActionLogEntry[] }) {

@@ -171,6 +171,16 @@ export const mamacareApi = {
     return res.json();
   },
 
+  async changePatientPathway(patientId: string, pathway: Pathway): Promise<{ message: string; pathway: string }> {
+    const res = await fetch(`${API_BASE}/patients/${patientId}/pathway`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pathway }),
+    });
+    if (!res.ok) throw new Error('Failed to change pathway');
+    return res.json();
+  },
+
   async fetchCommunications(pathway: string) {
     const res = await fetch(`${API_BASE}/communications/${encodeURIComponent(pathway)}`);
     if (!res.ok) throw new Error('Failed to fetch communications');

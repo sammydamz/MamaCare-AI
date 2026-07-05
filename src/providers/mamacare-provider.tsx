@@ -97,6 +97,7 @@ interface MamaCareContextType {
     transcript: Array<{ speaker: 'AI' | 'Mother' | 'Patient'; text: string }>;
     language: string;
   }) => Promise<{ success: boolean; riskLevel: string; referralTriggered: boolean }>;
+  changePatientPathway: (patientId: string, pathway: Pathway) => Promise<void>;
 }
 
 const MamaCareContext = createContext<MamaCareContextType | undefined>(undefined);
@@ -256,6 +257,16 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const changePatientPathway = async (patientId: string, pathway: Pathway) => {
+    try {
+      await mamacareApi.changePatientPathway(patientId, pathway);
+      await refreshAll();
+    } catch (error) {
+      console.error('Failed to change patient pathway:', error);
+      throw error;
+    }
+  };
+
   return (
     <MamaCareContext.Provider
       value={{
@@ -276,6 +287,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
         updateReferralStatus,
         addFacility,
         recordConsultation,
+        changePatientPathway,
       }}
     >
       {children}

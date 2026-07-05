@@ -384,6 +384,57 @@ app.patch('/api/patients/:id/care-stage', async (req, res) => {
   }
 });
 
+// PATCH /api/patients/:id/pathway — change pathway in-place
+app.patch('/api/patients/:id/pathway', async (req, res) => {
+  const { id } = req.params;
+  const { pathway } = req.body;
+
+  if (!['Pregnancy', 'Postnatal', 'Post-Loss'].includes(pathway)) {
+    return res.status(400).json({ error: 'Invalid pathway' });
+  }
+
+  try {
+    const patientRes = await pool.query('SELECT * FROM patients WHERE id = $1', [id]);
+    if (patientRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+    const prev = patientRes.rows[0];
+
+    const defaultStage = pathway === 'Pregnancy' ? '12 weeks'
+      : pathway === 'Postnatal' ? '6 weeks postpartum'
+      : 'Post-loss: 1 month';
+    const defaultCareStage = pathway === 'Pregnancy' ? 'prenatal'
+      : pathway === 'Postnatal' ? 'postpartum'
+      : 'bereavement';
+
+    await pool.query(
+      'UPDATE patients SET pathway = $1, stage = $2, care_stage = $3 WHERE id = $4',
+      [pathway, defaultStage, defaultCareStage, id],
+    );
+
+    const logId = 'a' + Math.floor(100 + Math.random() * 900);
+    const timestamp = new Date()
+      .toISOString()
+      .replace('T', ' ')
+      .substring(0, 19);
+    await pool.query(
+      'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      [
+        logId,
+        id,
+        'PathwayChange',
+        `Pathway changed from ${prev.pathway} to ${pathway}`,
+        timestamp,
+        'System',
+      ],
+    );
+
+    res.json({ message: 'Pathway updated successfully', pathway });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/outcomes
 app.get('/api/outcomes', async (req, res) => {
   try {
