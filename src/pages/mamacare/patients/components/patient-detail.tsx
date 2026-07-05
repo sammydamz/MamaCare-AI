@@ -84,56 +84,11 @@ export function PatientDetail({ patient }: { patient: Patient }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1">
-                  {patient.careStage === 'prenatal' ? 'Prenatal' : 
-                   patient.careStage === 'postpartum' ? 'Postpartum' : 
-                   patient.careStage === 'bereavement' ? 'Bereavement' : 'Care Stage'}
+                  Change Pathway
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem 
-                  onClick={async () => {
-                    toast.loading('Updating stage...', { id: 'stage-update' });
-                    try {
-                      const res = await fetch(`/api/patients/${patient.id}/care-stage`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ careStage: 'postpartum' })
-                      });
-                      if (!res.ok) throw new Error('Failed to update stage');
-                      toast.success('Patient moved to Postpartum', { id: 'stage-update' });
-                      // In a real app, we would refresh the data here.
-                    } catch (err: unknown) {
-                      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-                      toast.error(errorMessage, { id: 'stage-update' });
-                    }
-                  }}
-                >
-                  Record Delivery (Postpartum)
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={async () => {
-                    toast.loading('Updating stage...', { id: 'stage-update' });
-                    try {
-                      const res = await fetch(`/api/patients/${patient.id}/care-stage`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ careStage: 'bereavement' })
-                      });
-                      if (!res.ok) throw new Error('Failed to update stage');
-                      toast.success('Patient moved to Bereavement', { id: 'stage-update' });
-                    } catch (err: unknown) {
-                      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-                      toast.error(errorMessage, { id: 'stage-update' });
-                    }
-                  }}
-                >
-                  Record Loss (Bereavement)
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                  Change Pathway
-                </DropdownMenuItem>
                 {(['Pregnancy', 'Postnatal', 'Post-Loss'] as Pathway[])
                   .filter(p => p !== patient.pathway)
                   .map(targetPathway => (

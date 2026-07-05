@@ -17,3 +17,9 @@
 # ui
 - Preserve the full voice triage UI with waveform, status ring, audio meters, transcript panel, and feedback buttons; do not strip down or replace the ElevenLabs conversation interface. Confidence: 0.82
 
+# git
+- Use `gh` (GitHub CLI) instead of HTTPS authentication for git push operations. Confidence: 0.65
+
+# cli
+- Use `railway up` instead of `railway deploy` for deploying to Railway. Confidence: 0.72
+

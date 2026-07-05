@@ -176,7 +176,8 @@ INSERT INTO facilities (id, name, distance, hours, services, phone, address) VAL
 ON CONFLICT DO NOTHING;
 
 INSERT INTO users (id, username, email, password, first_name, last_name, fullname, email_verified, occupation, company_name, phone, pic, language, is_admin) VALUES
-    ('user-001', 'sarahc', 'sarac@kbth.com', 'demo123', 'Sarah', 'Coffie', 'Sarah Coffie', true, 'Healthcare Professional', 'Korle Bu Teaching Hospital', '+233 20 123 4567', 'https://images.pexels.com/photos/29852895/pexels-photo-29852895.jpeg', 'en', true)
+    ('user-001', 'sarahc', 'sarac@kbth.com', 'demo123', 'Sarah', 'Coffie', 'Sarah Coffie', true, 'Healthcare Professional', 'Korle Bu Teaching Hospital', '+233 20 123 4567', 'https://images.pexels.com/photos/29852895/pexels-photo-29852895.jpeg', 'en', true),
+    ('user-002', 'gloriao', 'gloppong@hospi.com', 'adminuser002', 'Gloria', 'Oppong', 'Gloria Oppong', true, 'Dashboard Admin', 'Korle Bu Teaching Hospital', NULL, NULL, 'en', true)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, last_call_date, registration_date, risk_history, coping_index) VALUES

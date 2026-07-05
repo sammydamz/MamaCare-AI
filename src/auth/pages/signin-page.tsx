@@ -223,9 +223,21 @@ export function SignInPage() {
         </Button>
 
         <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/50 p-3 text-xs text-muted-foreground">
-          <p className="font-medium mb-1">Demo Credentials</p>
-          <p>Email: <code className="bg-muted px-1 py-0.5 rounded text-foreground">sarac@kbth.com</code></p>
-          <p>Password: <code className="bg-muted px-1 py-0.5 rounded text-foreground">demo123</code></p>
+          <p className="font-medium mb-1.5">Demo Credentials</p>
+          <div className="space-y-1.5">
+            <div className="border-b border-muted-foreground/20 pb-1.5 mb-1.5">
+              <p className="font-medium text-foreground/80 text-[11px] uppercase tracking-wider mb-1">Admin</p>
+              <p>Email: <code className="bg-muted px-1 py-0.5 rounded text-foreground">sarac@kbth.com</code></p>
+              <p>Password: <code className="bg-muted px-1 py-0.5 rounded text-foreground">demo123</code></p>
+              <p className="text-muted-foreground mt-0.5">Zone: Korle Bu Teaching Hospital</p>
+            </div>
+            <div>
+              <p className="font-medium text-foreground/80 text-[11px] uppercase tracking-wider mb-1">Dashboard Admin</p>
+              <p>Email: <code className="bg-muted px-1 py-0.5 rounded text-foreground">gloppong@hospi.com</code></p>
+              <p>Password: <code className="bg-muted px-1 py-0.5 rounded text-foreground">adminuser002</code></p>
+              <p className="text-muted-foreground mt-0.5">Zone: Korle Bu Teaching Hospital</p>
+            </div>
+          </div>
         </div>
       </form>
     </Form>
