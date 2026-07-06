@@ -2,7 +2,20 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { mamacareApi } from '@/lib/mamacare/api';
 import type { Patient, Consultation, Referral, Facility, ActionLogEntry, Pathway } from '@/lib/mamacare/types';
 import { usePathway } from './pathway-provider';
-import { useAuth } from '@/auth/context/auth-context';
+import type { UserModel } from '@/auth/lib/models';
+
+const DEMO_EMAIL = 'sarac@kbth.com';
+
+function getStoredUserEmail(): string | null {
+  try {
+    const raw = localStorage.getItem('mamacare-current-user');
+    if (!raw) return null;
+    const user: UserModel = JSON.parse(raw);
+    return user.email || null;
+  } catch {
+    return null;
+  }
+}
 
 interface DashboardData {
   kpis: {
@@ -114,14 +127,13 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const { activePathway } = usePathway();
-  const { user: currentUser } = useAuth();
-  const isDemoAccount = currentUser?.email === 'sarac@kbth.com';
 
   const refreshAll = async () => {
     setIsLoading(true);
     try {
-      if (!isDemoAccount) {
-        // Non-demo users start with empty data
+      const email = getStoredUserEmail();
+      if (email !== DEMO_EMAIL) {
+        // Each user starts with their own empty data
         setPatients([]);
         setConsultations([]);
         setReferrals([]);
@@ -174,7 +186,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refreshAll();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePathway, currentUser?.email]);
+  }, [activePathway]);
 
   const registerPatient = async (data: {
     name: string;
