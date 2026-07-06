@@ -14,7 +14,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 
@@ -84,11 +83,16 @@ export function PatientDetail({ patient }: { patient: Patient }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1">
-                  Change Pathway
+                  {patient.careStage === 'prenatal' ? 'Prenatal' : 
+                   patient.careStage === 'postpartum' ? 'Postpartum' : 
+                   patient.careStage === 'bereavement' ? 'Bereavement' : 'Care Stage'}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                  Change Pathway
+                </DropdownMenuItem>
                 {(['Pregnancy', 'Postnatal', 'Post-Loss'] as Pathway[])
                   .filter(p => p !== patient.pathway)
                   .map(targetPathway => (
