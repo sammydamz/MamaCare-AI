@@ -242,15 +242,15 @@ app.get('/api/dashboard', async (req, res) => {
 
     res.json({
       kpis: {
-        totalMothers: kpis['total_mothers'] || 6,
-        highRisk: kpis['high_risk'] || 2,
-        pendingActions: kpis['pending_actions'] || 4,
-        resolutionRate: kpis['resolution_rate'] || 78,
+        totalMothers: kpis['total_mothers'] || 0,
+        highRisk: kpis['high_risk'] || 0,
+        pendingActions: kpis['pending_actions'] || 0,
+        resolutionRate: kpis['resolution_rate'] || 0,
       },
       zoneSummary: {
-        caseload: kpis['caseload'] || 6,
-        pendingVisits: kpis['pending_visits'] || 4,
-        unresolvedDanger: kpis['unresolved_danger'] || 2,
+        caseload: kpis['caseload'] || 0,
+        pendingVisits: kpis['pending_visits'] || 0,
+        unresolvedDanger: kpis['unresolved_danger'] || 0,
       },
       riskEscalationFeed: feedResult.rows.map((row) => ({
         patientId: row.patient_id,
