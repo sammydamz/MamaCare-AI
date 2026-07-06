@@ -2,17 +2,37 @@ import type { Patient, Consultation, Referral, Facility, ActionLogEntry, Pathway
 
 const API_BASE = '/api';
 
+function authHeaders(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem('mamacare-current-user');
+    if (!raw) return {};
+    const user = JSON.parse(raw);
+    return { 'X-User-Email': user.email || '' };
+  } catch {
+    return {};
+  }
+}
+
+async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders(),
+      ...(options.headers as Record<string, string> || {}),
+    },
+  });
+  if (!res.ok) throw new Error(`API error: ${res.statusText}`);
+  return res.json();
+}
+
 export const mamacareApi = {
   async fetchDashboard() {
-    const res = await fetch(`${API_BASE}/dashboard`);
-    if (!res.ok) throw new Error('Failed to fetch dashboard data');
-    return res.json();
+    return authFetch(`${API_BASE}/dashboard`);
   },
 
   async fetchPatients(): Promise<Patient[]> {
-    const res = await fetch(`${API_BASE}/patients`);
-    if (!res.ok) throw new Error('Failed to fetch patients');
-    return res.json();
+    return authFetch(`${API_BASE}/patients`);
   },
 
   async registerPatient(data: {
@@ -24,13 +44,10 @@ export const mamacareApi = {
     stage: string;
     phone: string;
   }): Promise<Patient> {
-    const res = await fetch(`${API_BASE}/patients`, {
+    return authFetch(`${API_BASE}/patients`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to register patient');
-    return res.json();
   },
 
   async recordVitals(
@@ -41,13 +58,10 @@ export const mamacareApi = {
       copingIndex?: number;
     }
   ): Promise<{ success: boolean; riskLevel: string }> {
-    const res = await fetch(`${API_BASE}/patients/${patientId}/vitals`, {
+    return authFetch(`${API_BASE}/patients/${patientId}/vitals`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to record vitals');
-    return res.json();
   },
 
   async logVisit(
@@ -57,19 +71,14 @@ export const mamacareApi = {
       notes: string;
     }
   ): Promise<{ success: boolean }> {
-    const res = await fetch(`${API_BASE}/patients/${patientId}/visits`, {
+    return authFetch(`${API_BASE}/patients/${patientId}/visits`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to log visit');
-    return res.json();
   },
 
   async fetchConsultations(): Promise<Consultation[]> {
-    const res = await fetch(`${API_BASE}/consultations`);
-    if (!res.ok) throw new Error('Failed to fetch consultations');
-    return res.json();
+    return authFetch(`${API_BASE}/consultations`);
   },
 
   async recordConsultation(data: {
@@ -77,19 +86,14 @@ export const mamacareApi = {
     transcript: Array<{ speaker: 'AI' | 'Mother' | 'Patient'; text: string }>;
     language: string;
   }): Promise<{ success: boolean; riskLevel: string; referralTriggered: boolean }> {
-    const res = await fetch(`${API_BASE}/consultations`, {
+    return authFetch(`${API_BASE}/consultations`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to record consultation');
-    return res.json();
   },
 
   async fetchReferrals(): Promise<Referral[]> {
-    const res = await fetch(`${API_BASE}/referrals`);
-    if (!res.ok) throw new Error('Failed to fetch referrals');
-    return res.json();
+    return authFetch(`${API_BASE}/referrals`);
   },
 
   async createReferral(data: {
@@ -97,13 +101,10 @@ export const mamacareApi = {
     facilityId: string;
     reason: string;
   }): Promise<{ id: string; success: boolean }> {
-    const res = await fetch(`${API_BASE}/referrals`, {
+    return authFetch(`${API_BASE}/referrals`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to create referral');
-    return res.json();
   },
 
   async updateReferralStatus(
@@ -114,19 +115,14 @@ export const mamacareApi = {
       note?: string;
     }
   ): Promise<{ success: boolean }> {
-    const res = await fetch(`${API_BASE}/referrals/${referralId}`, {
+    return authFetch(`${API_BASE}/referrals/${referralId}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to update referral status');
-    return res.json();
   },
 
   async fetchFacilities(): Promise<Facility[]> {
-    const res = await fetch(`${API_BASE}/facilities`);
-    if (!res.ok) throw new Error('Failed to fetch facilities');
-    return res.json();
+    return authFetch(`${API_BASE}/facilities`);
   },
 
   async addFacility(data: {
@@ -137,59 +133,41 @@ export const mamacareApi = {
     phone: string;
     address: string;
   }): Promise<Facility> {
-    const res = await fetch(`${API_BASE}/facilities`, {
+    return authFetch(`${API_BASE}/facilities`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to add facility');
-    return res.json();
   },
 
   async fetchActionLogs(): Promise<ActionLogEntry[]> {
-    const res = await fetch(`${API_BASE}/action-logs`);
-    if (!res.ok) throw new Error('Failed to fetch action logs');
-    return res.json();
+    return authFetch(`${API_BASE}/action-logs`);
   },
 
   async fetchAnalytics(pathway?: string) {
     const query = pathway ? `?pathway=${encodeURIComponent(pathway)}` : '';
-    const res = await fetch(`${API_BASE}/analytics${query}`);
-    if (!res.ok) throw new Error('Failed to fetch analytics data');
-    return res.json();
+    return authFetch(`${API_BASE}/analytics${query}`);
   },
 
   async fetchNotifications() {
-    const res = await fetch(`${API_BASE}/notifications`);
-    if (!res.ok) throw new Error('Failed to fetch notifications');
-    return res.json();
+    return authFetch(`${API_BASE}/notifications`);
   },
 
   async markNotificationAsRead(id: string) {
-    const res = await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PATCH' });
-    if (!res.ok) throw new Error('Failed to mark notification as read');
-    return res.json();
+    return authFetch(`${API_BASE}/notifications/${id}/read`, { method: 'PATCH' });
   },
 
   async changePatientPathway(patientId: string, pathway: Pathway): Promise<{ message: string; pathway: string }> {
-    const res = await fetch(`${API_BASE}/patients/${patientId}/pathway`, {
+    return authFetch(`${API_BASE}/patients/${patientId}/pathway`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pathway }),
     });
-    if (!res.ok) throw new Error('Failed to change pathway');
-    return res.json();
   },
 
   async fetchCommunications(pathway: string) {
-    const res = await fetch(`${API_BASE}/communications/${encodeURIComponent(pathway)}`);
-    if (!res.ok) throw new Error('Failed to fetch communications');
-    return res.json();
+    return authFetch(`${API_BASE}/communications/${encodeURIComponent(pathway)}`);
   },
 
   async fetchSchedules(pathway: string) {
-    const res = await fetch(`${API_BASE}/schedules/${encodeURIComponent(pathway)}`);
-    if (!res.ok) throw new Error('Failed to fetch schedules');
-    return res.json();
+    return authFetch(`${API_BASE}/schedules/${encodeURIComponent(pathway)}`);
   }
 };

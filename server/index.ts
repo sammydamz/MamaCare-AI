@@ -209,18 +209,36 @@ app.get('/api/user', async (req, res) => {
   }
 });
 
+// Middleware: resolve user_id from X-User-Email and attach to req
+app.use('/api', async (req: any, res, next) => {
+  if (req.path === '/login' || req.path === '/health' || req.path === '/user') return next();
+  const email = req.headers['x-user-email'];
+  if (!email) return next();
+  try {
+    const result = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (result.rows.length > 0) {
+      req.userId = result.rows[0].id;
+    }
+  } catch {}
+  next();
+});
+
 // GET /api/dashboard
 app.get('/api/dashboard', async (req, res) => {
   try {
-    const kpisResult = await pool.query('SELECT * FROM kpis');
+    const userId = (req as any).userId;
+
+    const kpisResult = userId
+      ? await pool.query('SELECT * FROM kpis WHERE user_id = $1', [userId])
+      : await pool.query('SELECT * FROM kpis');
     const kpis: Record<string, number> = {};
     kpisResult.rows.forEach((row) => {
       kpis[row.key] = Number(row.value);
     });
 
-    const feedResult = await pool.query(
-      'SELECT * FROM risk_escalation_feed ORDER BY id DESC LIMIT 10',
-    );
+    const feedResult = userId
+      ? await pool.query('SELECT * FROM risk_escalation_feed WHERE user_id = $1 ORDER BY id DESC LIMIT 10', [userId])
+      : await pool.query('SELECT * FROM risk_escalation_feed ORDER BY id DESC LIMIT 10');
 
     res.json({
       kpis: {
@@ -251,9 +269,10 @@ app.get('/api/dashboard', async (req, res) => {
 // GET /api/patients
 app.get('/api/patients', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM patients ORDER BY risk_level DESC, name ASC',
-    );
+    const userId = (req as any).userId;
+    const result = userId
+      ? await pool.query('SELECT * FROM patients WHERE user_id = $1 ORDER BY risk_level DESC, name ASC', [userId])
+      : await pool.query('SELECT * FROM patients ORDER BY risk_level DESC, name ASC');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -618,9 +637,10 @@ app.post('/api/patients/:id/visits', async (req, res) => {
 // GET /api/consultations
 app.get('/api/consultations', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM consultations ORDER BY created_at DESC',
-    );
+    const userId = (req as any).userId;
+    const result = userId
+      ? await pool.query('SELECT * FROM consultations WHERE user_id = $1 ORDER BY created_at DESC', [userId])
+      : await pool.query('SELECT * FROM consultations ORDER BY created_at DESC');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -764,9 +784,10 @@ app.post('/api/consultations', async (req, res) => {
 // GET /api/referrals
 app.get('/api/referrals', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM referrals ORDER BY created_at DESC',
-    );
+    const userId = (req as any).userId;
+    const result = userId
+      ? await pool.query('SELECT * FROM referrals WHERE user_id = $1 ORDER BY created_at DESC', [userId])
+      : await pool.query('SELECT * FROM referrals ORDER BY created_at DESC');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -953,9 +974,10 @@ app.post('/api/facilities', async (req, res) => {
 // GET /api/action-logs
 app.get('/api/action-logs', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM action_logs ORDER BY timestamp DESC',
-    );
+    const userId = (req as any).userId;
+    const result = userId
+      ? await pool.query('SELECT * FROM action_logs WHERE user_id = $1 ORDER BY timestamp DESC', [userId])
+      : await pool.query('SELECT * FROM action_logs ORDER BY timestamp DESC');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -974,9 +996,10 @@ app.get('/api/action-logs', async (req, res) => {
 // Notifications
 app.get('/api/notifications', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM notifications ORDER BY timestamp DESC',
-    );
+    const userId = (req as any).userId;
+    const result = userId
+      ? await pool.query('SELECT * FROM notifications WHERE user_id = $1 ORDER BY timestamp DESC', [userId])
+      : await pool.query('SELECT * FROM notifications ORDER BY timestamp DESC');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1232,10 +1255,10 @@ app.post('/api/sms/send', async (req, res) => {
 app.get('/api/communications/:pathway', async (req, res) => {
   try {
     const { pathway } = req.params;
-    const result = await pool.query(
-      'SELECT * FROM communications WHERE pathway = $1 ORDER BY sent_at DESC',
-      [pathway],
-    );
+    const userId = (req as any).userId;
+    const result = userId
+      ? await pool.query('SELECT * FROM communications WHERE pathway = $1 AND user_id = $2 ORDER BY sent_at DESC', [pathway, userId])
+      : await pool.query('SELECT * FROM communications WHERE pathway = $1 ORDER BY sent_at DESC', [pathway]);
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1256,10 +1279,10 @@ app.get('/api/communications/:pathway', async (req, res) => {
 app.get('/api/schedules/:pathway', async (req, res) => {
   try {
     const { pathway } = req.params;
-    const result = await pool.query(
-      'SELECT * FROM schedules WHERE pathway = $1 ORDER BY created_at DESC',
-      [pathway],
-    );
+    const userId = (req as any).userId;
+    const result = userId
+      ? await pool.query('SELECT * FROM schedules WHERE pathway = $1 AND user_id = $2 ORDER BY created_at DESC', [pathway, userId])
+      : await pool.query('SELECT * FROM schedules WHERE pathway = $1 ORDER BY created_at DESC', [pathway]);
     res.json(
       result.rows.map((row) => ({
         id: row.id,

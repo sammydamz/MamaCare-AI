@@ -167,6 +167,52 @@ CREATE TABLE IF NOT EXISTS users (
     is_admin BOOLEAN DEFAULT FALSE
 );
 
+-- Add user_id to seed data tables for multi-user isolation
+DO $$ BEGIN
+  ALTER TABLE patients ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE consultations ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE referrals ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE action_logs ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE communications ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE schedules ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE notifications ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE kpis ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE risk_escalation_feed ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
 -- Seed data (use ON CONFLICT DO NOTHING to avoid duplicate inserts)
 INSERT INTO facilities (id, name, distance, hours, services, phone, address) VALUES
     ('f001', 'Korle-Bu Teaching Hospital', '2.8 km', '24/7 Emergency', ARRAY['Obstetrics', 'Neonatal ICU', 'Emergency', 'Laboratory', 'Ultrasound'], '+233-30-267-3000', 'Guggisberg Avenue, Korle Gonno, Accra'),
@@ -180,18 +226,18 @@ INSERT INTO users (id, username, email, password, first_name, last_name, fullnam
     ('user-002', 'gloriao', 'gloppong@hospi.com', 'adminuser002', 'Gloria', 'Oppong', 'Gloria Oppong', true, 'Dashboard Admin', 'Korle Bu Teaching Hospital', NULL, NULL, 'en', true)
 ON CONFLICT DO NOTHING;
 
-INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, last_call_date, registration_date, risk_history, coping_index) VALUES
-    ('p001', 'Abena Osei', 27, 'Pregnancy', 'HIGH', 'English', 'Grace Mensah', '32 weeks', '2026-05-27', '2025-12-10', '[{"date": "2025-12-10", "level": "LOW"}, {"date": "2026-03-15", "level": "MEDIUM"}, {"date": "2026-05-20", "level": "HIGH"}]'::jsonb, NULL),
-    ('p002', 'Efua Mensah', 31, 'Post-Loss', 'MEDIUM', 'English', 'Comfort Asante', 'Post-loss: 4 months', '2026-05-26', '2026-02-01', '[{"date": "2026-02-01", "level": "HIGH"}, {"date": "2026-04-10", "level": "MEDIUM"}]'::jsonb, 5),
-    ('p003', 'Akosua Addo', 23, 'Pregnancy', 'LOW', 'English', 'Grace Mensah', '18 weeks', '2026-05-25', '2026-01-20', '[{"date": "2026-01-20", "level": "LOW"}]'::jsonb, NULL),
-    ('p004', 'Ama Serwaa', 34, 'Pregnancy', 'HIGH', 'English', 'Comfort Asante', '36 weeks', '2026-05-28', '2025-09-15', '[{"date": "2025-09-15", "level": "MEDIUM"}, {"date": "2025-12-20", "level": "MEDIUM"}, {"date": "2026-04-01", "level": "HIGH"}]'::jsonb, NULL),
-    ('p005', 'Yaa Ansah', 26, 'Pregnancy', 'MEDIUM', 'English', 'Mercy Owusu', '24 weeks', '2026-05-24', '2025-11-30', '[{"date": "2025-11-30", "level": "LOW"}, {"date": "2026-03-20", "level": "MEDIUM"}]'::jsonb, NULL),
-    ('p006', 'Esi Naadu', 29, 'Post-Loss', 'LOW', 'English', 'Mercy Owusu', 'Post-loss: 8 months', '2026-05-22', '2025-10-05', '[{"date": "2025-10-05", "level": "HIGH"}, {"date": "2025-12-15", "level": "MEDIUM"}, {"date": "2026-03-01", "level": "LOW"}]'::jsonb, 8),
-    ('p-prenatal-1781234133256-0', 'Nana Yaa', 25, 'Pregnancy', 'LOW', 'English', 'Grace Mensah', '28 weeks', NULL, '2026-07-03', '[]'::jsonb, NULL)
+INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, last_call_date, registration_date, risk_history, coping_index, user_id) VALUES
+    ('p001', 'Abena Osei', 27, 'Pregnancy', 'HIGH', 'English', 'Grace Mensah', '32 weeks', '2026-05-27', '2025-12-10', '[{"date": "2025-12-10", "level": "LOW"}, {"date": "2026-03-15", "level": "MEDIUM"}, {"date": "2026-05-20", "level": "HIGH"}]'::jsonb, NULL, 'user-001'),
+    ('p002', 'Efua Mensah', 31, 'Post-Loss', 'MEDIUM', 'English', 'Comfort Asante', 'Post-loss: 4 months', '2026-05-26', '2026-02-01', '[{"date": "2026-02-01", "level": "HIGH"}, {"date": "2026-04-10", "level": "MEDIUM"}]'::jsonb, 5, 'user-001'),
+    ('p003', 'Akosua Addo', 23, 'Pregnancy', 'LOW', 'English', 'Grace Mensah', '18 weeks', '2026-05-25', '2026-01-20', '[{"date": "2026-01-20", "level": "LOW"}]'::jsonb, NULL, 'user-001'),
+    ('p004', 'Ama Serwaa', 34, 'Pregnancy', 'HIGH', 'English', 'Comfort Asante', '36 weeks', '2026-05-28', '2025-09-15', '[{"date": "2025-09-15", "level": "MEDIUM"}, {"date": "2025-12-20", "level": "MEDIUM"}, {"date": "2026-04-01", "level": "HIGH"}]'::jsonb, NULL, 'user-001'),
+    ('p005', 'Yaa Ansah', 26, 'Pregnancy', 'MEDIUM', 'English', 'Mercy Owusu', '24 weeks', '2026-05-24', '2025-11-30', '[{"date": "2025-11-30", "level": "LOW"}, {"date": "2026-03-20", "level": "MEDIUM"}]'::jsonb, NULL, 'user-001'),
+    ('p006', 'Esi Naadu', 29, 'Post-Loss', 'LOW', 'English', 'Mercy Owusu', 'Post-loss: 8 months', '2026-05-22', '2025-10-05', '[{"date": "2025-10-05", "level": "HIGH"}, {"date": "2025-12-15", "level": "MEDIUM"}, {"date": "2026-03-01", "level": "LOW"}]'::jsonb, 8, 'user-001'),
+    ('p-prenatal-1781234133256-0', 'Nana Yaa', 25, 'Pregnancy', 'LOW', 'English', 'Grace Mensah', '28 weeks', NULL, '2026-07-03', '[]'::jsonb, NULL, 'user-001')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral) VALUES
-    ('c001', 'p001', 'Abena Osei', '2026-05-27', 'English', ARRAY['severe headache', 'blurred vision', 'swollen feet'], 'HIGH', 'Patient reports severe headache persisting for 3 days, blurred vision, and noticeable swelling in both feet. Blood pressure reading at 150/95 mmHg. These symptoms are consistent with pre-eclampsia warning signs. Immediate referral recommended.', '[{"text": "Good morning Abena, how are you today? I heard you have a headache.", "speaker": "AI"}, {"text": "I am not feeling well at all. I have had this headache for three days, and my vision is getting blurry.", "speaker": "Mother"}, {"text": "Have you noticed any swelling in your feet or legs?", "speaker": "AI"}, {"text": "Yes, my feet are very swollen.", "speaker": "Mother"}, {"text": "I understand. You need to go to the hospital immediately so we can check on you and your baby.", "speaker": "AI"}]'::jsonb, TRUE),
+INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral, user_id) VALUES
+    ('c001', 'p001', 'Abena Osei', '2026-05-27', 'English', ARRAY['severe headache', 'blurred vision', 'swollen feet'], 'HIGH', 'Patient reports severe headache persisting for 3 days, blurred vision, and noticeable swelling in both feet. Blood pressure reading at 150/95 mmHg. These symptoms are consistent with pre-eclampsia warning signs. Immediate referral recommended.', '[{"text": "Good morning Abena, how are you today? I heard you have a headache.", "speaker": "AI"}, {"text": "I am not feeling well at all. I have had this headache for three days, and my vision is getting blurry.", "speaker": "Mother"}, {"text": "Have you noticed any swelling in your feet or legs?", "speaker": "AI"}, {"text": "Yes, my feet are very swollen.", "speaker": "Mother"}, {"text": "I understand. You need to go to the hospital immediately so we can check on you and your baby.", "speaker": "AI"}]'::jsonb, TRUE, 'user-001'),
     ('c002', 'p002', 'Efua Mensah', '2026-05-26', 'English', ARRAY['difficulty sleeping', 'persistent sadness', 'low appetite'], 'MEDIUM', 'Patient continues to experience grief-related symptoms 4 months post-loss. Sleep quality has slightly improved from Poor to Fair. Coping index remains at 5/10. Recommend continued counselling sessions and community support group referral.', '[{"text": "Hello Efua, how are you feeling?", "speaker": "AI"}, {"text": "Not good. I am not sleeping well, and I don''t even feel like eating.", "speaker": "Mother"}, {"text": "I see. Were you able to attend the counselling session today?", "speaker": "AI"}, {"text": "Yes, but the group support doesn''t seem to be working.", "speaker": "Mother"}]'::jsonb, FALSE),
     ('c003', 'p003', 'Akosua Addo', '2026-05-25', 'English', ARRAY['mild nausea', 'normal fatigue'], 'LOW', 'Patient reports mild nausea and normal pregnancy-related fatigue at 18 weeks. Blood pressure stable at 118/76 mmHg. Baby kick count is within normal range. No danger signs identified. Continue routine ANC schedule.', '[{"text": "Good morning Akosua, how are you?", "speaker": "AI"}, {"text": "I am fine, but I feel a little nauseous.", "speaker": "Mother"}, {"text": "That is normal. Are you feeling the baby kick?", "speaker": "AI"}, {"text": "Yes, the baby is kicking very well.", "speaker": "Mother"}]'::jsonb, FALSE),
     ('c004', 'p004', 'Ama Serwaa', '2026-05-28', 'English', ARRAY['reduced fetal movement', 'severe abdominal pain', 'dizziness'], 'HIGH', 'Patient at 36 weeks reports significantly reduced fetal movement (kick count: 4), severe abdominal pain, and episodes of dizziness. Blood pressure at 160/100 mmHg is critically elevated. URGENT: Immediate emergency referral activated for possible placental abruption.', '[{"text": "Ama, how are you feeling? Are you in pain?", "speaker": "AI"}, {"text": "My stomach hurts so much. Also, my baby is not kicking as much as usual.", "speaker": "Mother"}, {"text": "You need to go to the hospital right now. I am calling an ambulance to come pick you up.", "speaker": "AI"}]'::jsonb, TRUE),
@@ -199,15 +245,15 @@ INSERT INTO consultations (id, patient_id, patient_name, date, language, symptom
     ('c006', 'p006', 'Esi Naadu', '2026-05-22', 'English', ARRAY['improved mood', 'better sleep'], 'LOW', 'Patient shows continued improvement 8 months post-loss. Coping index increased to 8/10. Sleep quality improved to Good. Actively participating in community support group. Recommend transitioning to quarterly check-ins.', '[{"text": "Good morning Esi. How are you?", "speaker": "AI"}, {"text": "I am fine. I am sleeping much better and I feel much happier now.", "speaker": "Mother"}, {"text": "That is wonderful to hear! We will meet again next month.", "speaker": "AI"}]'::jsonb, FALSE)
 ON CONFLICT DO NOTHING;
 
-INSERT INTO referrals (id, patient_id, patient_name, risk_level, status, facility_id, facility_name, assigned_chw, outcome, reason, created_at, timeline) VALUES
-    ('r001', 'p001', 'Abena Osei', 'HIGH', 'In Transit', 'f001', 'Korle-Bu Teaching Hospital', 'Grace Mensah', NULL, 'Pre-eclampsia warning signs detected', '2026-05-27T09:30:00Z', '[{"note": "Pre-eclampsia warning signs detected", "stage": "Referral Created", "timestamp": "2026-05-27T09:30:00Z"}, {"stage": "Ambulance Dispatched", "timestamp": "2026-05-27T09:45:00Z"}, {"note": "ETA 25 minutes", "stage": "In Transit", "timestamp": "2026-05-27T10:00:00Z"}]'::jsonb),
-    ('r002', 'p004', 'Ama Serwaa', 'HIGH', 'Pending', 'f002', 'Komfo Anokye Teaching Hospital', 'Comfort Asante', NULL, 'Emergency: possible placental abruption at 36 weeks', '2026-05-28T08:15:00Z', '[{"note": "Emergency: possible placental abruption at 36 weeks", "stage": "Referral Created", "timestamp": "2026-05-28T08:15:00Z"}]'::jsonb),
-    ('r003', 'p002', 'Efua Mensah', 'MEDIUM', 'Admitted', 'f003', 'Greater Accra Regional Hospital', 'Comfort Asante', 'Receiving grief counselling', 'Counselling referral for grief management', '2026-05-20T11:00:00Z', '[{"note": "Counselling referral for grief management", "stage": "Referral Created", "timestamp": "2026-05-20T11:00:00Z"}, {"stage": "In Transit", "timestamp": "2026-05-20T11:30:00Z"}, {"note": "Enrolled in intensive counselling programme", "stage": "Admitted", "timestamp": "2026-05-20T12:15:00Z"}]'::jsonb),
-    ('r004', 'p003', 'Akosua Addo', 'LOW', 'Resolved', 'f004', 'Tamale Teaching Hospital', 'Grace Mensah', 'Routine check-up completed, all normal', 'Routine ANC check-up', '2026-05-10T14:00:00Z', '[{"note": "Routine ANC check-up", "stage": "Referral Created", "timestamp": "2026-05-10T14:00:00Z"}, {"stage": "In Transit", "timestamp": "2026-05-10T14:20:00Z"}, {"stage": "Admitted", "timestamp": "2026-05-10T15:00:00Z"}, {"note": "All vitals normal, follow-up in 4 weeks", "stage": "Resolved", "timestamp": "2026-05-10T16:30:00Z"}]'::jsonb)
+INSERT INTO referrals (id, patient_id, patient_name, risk_level, status, facility_id, facility_name, assigned_chw, outcome, reason, created_at, timeline, user_id) VALUES
+    ('r001', 'p001', 'Abena Osei', 'HIGH', 'In Transit', 'f001', 'Korle-Bu Teaching Hospital', 'Grace Mensah', NULL, 'Pre-eclampsia warning signs detected', '2026-05-27T09:30:00Z', '[{"note": "Pre-eclampsia warning signs detected", "stage": "Referral Created", "timestamp": "2026-05-27T09:30:00Z"}, {"stage": "Ambulance Dispatched", "timestamp": "2026-05-27T09:45:00Z"}, {"note": "ETA 25 minutes", "stage": "In Transit", "timestamp": "2026-05-27T10:00:00Z"}]'::jsonb, 'user-001'),
+    ('r002', 'p004', 'Ama Serwaa', 'HIGH', 'Pending', 'f002', 'Komfo Anokye Teaching Hospital', 'Comfort Asante', NULL, 'Emergency: possible placental abruption at 36 weeks', '2026-05-28T08:15:00Z', '[{"note": "Emergency: possible placental abruption at 36 weeks", "stage": "Referral Created", "timestamp": "2026-05-28T08:15:00Z"}]'::jsonb, 'user-001'),
+    ('r003', 'p002', 'Efua Mensah', 'MEDIUM', 'Admitted', 'f003', 'Greater Accra Regional Hospital', 'Comfort Asante', 'Receiving grief counselling', 'Counselling referral for grief management', '2026-05-20T11:00:00Z', '[{"note": "Counselling referral for grief management", "stage": "Referral Created", "timestamp": "2026-05-20T11:00:00Z"}, {"stage": "In Transit", "timestamp": "2026-05-20T11:30:00Z"}, {"note": "Enrolled in intensive counselling programme", "stage": "Admitted", "timestamp": "2026-05-20T12:15:00Z"}]'::jsonb, 'user-001'),
+    ('r004', 'p003', 'Akosua Addo', 'LOW', 'Resolved', 'f004', 'Tamale Teaching Hospital', 'Grace Mensah', 'Routine check-up completed, all normal', 'Routine ANC check-up', '2026-05-10T14:00:00Z', '[{"note": "Routine ANC check-up", "stage": "Referral Created", "timestamp": "2026-05-10T14:00:00Z"}, {"stage": "In Transit", "timestamp": "2026-05-10T14:20:00Z"}, {"stage": "Admitted", "timestamp": "2026-05-10T15:00:00Z"}, {"note": "All vitals normal, follow-up in 4 weeks", "stage": "Resolved", "timestamp": "2026-05-10T16:30:00Z"}]'::jsonb, 'user-001')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES
-    ('a001', 'p001', 'Alert', 'Risk level escalated to HIGH - pre-eclampsia warning signs detected during AI consultation', '2026-05-27T09:28:00Z', 'System'),
+INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) VALUES
+    ('a001', 'p001', 'Alert', 'Risk level escalated to HIGH - pre-eclampsia warning signs detected during AI consultation', '2026-05-27T09:28:00Z', 'System', 'user-001'),
     ('a002', 'p001', 'Referral', 'Emergency referral created to Korle-Bu Teaching Hospital', '2026-05-27T09:30:00Z', 'Grace Mensah'),
     ('a003', 'p004', 'Alert', 'Risk level escalated to HIGH - reduced fetal movement and critically elevated blood pressure (160/100)', '2026-05-28T08:12:00Z', 'System'),
     ('a004', 'p004', 'Referral', 'Emergency referral created to Komfo Anokye Teaching Hospital - possible placental abruption', '2026-05-28T08:15:00Z', 'Comfort Asante'),
@@ -281,3 +327,14 @@ CREATE TABLE IF NOT EXISTS outcomes (
     timestamp VARCHAR(50) NOT NULL,
     recorded_by VARCHAR(255) NOT NULL
 );
+
+-- Backfill: assign existing orphan data to Sarah (user-001)
+UPDATE patients SET user_id = 'user-001' WHERE user_id IS NULL;
+UPDATE consultations SET user_id = 'user-001' WHERE user_id IS NULL;
+UPDATE referrals SET user_id = 'user-001' WHERE user_id IS NULL;
+UPDATE action_logs SET user_id = 'user-001' WHERE user_id IS NULL;
+UPDATE communications SET user_id = 'user-001' WHERE user_id IS NULL;
+UPDATE schedules SET user_id = 'user-001' WHERE user_id IS NULL;
+UPDATE notifications SET user_id = 'user-001' WHERE user_id IS NULL;
+UPDATE kpis SET user_id = 'user-001' WHERE user_id IS NULL;
+UPDATE risk_escalation_feed SET user_id = 'user-001' WHERE user_id IS NULL;

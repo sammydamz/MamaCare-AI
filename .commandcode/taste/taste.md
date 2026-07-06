@@ -20,6 +20,9 @@
 # git
 - Use `gh` (GitHub CLI) instead of HTTPS authentication for git push operations. Confidence: 0.65
 
+# database
+- Each user should have isolated/private data (own seed or empty state); do not use client-side email checks or hardcoded server-side email middleware to gate shared data. Confidence: 0.77
+
 # cli
 - Use `railway up` instead of `railway deploy` for deploying to Railway. Confidence: 0.72
 
