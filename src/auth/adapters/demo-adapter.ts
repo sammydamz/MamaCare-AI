@@ -1,5 +1,22 @@
 import { AuthModel, UserModel } from '@/auth/lib/models';
 
+const USER_STORAGE_KEY = 'mamacare-current-user';
+
+function saveUserToStorage(user: UserModel) {
+  try {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  } catch {}
+}
+
+function getUserFromStorage(): UserModel | null {
+  try {
+    const raw = localStorage.getItem(USER_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const DemoAdapter = {
   async login(email: string, password: string): Promise<AuthModel> {
     const response = await fetch('/api/login', {
@@ -16,6 +33,9 @@ export const DemoAdapter = {
     }
 
     const data = await response.json();
+    if (data.user) {
+      saveUserToStorage(data.user);
+    }
     return {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
@@ -60,23 +80,15 @@ export const DemoAdapter = {
   },
 
   async getCurrentUser(): Promise<UserModel | null> {
-    try {
-      const response = await fetch('/api/user');
-      if (response.ok) {
-        return await response.json();
-      }
-      return null;
-    } catch {
-      return null;
-    }
+    return getUserFromStorage();
   },
 
   async getUserProfile(): Promise<UserModel> {
-    const response = await fetch('/api/user');
-    if (!response.ok) {
-      throw new Error('Failed to fetch user profile');
+    const user = getUserFromStorage();
+    if (!user) {
+      throw new Error('No user found');
     }
-    return await response.json();
+    return user;
   },
 
   async updateUserProfile(userData: Partial<UserModel>): Promise<UserModel> {
@@ -85,5 +97,9 @@ export const DemoAdapter = {
     return { ...profile, ...userData };
   },
 
-  async logout(): Promise<void> {},
+  async logout(): Promise<void> {
+    try {
+      localStorage.removeItem(USER_STORAGE_KEY);
+    } catch {}
+  },
 };
