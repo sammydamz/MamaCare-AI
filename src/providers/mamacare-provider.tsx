@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { mamacareApi } from '@/lib/mamacare/api';
 import type { Patient, Consultation, Referral, Facility, ActionLogEntry, Pathway } from '@/lib/mamacare/types';
 import { usePathway } from './pathway-provider';
+import { useAuth } from '@/auth/context/auth-context';
 
 interface DashboardData {
   kpis: {
@@ -113,10 +114,23 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const { activePathway } = usePathway();
+  const { user: currentUser } = useAuth();
+  const isDemoAccount = currentUser?.email === 'sarac@kbth.com';
 
   const refreshAll = async () => {
     setIsLoading(true);
     try {
+      if (!isDemoAccount) {
+        // Non-demo users start with empty data
+        setPatients([]);
+        setConsultations([]);
+        setReferrals([]);
+        setFacilities([]);
+        setActionLogs([]);
+        setDashboardData(null);
+        setAnalyticsData(null);
+        return;
+      }
       const [pts, cons, refs, facs, logs, dash, an] = await Promise.all([
         mamacareApi.fetchPatients(),
         mamacareApi.fetchConsultations(),
@@ -147,6 +161,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
     }
   };
 
+
   const refreshConsultationsOnly = async () => {
     try {
       const cons = await mamacareApi.fetchConsultations();
@@ -159,7 +174,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refreshAll();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePathway]);
+  }, [activePathway, currentUser?.email]);
 
   const registerPatient = async (data: {
     name: string;

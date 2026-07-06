@@ -14,6 +14,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setIsAdmin(currentUser?.is_admin === true);
   }, [currentUser]);
 
+  // Restore current user from localStorage on mount if auth exists
+  useEffect(() => {
+    if (auth) {
+      verify();
+    }
+    setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const verify = async () => {
     if (auth) {
       try {
