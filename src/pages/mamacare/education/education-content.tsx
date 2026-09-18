@@ -5,13 +5,12 @@ import { Card } from '@heroui/react/card';
 import { Chip } from '@heroui/react/chip';
 import { Drawer } from '@heroui/react/drawer';
 import { Input } from '@heroui/react/input';
-import { ListBox } from '@heroui/react/list-box';
-import { ListBoxItem } from '@heroui/react/list-box-item';
 import { SearchField } from '@heroui/react/search-field';
-import { Select } from '@heroui/react/select';
 import { Table } from '@heroui/react/table';
 import { Tabs } from '@heroui/react/tabs';
 import { TextArea } from '@heroui/react/textarea';
+
+const selectCls = 'rounded-lg border border-input bg-white px-3 py-2 text-sm';
 
 export type EduPiece = {
   id: string;
@@ -171,26 +170,16 @@ export function EducationContent() {
         <Tabs.Panel id="library">
           <div className="flex flex-wrap gap-3 py-4">
             <SearchField value={search} onChange={setSearch} aria-label="Search pieces" className="w-64" />
-            <Select selectedKey={trackFilter} onSelectionChange={(k) => setTrackFilter(k as string)} aria-label="Track filter" className="w-44">
-              <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-              <Select.Popover>
-                <ListBox>
-                  <ListBoxItem id="all">All tracks</ListBoxItem>
-                  {TRACKS.map((t) => <ListBoxItem key={t} id={t}>{t}</ListBoxItem>)}
-                </ListBox>
-              </Select.Popover>
-            </Select>
-            <Select selectedKey={statusFilter} onSelectionChange={(k) => setStatusFilter(k as string)} aria-label="Status filter" className="w-44">
-              <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-              <Select.Popover>
-                <ListBox>
-                  <ListBoxItem id="all">All statuses</ListBoxItem>
-                  <ListBoxItem id="draft">Draft</ListBoxItem>
-                  <ListBoxItem id="in-review">In review</ListBoxItem>
-                  <ListBoxItem id="approved">Approved</ListBoxItem>
-                </ListBox>
-              </Select.Popover>
-            </Select>
+            <select value={trackFilter} onChange={(e) => setTrackFilter(e.target.value)} aria-label="Track filter" className={selectCls}>
+              <option value="all">All tracks</option>
+              {TRACKS.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Status filter" className={selectCls}>
+              <option value="all">All statuses</option>
+              <option value="draft">Draft</option>
+              <option value="in-review">In review</option>
+              <option value="approved">Approved</option>
+            </select>
           </div>
 
           {loading ? (
@@ -292,18 +281,12 @@ export function EducationContent() {
             <div className="flex flex-col gap-3">
               <Input value={form.title} onChange={set('title')} aria-label="Title" placeholder="Title, e.g. Iron-rich foods in pregnancy" />
               <div className="flex gap-3">
-                <Select selectedKey={form.track} onSelectionChange={(k) => set('track')(k as string)} aria-label="Track" className="flex-1">
-                  <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-                  <Select.Popover>
-                    <ListBox>{TRACKS.map((t) => <ListBoxItem key={t} id={t}>{t}</ListBoxItem>)}</ListBox>
-                  </Select.Popover>
-                </Select>
-                <Select selectedKey={form.language} onSelectionChange={(k) => set('language')(k as string)} aria-label="Language" className="w-32">
-                  <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-                  <Select.Popover>
-                    <ListBox>{LANGS.map((l) => <ListBoxItem key={l} id={l}>{l}</ListBoxItem>)}</ListBox>
-                  </Select.Popover>
-                </Select>
+                <select value={form.track} onChange={(e) => set('track')(e.target.value)} aria-label="Track" className={`${selectCls} flex-1`}>
+                  {TRACKS.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <select value={form.language} onChange={(e) => set('language')(e.target.value)} aria-label="Language" className={`${selectCls} w-32`}>
+                  {LANGS.map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
               </div>
               <div className="flex gap-3">
                 <Input value={form.trimester} onChange={set('trimester')} aria-label="Trimester group" placeholder="Trimester: 1st / 2nd / 3rd (optional)" className="flex-1" />
