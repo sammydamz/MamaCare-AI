@@ -16,6 +16,51 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown, ArrowRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+type Delivery = {
+  piece_id: string;
+  version: number;
+  language: string;
+  stayed_pct: number | null;
+  replayed: number;
+  skipped: boolean;
+  skip_reason: string | null;
+  created_at: string;
+};
+
+function EducationBlock({ patientId }: { patientId: string }) {
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  useEffect(() => {
+    fetch(`/api/education/deliveries?patientId=${patientId}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setDeliveries)
+      .catch(() => {});
+  }, [patientId]);
+  if (!deliveries.length) return null;
+  const latest = deliveries[0];
+  return (
+    <div>
+      <h3 className="text-sm font-medium mb-2">Education</h3>
+      <div className="rounded-lg border p-3">
+        <div className="text-sm">
+          {latest.skipped ? (
+            <span>Lesson skipped — {latest.skip_reason || 'danger flag'}. Requeued for next call.</span>
+          ) : (
+            <span>
+              Heard {latest.piece_id} (v{latest.version}, {latest.language})
+              {latest.stayed_pct != null ? ` · stayed ${latest.stayed_pct}%` : ''}
+              {latest.replayed > 0 ? ` · replayed ×${latest.replayed}` : ''}
+            </span>
+          )}
+        </div>
+        {deliveries.length > 1 && (
+          <div className="text-xs text-muted-foreground mt-1">{deliveries.length - 1} earlier lesson{deliveries.length > 2 ? 's' : ''} on record</div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 
 const RISK_BADGE_VARIANT: Record<RiskLevel, BadgeProps['variant']> = {
@@ -157,6 +202,8 @@ export function PatientDetail({ patient }: { patient: Patient }) {
           <h3 className="text-sm font-medium mb-3">Action Log</h3>
           <ActionLog entries={patientActions} />
         </div>
+
+        <EducationBlock patientId={patient.id} />
 
         <div className="flex flex-wrap items-center gap-2 pt-2">
           <div className="flex items-center gap-2">

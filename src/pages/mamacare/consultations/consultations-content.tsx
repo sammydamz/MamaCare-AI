@@ -27,6 +27,7 @@ export function ConsultationsContent() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [patientFilter, setPatientFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [eduByPatient, setEduByPatient] = useState<Record<string, { piece_id: string; version: number; language: string; stayed_pct: number | null; skipped: boolean }>>({});
 
   // Quietly refresh consultations on mount + every 30s so new
   // voice sessions appear without a manual reload (no global loading)
@@ -49,6 +50,27 @@ export function ConsultationsContent() {
     if (riskFilter !== 'all' && c.riskLevel !== riskFilter) return false;
     return true;
   });
+
+  // Latest education delivery per visible patient (one small request each)
+  useEffect(() => {
+    const ids = Array.from(new Set(filtered.map((c) => c.patientId)));
+    Promise.all(
+      ids.map(async (id) => {
+        try {
+          const r = await fetch(`/api/education/deliveries?patientId=${id}`);
+          const rows = r.ok ? await r.json() : [];
+          return [id, rows[0] || null] as const;
+        } catch {
+          return [id, null] as const;
+        }
+      }),
+    ).then((pairs) => {
+      const map: Record<string, any> = {};
+      pairs.forEach(([id, row]) => { if (row) map[id] = row; });
+      setEduByPatient(map);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consultations.length]);
 
   function handleRowClick(id: string) {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -95,6 +117,7 @@ export function ConsultationsContent() {
             <TableHead>Language</TableHead>
             <TableHead>Symptoms</TableHead>
             <TableHead>Risk Level</TableHead>
+            <TableHead>Education</TableHead>
             <TableHead>AI Summary</TableHead>
           </TableRow>
         </TableHeader>
@@ -103,6 +126,7 @@ export function ConsultationsContent() {
             <ConsultationRow
               key={consultation.id}
               consultation={consultation}
+              education={eduByPatient[consultation.patientId]}
               isExpanded={expandedId === consultation.id}
               onToggle={handleRowClick}
             />
@@ -115,10 +139,12 @@ export function ConsultationsContent() {
 
 function ConsultationRow({
   consultation,
+  education,
   isExpanded,
   onToggle,
 }: {
   consultation: Consultation;
+  education?: { piece_id: string; version: number; language: string; stayed_pct: number | null; skipped: boolean };
   isExpanded: boolean;
   onToggle: (id: string) => void;
 }) {
@@ -158,6 +184,19 @@ function ConsultationRow({
             {consultation.riskLevel}
           </Badge>
         </TableCell>
+        <TableCell>
+          {education ? (
+            education.skipped ? (
+              <Badge variant="warning" size="sm">skipped · danger</Badge>
+            ) : (
+              <Badge variant="outline" size="sm" className="text-xs bg-white">
+                {education.piece_id} · {education.language}{education.stayed_pct != null ? ` · ${education.stayed_pct}%` : ''}
+              </Badge>
+            )
+          ) : (
+            <span className="text-muted-foreground text-xs">—</span>
+          )}
+        </TableCell>
         <TableCell className="max-w-xs">
           <div className="flex flex-col items-start gap-1">
             <span className={`text-sm ${isExpanded ? 'text-foreground whitespace-normal' : 'text-muted-foreground truncate w-full'}`}>
@@ -173,7 +212,7 @@ function ConsultationRow({
       </TableRow>
       {isExpanded && (
         <TableRow>
-          <TableCell colSpan={6} className="p-0">
+          <TableCell colSpan={7} className="p-0">
             <ConsultationDetail consultation={consultation} />
           </TableCell>
         </TableRow>

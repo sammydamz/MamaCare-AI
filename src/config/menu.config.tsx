@@ -5,6 +5,7 @@ import {
   Bell,
   Bitcoin,
   Book,
+  BookOpen,
   Briefcase,
   Building,
   CalendarCheck,
@@ -84,6 +85,11 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/facilities',
   },
   {
+    title: 'Education',
+    icon: BookOpen,
+    path: '/education',
+  },
+  {
     title: 'Voice Triage',
     icon: Phone,
     path: '/voice-triage-demo',
@@ -119,6 +125,12 @@ export const MENU_SIDEBAR_POSTNATAL: MenuConfig = [
     title: 'Communications',
     icon: Bell,
     path: '/communications',
+  },
+  {
+    title: 'Education',
+    icon: BookOpen,
+    path: '/education',
+    disabled: true,
   },
   {
     title: 'Voice Triage',
@@ -157,6 +169,11 @@ export const MENU_SIDEBAR_POST_LOSS: MenuConfig = [
     title: 'Communications',
     icon: Bell,
     path: '/communications',
+  },
+  {
+    title: 'Education',
+    icon: BookOpen,
+    path: '/education',
   },
   {
     title: 'Settings',

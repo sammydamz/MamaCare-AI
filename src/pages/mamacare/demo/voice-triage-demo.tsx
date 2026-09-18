@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { Phone, Mic, MicOff, PhoneOff } from 'lucide-react';
+import { EducationCallPanel } from './education-call-panel';
 
 const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
 
@@ -125,6 +126,7 @@ export function VoiceTriageDemo() {
         <ConversationProvider agentId={AGENT_ID}>
           <VoiceTriageInner />
         </ConversationProvider>
+        <EducationCallPanel />
       </div>
     </div>
   );

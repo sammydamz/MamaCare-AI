@@ -26,7 +26,20 @@ CREATE TABLE IF NOT EXISTS patients (
     registration_date VARCHAR(50) NOT NULL,
     risk_history JSONB NOT NULL DEFAULT '[]'::jsonb,
     coping_index INT,
-    phone VARCHAR(50)
+    phone VARCHAR(50),
+    date_of_birth VARCHAR(50),
+    address TEXT,
+    trimester VARCHAR(20),
+    gestational_weeks INT,
+    lmp_date VARCHAR(50),
+    edd VARCHAR(50),
+    conditions TEXT[],
+    other_conditions TEXT,
+    emergency_contact VARCHAR(255),
+    emergency_phone VARCHAR(50),
+    occupation VARCHAR(255),
+    allergies TEXT,
+    current_medications TEXT
 );
 
 -- Consultations
@@ -310,3 +323,46 @@ UPDATE schedules SET user_id = 'user-001' WHERE user_id IS NULL;
 UPDATE notifications SET user_id = 'user-001' WHERE user_id IS NULL;
 UPDATE kpis SET user_id = 'user-001' WHERE user_id IS NULL;
 UPDATE risk_escalation_feed SET user_id = 'user-001' WHERE user_id IS NULL;
+
+-- Continuous Education: content library (frozen versions, approved-only selection)
+CREATE TABLE IF NOT EXISTS education_pieces (
+    id VARCHAR(50) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    track VARCHAR(20) NOT NULL,
+    trimester VARCHAR(10),
+    month INT,
+    status VARCHAR(20) NOT NULL DEFAULT 'draft',
+    source_ref VARCHAR(500),
+    audio_url VARCHAR(500),
+    audio_mode VARCHAR(20) NOT NULL DEFAULT 'generated',
+    current_version INT NOT NULL DEFAULT 1,
+    reviewer VARCHAR(255),
+    approved_at VARCHAR(50),
+    review_note VARCHAR(1000),
+    user_id VARCHAR(100),
+    created_at VARCHAR(50) NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS education_versions (
+    id SERIAL PRIMARY KEY,
+    piece_id VARCHAR(50) REFERENCES education_pieces(id) ON DELETE CASCADE,
+    version INT NOT NULL,
+    script TEXT NOT NULL,
+    language VARCHAR(20) NOT NULL DEFAULT 'en',
+    reviewer VARCHAR(255),
+    approved_at VARCHAR(50),
+    created_at VARCHAR(50) NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS education_deliveries (
+    id SERIAL PRIMARY KEY,
+    piece_id VARCHAR(50),
+    version INT,
+    patient_id VARCHAR(50),
+    language VARCHAR(20),
+    stayed_pct INT,
+    replayed INT NOT NULL DEFAULT 0,
+    skipped BOOLEAN NOT NULL DEFAULT FALSE,
+    skip_reason VARCHAR(255),
+    conversation_id VARCHAR(100),
+    user_id VARCHAR(100),
+    created_at VARCHAR(50) NOT NULL DEFAULT ''
+);

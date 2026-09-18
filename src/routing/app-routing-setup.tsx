@@ -13,6 +13,7 @@ import {
   ReferralsPage,
   SettingsPage,
   CommunicationsPage,
+  EducationPage,
   VoiceTriageDemo,
 } from '@/pages/mamacare';
 import { Navigate, Route, Routes } from 'react-router';
@@ -30,6 +31,7 @@ export function AppRoutingSetup() {
           <Route path="/analytics" element={currentUserRole === 'Provider' ? <AnalyticsPage /> : <Navigate to="/" />} />
           <Route path="/facilities" element={<FacilitiesPage />} />
           <Route path="/communications" element={<CommunicationsPage />} />
+          <Route path="/education" element={<EducationPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/voice-triage-demo" element={<VoiceTriageDemo />} />
         </Route>
