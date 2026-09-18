@@ -61,11 +61,12 @@ export async function processPostCallWebhook(
   const [triage, prevRiskRes] = await Promise.all([
     triageTranscript(fullText),
     pool.query(
-      'SELECT risk_level FROM patients WHERE id = $1',
+      'SELECT risk_level, user_id FROM patients WHERE id = $1',
       [demoPatientId]
     )
   ]);
   const prevRiskLevel = prevRiskRes.rows[0]?.risk_level || 'LOW';
+  const ownerId = prevRiskRes.rows[0]?.user_id || null;
 
   // 4. Save consultation and updates to DB concurrently
   const dbPromises = [];
@@ -74,8 +75,8 @@ export async function processPostCallWebhook(
     pool.query(
       `INSERT INTO consultations
        (id, patient_id, patient_name, date, language, symptoms,
-        risk_level, ai_summary, transcript, triggered_referral)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        risk_level, ai_summary, transcript, triggered_referral, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         consultationId,
         demoPatientId,
@@ -87,6 +88,7 @@ export async function processPostCallWebhook(
         triage.summary,
         JSON.stringify(formattedTranscript),
         false,
+        ownerId,
       ]
     )
   );
@@ -104,8 +106,8 @@ export async function processPostCallWebhook(
     dbPromises.push(
       pool.query(
         `INSERT INTO risk_escalation_feed
-         (patient_id, patient_name, from_level, to_level, date, reason)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+         (patient_id, patient_name, from_level, to_level, date, reason, user_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           demoPatientId,
           'Nana Yaa',
@@ -113,6 +115,7 @@ export async function processPostCallWebhook(
           triage.riskLevel,
           today,
           triage.triageReason,
+          ownerId,
         ]
       )
     );
@@ -131,8 +134,8 @@ export async function processPostCallWebhook(
   dbPromises.push(
     pool.query(
       `INSERT INTO notifications
-       (id, ui_type, payload, is_read, timestamp, pathway)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+       (id, ui_type, payload, is_read, timestamp, pathway, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         notifId,
         'voice-triage',
@@ -149,6 +152,7 @@ export async function processPostCallWebhook(
         false,
         new Date().toISOString(),
         'Pregnancy',
+        ownerId,
       ]
     )
   );
@@ -157,8 +161,8 @@ export async function processPostCallWebhook(
   dbPromises.push(
     pool.query(
       `INSERT INTO action_logs
-       (id, patient_id, type, description, timestamp, performed_by)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+       (id, patient_id, type, description, timestamp, performed_by, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         'log-el-' + Date.now(),
         demoPatientId,
@@ -166,6 +170,7 @@ export async function processPostCallWebhook(
         `Voice triage: ${triage.riskLevel} — ${triage.triageReason}`,
         new Date().toISOString(),
         'LangChain (ElevenLabs to Gemini)',
+        ownerId,
       ]
     )
   );

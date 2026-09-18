@@ -229,7 +229,7 @@ app.get('/api/dashboard', async (req, res) => {
     const userId = (req as any).userId;
 
     const kpisResult = userId
-      ? await pool.query('SELECT * FROM kpis WHERE user_id = $1', [userId])
+      ? await pool.query('SELECT * FROM kpis WHERE (user_id = $1 OR user_id IS NULL)', [userId])
       : await pool.query('SELECT * FROM kpis');
     const kpis: Record<string, number> = {};
     kpisResult.rows.forEach((row) => {
@@ -237,7 +237,7 @@ app.get('/api/dashboard', async (req, res) => {
     });
 
     const feedResult = userId
-      ? await pool.query('SELECT * FROM risk_escalation_feed WHERE user_id = $1 ORDER BY id DESC LIMIT 10', [userId])
+      ? await pool.query('SELECT * FROM risk_escalation_feed WHERE (user_id = $1 OR user_id IS NULL) ORDER BY id DESC LIMIT 10', [userId])
       : await pool.query('SELECT * FROM risk_escalation_feed ORDER BY id DESC LIMIT 10');
 
     res.json({
@@ -271,7 +271,7 @@ app.get('/api/patients', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM patients WHERE user_id = $1 ORDER BY risk_level DESC, name ASC', [userId])
+      ? await pool.query('SELECT * FROM patients WHERE (user_id = $1 OR user_id IS NULL) ORDER BY risk_level DESC, name ASC', [userId])
       : await pool.query('SELECT * FROM patients ORDER BY risk_level DESC, name ASC');
     res.json(
       result.rows.map((row) => ({
@@ -311,7 +311,7 @@ app.post('/api/patients', async (req, res) => {
 
   try {
     await pool.query(
-      'INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, care_stage, registration_date, risk_history, phone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      'INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, care_stage, registration_date, risk_history, phone, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
       [
         id,
         name,
@@ -325,14 +325,15 @@ app.post('/api/patients', async (req, res) => {
         regDate,
         initialHistory,
         phone || null,
+        (req as any).userId || null,
       ],
     );
 
     // Insert to action log
     const logId = 'a' + Math.floor(100 + Math.random() * 900);
     await pool.query(
-      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         logId,
         id,
@@ -340,6 +341,7 @@ app.post('/api/patients', async (req, res) => {
         `Patient registered for MamaCare programme - ${pathway} pathway`,
         new Date().toISOString(),
         assignedChw || 'System',
+        (req as any).userId || null,
       ],
     );
 
@@ -386,7 +388,7 @@ app.patch('/api/patients/:id/care-stage', async (req, res) => {
       .replace('T', ' ')
       .substring(0, 19);
     await pool.query(
-      'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [
         logId,
         id,
@@ -394,6 +396,7 @@ app.patch('/api/patients/:id/care-stage', async (req, res) => {
         'Care stage transitioned to ' + careStage,
         timestamp,
         'System',
+        (req as any).userId || null,
       ],
     );
 
@@ -437,7 +440,7 @@ app.patch('/api/patients/:id/pathway', async (req, res) => {
       .replace('T', ' ')
       .substring(0, 19);
     await pool.query(
-      'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES ($1, $2, $3, $4, $5, $6)',
+      'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [
         logId,
         id,
@@ -445,6 +448,7 @@ app.patch('/api/patients/:id/pathway', async (req, res) => {
         `Pathway changed from ${prev.pathway} to ${pathway}`,
         timestamp,
         'System',
+        (req as any).userId || null,
       ],
     );
 
@@ -483,8 +487,8 @@ app.post('/api/outcomes', async (req, res) => {
 
   try {
     await pool.query(
-      'INSERT INTO outcomes (id, patient_id, metric_type, value, timestamp, recorded_by) VALUES ($1, $2, $3, $4, $5, $6)',
-      [id, patientId, metricType, value, timestamp, recordedBy || 'System'],
+      'INSERT INTO outcomes (id, patient_id, metric_type, value, timestamp, recorded_by, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [id, patientId, metricType, value, timestamp, recordedBy || 'System', (req as any).userId || null],
     );
     res
       .status(201)
@@ -586,9 +590,9 @@ app.post('/api/patients/:id/vitals', async (req, res) => {
     const logId = 'a' + Math.floor(100 + Math.random() * 900);
     const desc = `Vitals updated: ${bloodPressure ? `BP: ${bloodPressure} ` : ''}${kickCount ? `Kick Count: ${kickCount} ` : ''}${copingIndex ? `Coping Index: ${copingIndex}` : ''}`;
     await pool.query(
-      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [logId, id, 'Vitals', desc, timestamp, patient.assigned_chw || 'System'],
+      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [logId, id, 'Vitals', desc, timestamp, patient.assigned_chw || 'System', (req as any).userId || patient.user_id || null],
     );
 
     res.json({ success: true, riskLevel: newRisk });
@@ -616,8 +620,8 @@ app.post('/api/patients/:id/visits', async (req, res) => {
 
     const logId = 'a' + Math.floor(100 + Math.random() * 900);
     await pool.query(
-      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         logId,
         id,
@@ -625,6 +629,7 @@ app.post('/api/patients/:id/visits', async (req, res) => {
         `${visitType} visit completed: ${notes}`,
         timestamp,
         patient.assigned_chw || 'System',
+        (req as any).userId || patient.user_id || null,
       ],
     );
 
@@ -639,8 +644,8 @@ app.get('/api/consultations', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM consultations WHERE user_id = $1 ORDER BY created_at DESC', [userId])
-      : await pool.query('SELECT * FROM consultations ORDER BY created_at DESC');
+      ? await pool.query('SELECT * FROM consultations WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC LIMIT 200', [userId])
+      : await pool.query('SELECT * FROM consultations ORDER BY created_at DESC LIMIT 200');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -732,8 +737,8 @@ app.post('/api/consultations', async (req, res) => {
 
     // 5. Insert Consultation Record
     await pool.query(
-      `INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      `INSERT INTO consultations (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         id,
         patientId,
@@ -745,6 +750,7 @@ app.post('/api/consultations', async (req, res) => {
         aiSummary,
         JSON.stringify(transcript),
         triggeredReferral,
+        (req as any).userId || patient.user_id || null,
       ],
     );
 
@@ -786,8 +792,8 @@ app.get('/api/referrals', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM referrals WHERE user_id = $1 ORDER BY created_at DESC', [userId])
-      : await pool.query('SELECT * FROM referrals ORDER BY created_at DESC');
+      ? await pool.query('SELECT * FROM referrals WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC LIMIT 200', [userId])
+      : await pool.query('SELECT * FROM referrals ORDER BY created_at DESC LIMIT 200');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -838,8 +844,8 @@ app.post('/api/referrals', async (req, res) => {
     ]);
 
     await pool.query(
-      `INSERT INTO referrals (id, patient_id, patient_name, risk_level, status, facility_id, facility_name, assigned_chw, reason, created_at, timeline) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      `INSERT INTO referrals (id, patient_id, patient_name, risk_level, status, facility_id, facility_name, assigned_chw, reason, created_at, timeline, user_id) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
       [
         id,
         patientId,
@@ -852,14 +858,15 @@ app.post('/api/referrals', async (req, res) => {
         reason,
         timestamp,
         timeline,
+        (req as any).userId || patient.user_id || null,
       ],
     );
 
     // Insert to action log
     const logId = 'a' + Math.floor(100 + Math.random() * 900);
     await pool.query(
-      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         logId,
         patientId,
@@ -867,6 +874,7 @@ app.post('/api/referrals', async (req, res) => {
         `Referral created to ${facility.name}. Reason: ${reason}`,
         timestamp,
         patient.assigned_chw,
+        (req as any).userId || patient.user_id || null,
       ],
     );
 
@@ -912,8 +920,8 @@ app.patch('/api/referrals/:id', async (req, res) => {
     // Update action logs
     const logId = 'a' + Math.floor(100 + Math.random() * 900);
     await pool.query(
-      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+      `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         logId,
         referral.patient_id,
@@ -921,6 +929,7 @@ app.patch('/api/referrals/:id', async (req, res) => {
         `Referral status updated to ${status}.${outcome ? ` Outcome: ${outcome}` : ''}`,
         timestamp,
         referral.assigned_chw,
+        (req as any).userId || referral.user_id || null,
       ],
     );
 
@@ -976,8 +985,8 @@ app.get('/api/action-logs', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM action_logs WHERE user_id = $1 ORDER BY timestamp DESC', [userId])
-      : await pool.query('SELECT * FROM action_logs ORDER BY timestamp DESC');
+      ? await pool.query('SELECT * FROM action_logs WHERE (user_id = $1 OR user_id IS NULL) ORDER BY timestamp DESC LIMIT 200', [userId])
+      : await pool.query('SELECT * FROM action_logs ORDER BY timestamp DESC LIMIT 200');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -998,8 +1007,8 @@ app.get('/api/notifications', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM notifications WHERE user_id = $1 ORDER BY timestamp DESC', [userId])
-      : await pool.query('SELECT * FROM notifications ORDER BY timestamp DESC');
+      ? await pool.query('SELECT * FROM notifications WHERE (user_id = $1 OR user_id IS NULL) ORDER BY timestamp DESC LIMIT 200', [userId])
+      : await pool.query('SELECT * FROM notifications ORDER BY timestamp DESC LIMIT 200');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1209,7 +1218,7 @@ app.post('/api/sms/send', async (req, res) => {
       // Log to database
       const id = 'c' + Date.now();
       await pool.query(
-        'INSERT INTO communications (id, pathway, recipient_type, recipient_count, message, status, sent_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        'INSERT INTO communications (id, pathway, recipient_type, recipient_count, message, status, sent_at, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
         [
           id,
           pathway || 'Unknown',
@@ -1218,6 +1227,7 @@ app.post('/api/sms/send', async (req, res) => {
           message,
           'sent',
           new Date().toISOString(),
+          (req as any).userId || null,
         ],
       );
 
@@ -1226,7 +1236,7 @@ app.post('/api/sms/send', async (req, res) => {
       // For scheduling, we just log it to the schedules table
       const id = 's' + Date.now();
       await pool.query(
-        'INSERT INTO schedules (id, pathway, appointment_date, appointment_time, reminder_timing, message, patients_count, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        'INSERT INTO schedules (id, pathway, appointment_date, appointment_time, reminder_timing, message, patients_count, status, created_at, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
         [
           id,
           pathway || 'Unknown',
@@ -1237,6 +1247,7 @@ app.post('/api/sms/send', async (req, res) => {
           recipientCount || to.length,
           'active',
           new Date().toISOString(),
+          (req as any).userId || null,
         ],
       );
       res.json({ success: true, status: 'scheduled' });
@@ -1257,7 +1268,7 @@ app.get('/api/communications/:pathway', async (req, res) => {
     const { pathway } = req.params;
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM communications WHERE pathway = $1 AND user_id = $2 ORDER BY sent_at DESC', [pathway, userId])
+      ? await pool.query('SELECT * FROM communications WHERE pathway = $1 AND (user_id = $2 OR user_id IS NULL) ORDER BY sent_at DESC', [pathway, userId])
       : await pool.query('SELECT * FROM communications WHERE pathway = $1 ORDER BY sent_at DESC', [pathway]);
     res.json(
       result.rows.map((row) => ({
@@ -1281,7 +1292,7 @@ app.get('/api/schedules/:pathway', async (req, res) => {
     const { pathway } = req.params;
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM schedules WHERE pathway = $1 AND user_id = $2 ORDER BY created_at DESC', [pathway, userId])
+      ? await pool.query('SELECT * FROM schedules WHERE pathway = $1 AND (user_id = $2 OR user_id IS NULL) ORDER BY created_at DESC', [pathway, userId])
       : await pool.query('SELECT * FROM schedules WHERE pathway = $1 ORDER BY created_at DESC', [pathway]);
     res.json(
       result.rows.map((row) => ({
@@ -1371,7 +1382,7 @@ app.post('/api/ivr/callback', async (req, res) => {
     try {
       // 1. Find patient by phone number
       const patientRes = await pool.query(
-        'SELECT id, care_stage, language FROM patients WHERE phone = $1 OR phone = $2',
+        'SELECT id, care_stage, language, user_id FROM patients WHERE phone = $1 OR phone = $2',
         [callerNumber, '+' + callerNumber.replace('+', '')],
       );
       if (patientRes.rows.length === 0) {
@@ -1408,7 +1419,7 @@ app.post('/api/ivr/callback', async (req, res) => {
         .replace('T', ' ')
         .substring(0, 19);
       await pool.query(
-        'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by) VALUES ($1, $2, $3, $4, $5, $6)',
+        'INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
         [
           logId,
           patient.id,
@@ -1416,6 +1427,7 @@ app.post('/api/ivr/callback', async (req, res) => {
           'IVR Report: ' + transcript + ' -> ' + triage.riskLevel,
           timestamp,
           'System',
+          patient.user_id || null,
         ],
       );
     } catch (err) {
