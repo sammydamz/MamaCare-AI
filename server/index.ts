@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import multer from 'multer';
 import pg from 'pg';
 import { buildTriagePrompt } from './prompts.js';
+import { publishSSE, subscribeSSE } from './services/realtime.js';
 import { voice } from './services/africas-talking.js';
 import { transcribeAudio } from './services/khaya.js';
 import { triageSymptoms } from './services/triage.js';
@@ -105,6 +106,17 @@ pool.connect((err, client, release) => {
 
 // --- API ENDPOINTS ---
 
+// ponytail: one place for tenant scoping — every user-filtered read uses scoped(),
+// every runtime write uses ownerId(). New rows carry their owner; NULL-owner
+// legacy/async rows stay visible via the OR branch.
+function scoped(param = '$1') {
+  return `(user_id = ${param} OR user_id IS NULL)`;
+}
+
+function ownerId(req: any, patient?: any): string | null {
+  return req?.userId || patient?.user_id || null;
+}
+
 // POST /api/voice/upload-recording/:patientId
 app.post(
   '/api/voice/upload-recording/:patientId',
@@ -126,6 +138,7 @@ app.post(
       }
 
       res.json(result);
+      publishSSE('changed', { scope: 'consultations' });
     } catch (err: any) {
       if (req.file && fs.existsSync(req.file.path)) {
         try {
@@ -229,7 +242,7 @@ app.get('/api/dashboard', async (req, res) => {
     const userId = (req as any).userId;
 
     const kpisResult = userId
-      ? await pool.query('SELECT * FROM kpis WHERE (user_id = $1 OR user_id IS NULL)', [userId])
+      ? await pool.query(`SELECT * FROM kpis WHERE ${scoped()}`, [userId])
       : await pool.query('SELECT * FROM kpis');
     const kpis: Record<string, number> = {};
     kpisResult.rows.forEach((row) => {
@@ -237,7 +250,7 @@ app.get('/api/dashboard', async (req, res) => {
     });
 
     const feedResult = userId
-      ? await pool.query('SELECT * FROM risk_escalation_feed WHERE (user_id = $1 OR user_id IS NULL) ORDER BY id DESC LIMIT 10', [userId])
+      ? await pool.query(`SELECT * FROM risk_escalation_feed WHERE ${scoped()} ORDER BY id DESC LIMIT 10`, [userId])
       : await pool.query('SELECT * FROM risk_escalation_feed ORDER BY id DESC LIMIT 10');
 
     res.json({
@@ -271,8 +284,8 @@ app.get('/api/patients', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM patients WHERE (user_id = $1 OR user_id IS NULL) ORDER BY risk_level DESC, name ASC', [userId])
-      : await pool.query('SELECT * FROM patients ORDER BY risk_level DESC, name ASC');
+      ? await pool.query(`SELECT * FROM patients WHERE ${scoped()} ORDER BY risk_level DESC, name ASC LIMIT 200`, [userId])
+      : await pool.query('SELECT * FROM patients ORDER BY risk_level DESC, name ASC LIMIT 200');
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -325,7 +338,7 @@ app.post('/api/patients', async (req, res) => {
         regDate,
         initialHistory,
         phone || null,
-        (req as any).userId || null,
+        ownerId(req),
       ],
     );
 
@@ -341,7 +354,7 @@ app.post('/api/patients', async (req, res) => {
         `Patient registered for MamaCare programme - ${pathway} pathway`,
         new Date().toISOString(),
         assignedChw || 'System',
-        (req as any).userId || null,
+        ownerId(req),
       ],
     );
 
@@ -396,7 +409,7 @@ app.patch('/api/patients/:id/care-stage', async (req, res) => {
         'Care stage transitioned to ' + careStage,
         timestamp,
         'System',
-        (req as any).userId || null,
+        ownerId(req),
       ],
     );
 
@@ -448,7 +461,7 @@ app.patch('/api/patients/:id/pathway', async (req, res) => {
         `Pathway changed from ${prev.pathway} to ${pathway}`,
         timestamp,
         'System',
-        (req as any).userId || null,
+        ownerId(req),
       ],
     );
 
@@ -488,7 +501,7 @@ app.post('/api/outcomes', async (req, res) => {
   try {
     await pool.query(
       'INSERT INTO outcomes (id, patient_id, metric_type, value, timestamp, recorded_by, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-      [id, patientId, metricType, value, timestamp, recordedBy || 'System', (req as any).userId || null],
+      [id, patientId, metricType, value, timestamp, recordedBy || 'System', ownerId(req)],
     );
     res
       .status(201)
@@ -592,7 +605,7 @@ app.post('/api/patients/:id/vitals', async (req, res) => {
     await pool.query(
       `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) 
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [logId, id, 'Vitals', desc, timestamp, patient.assigned_chw || 'System', (req as any).userId || patient.user_id || null],
+      [logId, id, 'Vitals', desc, timestamp, patient.assigned_chw || 'System', ownerId(req, patient)],
     );
 
     res.json({ success: true, riskLevel: newRisk });
@@ -629,7 +642,7 @@ app.post('/api/patients/:id/visits', async (req, res) => {
         `${visitType} visit completed: ${notes}`,
         timestamp,
         patient.assigned_chw || 'System',
-        (req as any).userId || patient.user_id || null,
+        ownerId(req, patient),
       ],
     );
 
@@ -639,13 +652,34 @@ app.post('/api/patients/:id/visits', async (req, res) => {
   }
 });
 
+// GET /api/consultations/stream — SSE push; clients refetch the bounded
+// list on 'changed' (payload-free: no row-mapping duplication server-side)
+app.get('/api/consultations/stream', (_req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.write(': connected\n\n');
+  const hb = setInterval(() => {
+    try {
+      res.write(': ping\n\n');
+    } catch {}
+  }, 25000);
+  const unsub = subscribeSSE(res);
+  _req.on('close', () => {
+    clearInterval(hb);
+    unsub();
+  });
+});
+
 // GET /api/consultations
 app.get('/api/consultations', async (req, res) => {
   try {
     const userId = (req as any).userId;
+    // ponytail: bounded + client-tunable; parseInt kills injection, Math.min caps abuse
+    const limit = Math.min(parseInt(req.query.limit as string) || 200, 500);
     const result = userId
-      ? await pool.query('SELECT * FROM consultations WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC LIMIT 200', [userId])
-      : await pool.query('SELECT * FROM consultations ORDER BY created_at DESC LIMIT 200');
+      ? await pool.query(`SELECT * FROM consultations WHERE ${scoped()} ORDER BY created_at DESC LIMIT ${limit}`, [userId])
+      : await pool.query(`SELECT * FROM consultations ORDER BY created_at DESC LIMIT ${limit}`);
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -750,7 +784,7 @@ app.post('/api/consultations', async (req, res) => {
         aiSummary,
         JSON.stringify(transcript),
         triggeredReferral,
-        (req as any).userId || patient.user_id || null,
+        ownerId(req, patient),
       ],
     );
 
@@ -781,6 +815,7 @@ app.post('/api/consultations', async (req, res) => {
       referralTriggered: false,
       referralId: null,
     });
+    publishSSE('changed', { scope: 'consultations' });
   } catch (err: any) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -792,7 +827,7 @@ app.get('/api/referrals', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM referrals WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC LIMIT 200', [userId])
+      ? await pool.query(`SELECT * FROM referrals WHERE ${scoped()} ORDER BY created_at DESC LIMIT 200`, [userId])
       : await pool.query('SELECT * FROM referrals ORDER BY created_at DESC LIMIT 200');
     res.json(
       result.rows.map((row) => ({
@@ -858,7 +893,7 @@ app.post('/api/referrals', async (req, res) => {
         reason,
         timestamp,
         timeline,
-        (req as any).userId || patient.user_id || null,
+        ownerId(req, patient),
       ],
     );
 
@@ -874,7 +909,7 @@ app.post('/api/referrals', async (req, res) => {
         `Referral created to ${facility.name}. Reason: ${reason}`,
         timestamp,
         patient.assigned_chw,
-        (req as any).userId || patient.user_id || null,
+        ownerId(req, patient),
       ],
     );
 
@@ -929,7 +964,7 @@ app.patch('/api/referrals/:id', async (req, res) => {
         `Referral status updated to ${status}.${outcome ? ` Outcome: ${outcome}` : ''}`,
         timestamp,
         referral.assigned_chw,
-        (req as any).userId || referral.user_id || null,
+        ownerId(req, referral),
       ],
     );
 
@@ -984,9 +1019,10 @@ app.post('/api/facilities', async (req, res) => {
 app.get('/api/action-logs', async (req, res) => {
   try {
     const userId = (req as any).userId;
+    const limit = Math.min(parseInt(req.query.limit as string) || 200, 500);
     const result = userId
-      ? await pool.query('SELECT * FROM action_logs WHERE (user_id = $1 OR user_id IS NULL) ORDER BY timestamp DESC LIMIT 200', [userId])
-      : await pool.query('SELECT * FROM action_logs ORDER BY timestamp DESC LIMIT 200');
+      ? await pool.query(`SELECT * FROM action_logs WHERE ${scoped()} ORDER BY timestamp DESC LIMIT ${limit}`, [userId])
+      : await pool.query(`SELECT * FROM action_logs ORDER BY timestamp DESC LIMIT ${limit}`);
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1007,7 +1043,7 @@ app.get('/api/notifications', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM notifications WHERE (user_id = $1 OR user_id IS NULL) ORDER BY timestamp DESC LIMIT 200', [userId])
+      ? await pool.query(`SELECT * FROM notifications WHERE ${scoped()} ORDER BY timestamp DESC LIMIT 200`, [userId])
       : await pool.query('SELECT * FROM notifications ORDER BY timestamp DESC LIMIT 200');
     res.json(
       result.rows.map((row) => ({
@@ -1227,7 +1263,7 @@ app.post('/api/sms/send', async (req, res) => {
           message,
           'sent',
           new Date().toISOString(),
-          (req as any).userId || null,
+          ownerId(req),
         ],
       );
 
@@ -1247,7 +1283,7 @@ app.post('/api/sms/send', async (req, res) => {
           recipientCount || to.length,
           'active',
           new Date().toISOString(),
-          (req as any).userId || null,
+          ownerId(req),
         ],
       );
       res.json({ success: true, status: 'scheduled' });
@@ -1268,7 +1304,7 @@ app.get('/api/communications/:pathway', async (req, res) => {
     const { pathway } = req.params;
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM communications WHERE pathway = $1 AND (user_id = $2 OR user_id IS NULL) ORDER BY sent_at DESC', [pathway, userId])
+      ? await pool.query(`SELECT * FROM communications WHERE pathway = $1 AND ${scoped('$2')} ORDER BY sent_at DESC LIMIT 200`, [pathway, userId])
       : await pool.query('SELECT * FROM communications WHERE pathway = $1 ORDER BY sent_at DESC', [pathway]);
     res.json(
       result.rows.map((row) => ({
@@ -1292,7 +1328,7 @@ app.get('/api/schedules/:pathway', async (req, res) => {
     const { pathway } = req.params;
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM schedules WHERE pathway = $1 AND (user_id = $2 OR user_id IS NULL) ORDER BY created_at DESC', [pathway, userId])
+      ? await pool.query(`SELECT * FROM schedules WHERE pathway = $1 AND ${scoped('$2')} ORDER BY created_at DESC LIMIT 200`, [pathway, userId])
       : await pool.query('SELECT * FROM schedules WHERE pathway = $1 ORDER BY created_at DESC', [pathway]);
     res.json(
       result.rows.map((row) => ({
@@ -1430,6 +1466,7 @@ app.post('/api/ivr/callback', async (req, res) => {
           patient.user_id || null,
         ],
       );
+      publishSSE('changed', { scope: 'consultations' });
     } catch (err) {
       console.error('Error processing IVR callback:', err);
     }

@@ -1,4 +1,5 @@
 import { triageTranscript, type TriageResult } from './triage-chain.js';
+import { publishSSE } from './realtime.js';
 
 interface TranscriptEntry {
   role: 'agent' | 'user';
@@ -176,6 +177,8 @@ export async function processPostCallWebhook(
   );
 
   await Promise.all(dbPromises);
+
+  publishSSE('changed', { scope: 'consultations' });
 
   console.log(
     `[Webhook] Processed ${data.conversation_id}: ` +

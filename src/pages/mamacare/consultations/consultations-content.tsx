@@ -28,12 +28,26 @@ export function ConsultationsContent() {
   const [patientFilter, setPatientFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
 
-  // Quietly refresh consultations on mount + every 30s so new
-  // voice sessions appear without a manual reload (no global loading)
+  // Live updates via SSE; 60s poll stays as safety net only
   useEffect(() => {
     refreshConsultationsOnly();
-    const t = setInterval(refreshConsultationsOnly, 30000);
-    return () => clearInterval(t);
+    let es: EventSource | null = null;
+    try {
+      const raw = localStorage.getItem('mamacare-current-user');
+      const email = raw ? JSON.parse(raw).email || '' : '';
+      es = new EventSource(
+        `/api/consultations/stream?email=${encodeURIComponent(email)}`,
+      );
+      es.addEventListener('changed', () => refreshConsultationsOnly());
+      es.onerror = () => es?.close();
+    } catch {
+      /* poll fallback below covers it */
+    }
+    const t = setInterval(refreshConsultationsOnly, 60000);
+    return () => {
+      es?.close();
+      clearInterval(t);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
