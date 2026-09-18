@@ -28,6 +28,7 @@
     "@formatjs/intl-pluralrules": "^5.4.4",
     "@formatjs/intl-relativetimeformat": "^11.4.11",
     "@google/generative-ai": "^0.24.1",
+    "@heroui/react": "^3.2.6",
     "@hookform/resolvers": "^5.2.1",
     "@huggingface/inference": "^4.13.22",
     "@langchain/core": "^1.2.1",
