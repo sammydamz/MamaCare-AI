@@ -117,7 +117,8 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
   const refreshAll = async () => {
     setIsLoading(true);
     try {
-      const [pts, cons, refs, facs, logs, dash, an] = await Promise.all([
+      // ponytail: allSettled — one slow/failing endpoint must not wipe the whole page
+      const results = await Promise.allSettled([
         mamacareApi.fetchPatients(),
         mamacareApi.fetchConsultations(),
         mamacareApi.fetchReferrals(),
@@ -126,22 +127,17 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
         mamacareApi.fetchDashboard(),
         mamacareApi.fetchAnalytics(activePathway),
       ]);
-      setPatients(pts);
-      setConsultations(cons);
-      setReferrals(refs);
-      setFacilities(facs);
-      setActionLogs(logs);
-      setDashboardData(dash);
-      setAnalyticsData(an);
+      const val = <T,>(i: number, fallback: T): T =>
+        results[i].status === 'fulfilled' ? (results[i] as PromiseFulfilledResult<T>).value : fallback;
+      setPatients(val(0, patients));
+      setConsultations(val(1, consultations));
+      setReferrals(val(2, referrals));
+      setFacilities(val(3, facilities));
+      setActionLogs(val(4, actionLogs));
+      setDashboardData(val(5, dashboardData));
+      setAnalyticsData(val(6, analyticsData));
     } catch (error) {
       console.error('MamaCare API offline.', error);
-      setPatients([]);
-      setConsultations([]);
-      setReferrals([]);
-      setFacilities([]);
-      setActionLogs([]);
-      setDashboardData(null);
-      setAnalyticsData(null);
     } finally {
       setIsLoading(false);
     }

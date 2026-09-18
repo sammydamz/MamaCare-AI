@@ -178,6 +178,14 @@ DO $$ BEGIN ALTER TABLE notifications ADD COLUMN IF NOT EXISTS user_id VARCHAR(5
 DO $$ BEGIN ALTER TABLE kpis ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE risk_escalation_feed ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 
+-- Indexes for list endpoints (consultations/action-logs were full-table scans)
+CREATE INDEX IF NOT EXISTS idx_consultations_user_created ON consultations(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_action_logs_user_ts ON action_logs(user_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_patients_user ON patients(user_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_user ON referrals(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_consultations_patient ON consultations(patient_id);
+
 -- Seed data (use ON CONFLICT DO NOTHING to avoid duplicate inserts)
 INSERT INTO facilities (id, name, distance, hours, services, phone, address) VALUES
     ('f001', 'Korle-Bu Teaching Hospital', '2.8 km', '24/7 Emergency', ARRAY['Obstetrics', 'Neonatal ICU', 'Emergency', 'Laboratory', 'Ultrasound'], '+233-30-267-3000', 'Guggisberg Avenue, Korle Gonno, Accra'),

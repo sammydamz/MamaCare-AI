@@ -28,9 +28,12 @@ export function ConsultationsContent() {
   const [patientFilter, setPatientFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
 
-  // Quietly refresh consultations on mount (no global loading)
+  // Quietly refresh consultations on mount + every 30s so new
+  // voice sessions appear without a manual reload (no global loading)
   useEffect(() => {
     refreshConsultationsOnly();
+    const t = setInterval(refreshConsultationsOnly, 30000);
+    return () => clearInterval(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

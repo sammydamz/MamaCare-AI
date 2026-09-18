@@ -132,8 +132,8 @@ export async function processRecordedSession(audioPath: string, patientId: strin
 
     await pool.query(
       `INSERT INTO consultations 
-      (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral, audio_url)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      (id, patient_id, patient_name, date, language, symptoms, risk_level, ai_summary, transcript, triggered_referral, audio_url, user_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
       [
         id, 
         patientId, 
@@ -145,7 +145,8 @@ export async function processRecordedSession(audioPath: string, patientId: strin
         aiSummary, 
         transcriptJson,
         triggeredReferral,
-        audioUrl
+        audioUrl,
+        patient.user_id || null
       ]
     );
 
