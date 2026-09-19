@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { useMamaCare } from '@/providers/mamacare-provider';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,8 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -16,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useMamaCare } from '@/providers/mamacare-provider';
+import { Textarea } from '@/components/ui/textarea';
 
 export function CreateReferralDialog({ patientId }: { patientId: string }) {
   const [open, setOpen] = useState(false);
@@ -25,14 +26,19 @@ export function CreateReferralDialog({ patientId }: { patientId: string }) {
   const { facilities, createReferral } = useMamaCare();
 
   const handleSubmit = async () => {
-    if (!facilityId || !reason) return;
+    if (!facilityId || !reason) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
     try {
       await createReferral({ patientId, facilityId, reason });
+      toast.success('Referral created successfully');
       setOpen(false);
       setFacilityId('');
       setReason('');
     } catch (err) {
       console.error(err);
+      toast.error('Failed to create referral');
     }
   };
 
@@ -79,7 +85,11 @@ export function CreateReferralDialog({ patientId }: { patientId: string }) {
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleSubmit} disabled={!facilityId || !reason}>
+            <Button
+              variant="primary"
+              onClick={handleSubmit}
+              disabled={!facilityId || !reason}
+            >
               Submit Referral
             </Button>
           </div>

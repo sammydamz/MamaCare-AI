@@ -28,6 +28,18 @@ export interface Patient {
   copingIndex?: number
   sleepQuality?: 'Poor' | 'Fair' | 'Good'
   bleedingStatus?: string
+  address?: string
+  trimester?: 'first' | 'second' | 'third'
+  gestationalWeeks?: number
+  lmpDate?: string
+  edd?: string
+  conditions?: string[]
+  otherConditions?: string
+  emergencyContact?: string
+  emergencyPhone?: string
+  occupation?: string
+  allergies?: string
+  currentMedications?: string
 }
 
 export interface Consultation {
