@@ -17,6 +17,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { usePathway, type PathwayType } from '@/providers/pathway-provider';
+import { EducationDeliveryPanel } from './education-delivery-panel';
 
 const selectCls = 'rounded-lg border border-input bg-white px-3 py-2 text-sm';
 
@@ -57,12 +59,14 @@ async function api(url: string, options: RequestInit = {}) {
 }
 
 const TRACKS = ['prenatal', 'postnatal', 'bereavement'];
+const TRACK_LABEL: Record<string, string> = { prenatal: 'Prenatal', postnatal: 'Postnatal', bereavement: 'Bereavement' };
+const PATHWAY_TRACK: Record<PathwayType, string> = { Pregnancy: 'prenatal', Postnatal: 'postnatal', 'Post-Loss': 'bereavement' };
 const LANGS = ['en', 'tw', 'dag', 'ewe', 'ga'];
 
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const STATUS_VARIANT: Record<string, 'primary' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'> = {
   draft: 'secondary',
   'in-review': 'outline',
-  approved: 'default',
+  approved: 'success',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -80,11 +84,13 @@ function targetLabel(p: EduPiece) {
 const emptyForm = { title: '', track: 'prenatal', trimester: '', month: '', sourceRef: '', script: '', language: 'en', audioMode: 'generated' };
 
 export function EducationContent() {
+  const { activePathway } = usePathway();
+  const pathwayTrack = PATHWAY_TRACK[activePathway];
   const [tab, setTab] = useState('library');
   const [pieces, setPieces] = useState<EduPiece[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [trackFilter, setTrackFilter] = useState<string>('all');
+  const [trackFilter, setTrackFilter] = useState<string>(pathwayTrack);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<EduPiece | null>(null);
@@ -106,6 +112,10 @@ export function EducationContent() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    setTrackFilter(pathwayTrack);
+  }, [pathwayTrack]);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -179,6 +189,7 @@ export function EducationContent() {
           <TabsTrigger value="library">Library ({pieces.length})</TabsTrigger>
           <TabsTrigger value="review">Review queue ({inReview.length})</TabsTrigger>
           <TabsTrigger value="gaps">Gap report ({gaps.length})</TabsTrigger>
+          <TabsTrigger value="deliver">Deliver</TabsTrigger>
         </TabsList>
 
         <TabsContent value="library">
@@ -309,6 +320,12 @@ export function EducationContent() {
             ))}
           </div>
         </TabsContent>
+
+        <TabsContent value="deliver">
+          <div className="py-4">
+            <EducationDeliveryPanel />
+          </div>
+        </TabsContent>
       </Tabs>
 
       <Dialog open={drawerOpen} onOpenChange={setDrawerOpen}>
@@ -325,8 +342,15 @@ export function EducationContent() {
             <div className="flex gap-3">
               <div className="flex flex-col gap-1.5 flex-1">
                 <Label>Track</Label>
-                <select value={form.track} onChange={(e) => set('track')(e)} className={selectCls}>
-                  {TRACKS.map((t) => <option key={t} value={t}>{t}</option>)}
+                <select
+                  value={form.track}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setForm((f) => ({ ...f, track: v, trimester: '', month: '' }));
+                  }}
+                  className={selectCls}
+                >
+                  {TRACKS.map((t) => <option key={t} value={t}>{TRACK_LABEL[t]}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5 w-32">
@@ -336,15 +360,33 @@ export function EducationContent() {
                 </select>
               </div>
             </div>
-            <div className="flex gap-3">
-              <div className="flex flex-col gap-1.5 flex-1">
+            {form.track === 'prenatal' && (
+              <div className="flex flex-col gap-1.5">
                 <Label>Trimester</Label>
-                <Input value={form.trimester} onChange={set('trimester')} placeholder="1st / 2nd / 3rd (optional)" />
+                <select value={form.trimester} onChange={(e) => set('trimester')(e)} className={selectCls}>
+                  <option value="">All pregnancy (no trimester)</option>
+                  <option value="1st">1st trimester (weeks 1–12)</option>
+                  <option value="2nd">2nd trimester (weeks 13–26)</option>
+                  <option value="3rd">3rd trimester (weeks 27–40)</option>
+                </select>
               </div>
-              <div className="flex flex-col gap-1.5 w-44">
-                <Label>Month</Label>
+            )}
+            {form.track === 'postnatal' && (
+              <div className="flex flex-col gap-1.5">
+                <Label>Month after birth</Label>
                 <Input value={form.month} onChange={set('month')} placeholder="Month 1–9 (optional)" inputMode="numeric" />
               </div>
+            )}
+            {form.track === 'bereavement' && (
+              <p className="text-xs text-muted-foreground">Applies to all bereaved mothers. No trimester or month targeting.</p>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <Label>Audio</Label>
+              <select value={form.audioMode} onChange={(e) => set('audioMode')(e)} className={selectCls}>
+                <option value="generated">Generate from script (local-language TTS)</option>
+                <option value="recorded">Record in studio</option>
+                <option value="uploaded">Upload an audio file</option>
+              </select>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>Source reference</Label>

@@ -1554,6 +1554,7 @@ app.patch('/api/education/:id', async (req, res) => {
       reviewer,
       note,
       audioUrl,
+      audioMode,
     } = req.body;
     const cur = await pool.query(
       'SELECT * FROM education_pieces WHERE id = $1',
@@ -1573,7 +1574,7 @@ app.patch('/api/education/:id', async (req, res) => {
         return;
       }
       await pool.query(
-        'UPDATE education_pieces SET title=$2, track=$3, trimester=$4, month=$5, source_ref=$6 WHERE id=$1',
+        'UPDATE education_pieces SET title=$2, track=$3, trimester=$4, month=$5, source_ref=$6, audio_mode=$7 WHERE id=$1',
         [
           p.id,
           title ?? p.title,
@@ -1581,6 +1582,7 @@ app.patch('/api/education/:id', async (req, res) => {
           trimester ?? p.trimester,
           month ?? p.month,
           sourceRef ?? p.source_ref,
+          audioMode ?? p.audio_mode,
         ],
       );
       if (script)
