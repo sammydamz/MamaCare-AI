@@ -77,7 +77,7 @@ export function EducationCallPanel() {
     <Card className="mt-4 shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-base">Education segment</CardTitle>
-        <CardDescription>Approved lesson for this call — screening first, lesson after.</CardDescription>
+        <CardDescription>Approved lesson for this call: screening first, lesson after.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex gap-2">
@@ -98,7 +98,7 @@ export function EducationCallPanel() {
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm">{piece.title}</span>
               <Badge variant="secondary">v{piece.version} · {piece.language}</Badge>
-              {piece.fallback && <Badge variant="warning">English fallback — logged</Badge>}
+              {piece.fallback && <Badge variant="warning">English fallback, logged</Badge>}
             </div>
             <p className="text-sm text-muted-foreground line-clamp-4">{piece.script}</p>
             {piece.audioUrl && <audio controls src={piece.audioUrl} className="w-full" />}
@@ -108,7 +108,7 @@ export function EducationCallPanel() {
                 Replay ({replays})
               </Button>
               <Button size="sm" variant="destructive" onClick={() => record({ skipped: true, skipReason: 'danger flag' })}>
-                Skip — danger
+                Skip: danger
               </Button>
             </div>
           </div>

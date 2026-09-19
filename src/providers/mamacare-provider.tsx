@@ -159,7 +159,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
   const refreshAll = async () => {
     setIsLoading(true);
     try {
-      // ponytail: allSettled — one slow/failing endpoint must not wipe the whole page
+      // ponytail: allSettled, so one slow/failing endpoint does not wipe the whole page
       const results = await Promise.allSettled([
         mamacareApi.fetchPatients(),
         mamacareApi.fetchConsultations(),

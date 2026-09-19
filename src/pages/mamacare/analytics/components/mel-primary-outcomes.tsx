@@ -32,7 +32,7 @@ export function MelPrimaryOutcomes() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Primary Outcome Metrics — {activePathway}</CardTitle>
+        <CardTitle>Primary Outcome Metrics: {activePathway}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
