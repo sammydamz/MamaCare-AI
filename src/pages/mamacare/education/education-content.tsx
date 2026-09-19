@@ -169,7 +169,7 @@ export function EducationContent() {
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Clinician-approved lessons only. Approved pieces freeze — edits create a new version.
+          Clinician-approved lessons only. Approved pieces freeze. Edits create a new version.
         </p>
         <Button onClick={openNew}>+ New piece</Button>
       </div>
@@ -229,7 +229,7 @@ export function EducationContent() {
                       <TableCell>{targetLabel(p)}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          {(p.languages.length ? p.languages : ['—']).map((l) => <Badge key={l} variant="secondary" className="text-xs">{l}</Badge>)}
+                          {(p.languages.length ? p.languages : ['None']).map((l) => <Badge key={l} variant="secondary" className="text-xs">{l}</Badge>)}
                         </div>
                       </TableCell>
                       <TableCell><Badge variant={STATUS_VARIANT[p.status]}>{STATUS_LABEL[p.status]}</Badge></TableCell>

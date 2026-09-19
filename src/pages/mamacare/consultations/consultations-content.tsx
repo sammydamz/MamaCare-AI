@@ -194,7 +194,7 @@ function ConsultationRow({
               </Badge>
             )
           ) : (
-            <span className="text-muted-foreground text-xs">—</span>
+            <span className="text-muted-foreground text-xs">Not recorded</span>
           )}
         </TableCell>
         <TableCell className="max-w-xs">

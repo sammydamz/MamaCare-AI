@@ -45,7 +45,7 @@ function EducationBlock({ patientId }: { patientId: string }) {
       <div className="rounded-lg border p-3">
         <div className="text-sm">
           {latest.skipped ? (
-            <span>Lesson skipped — {latest.skip_reason || 'danger flag'}. Requeued for next call.</span>
+            <span>Lesson skipped: {latest.skip_reason || 'danger flag'}. Requeued for next call.</span>
           ) : (
             <span>
               Heard {latest.piece_id} (v{latest.version}, {latest.language})
