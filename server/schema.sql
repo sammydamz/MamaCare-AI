@@ -190,6 +190,21 @@ DO $$ BEGIN ALTER TABLE notifications ADD COLUMN IF NOT EXISTS user_id VARCHAR(5
 DO $$ BEGIN ALTER TABLE kpis ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE risk_escalation_feed ADD COLUMN IF NOT EXISTS user_id VARCHAR(50) REFERENCES users(id); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 
+-- Add registration fields to pre-existing patients tables (CREATE TABLE IF NOT EXISTS skips them)
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS care_stage VARCHAR(50) NOT NULL DEFAULT 'prenatal'; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS address TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS trimester VARCHAR(20); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS gestational_weeks INT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS lmp_date VARCHAR(50); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS edd VARCHAR(50); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS conditions TEXT[]; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS other_conditions TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(255); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS emergency_phone VARCHAR(50); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS occupation VARCHAR(255); EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS allergies TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+DO $$ BEGIN ALTER TABLE patients ADD COLUMN IF NOT EXISTS current_medications TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$;
+
 -- Indexes for list endpoints (consultations/action-logs were full-table scans)
 CREATE INDEX IF NOT EXISTS idx_consultations_user_created ON consultations(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_action_logs_user_ts ON action_logs(user_id, timestamp DESC);
