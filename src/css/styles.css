@@ -4,9 +4,6 @@
 /* ReUI Configs */
 @import './config.reui.css';
 
-/* HeroUI */
-@import '@heroui/react/styles';
-
 /** Global Styles **/
 @layer base {
   * {
