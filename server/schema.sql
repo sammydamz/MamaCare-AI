@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS patients (
     risk_history JSONB NOT NULL DEFAULT '[]'::jsonb,
     coping_index INT,
     phone VARCHAR(50),
-    date_of_birth VARCHAR(50),
     address TEXT,
     trimester VARCHAR(20),
     gestational_weeks INT,

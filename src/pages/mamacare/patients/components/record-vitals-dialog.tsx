@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
+import type { Pathway } from '@/lib/mamacare/types';
+import { useMamaCare } from '@/providers/mamacare-provider';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,12 +11,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { Pathway } from '@/lib/mamacare/types';
-import { useMamaCare } from '@/providers/mamacare-provider';
 
-export function RecordVitalsDialog({ patientId, pathway }: { patientId: string; pathway: Pathway }) {
+export function RecordVitalsDialog({
+  patientId,
+  pathway,
+}: {
+  patientId: string;
+  pathway: Pathway;
+}) {
   const [open, setOpen] = useState(false);
   const [bloodPressure, setBloodPressure] = useState('');
   const [kickCount, setKickCount] = useState('');
@@ -26,12 +33,14 @@ export function RecordVitalsDialog({ patientId, pathway }: { patientId: string; 
         kickCount: kickCount ? parseInt(kickCount) : undefined,
         copingIndex: copingIndex ? parseInt(copingIndex) : undefined,
       });
+      toast.success('Vitals recorded successfully');
       setOpen(false);
       setBloodPressure('');
       setKickCount('');
       setCopingIndex('');
     } catch (err) {
       console.error(err);
+      toast.error('Failed to record vitals');
     }
   };
 
@@ -45,9 +54,7 @@ export function RecordVitalsDialog({ patientId, pathway }: { patientId: string; 
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Record Vitals</DialogTitle>
-          <DialogDescription>
-            Record patient vital signs.
-          </DialogDescription>
+          <DialogDescription>Record patient vital signs.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1.5">

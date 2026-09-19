@@ -1,4 +1,11 @@
-import type { Patient, Consultation, Referral, Facility, ActionLogEntry, Pathway } from './types';
+import type {
+  ActionLogEntry,
+  Consultation,
+  Facility,
+  Pathway,
+  Patient,
+  Referral,
+} from './types';
 
 const API_BASE = '/api';
 
@@ -13,13 +20,16 @@ function authHeaders(): Record<string, string> {
   }
 }
 
-async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+async function authFetch(
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> {
   const res = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
       ...authHeaders(),
-      ...(options.headers as Record<string, string> || {}),
+      ...((options.headers as Record<string, string>) || {}),
     },
   });
   if (!res.ok) throw new Error(`API error: ${res.statusText}`);
@@ -43,6 +53,18 @@ export const mamacareApi = {
     assignedChw?: string;
     stage: string;
     phone: string;
+    address?: string;
+    trimester?: 'first' | 'second' | 'third';
+    gestationalWeeks?: number;
+    lmpDate?: string;
+    edd?: string;
+    conditions?: string[];
+    otherConditions?: string;
+    emergencyContact?: string;
+    emergencyPhone?: string;
+    occupation?: string;
+    allergies?: string;
+    currentMedications?: string;
   }): Promise<Patient> {
     return authFetch(`${API_BASE}/patients`, {
       method: 'POST',
@@ -56,7 +78,7 @@ export const mamacareApi = {
       bloodPressure?: string;
       kickCount?: number;
       copingIndex?: number;
-    }
+    },
   ): Promise<{ success: boolean; riskLevel: string }> {
     return authFetch(`${API_BASE}/patients/${patientId}/vitals`, {
       method: 'POST',
@@ -69,7 +91,7 @@ export const mamacareApi = {
     data: {
       visitType: string;
       notes: string;
-    }
+    },
   ): Promise<{ success: boolean }> {
     return authFetch(`${API_BASE}/patients/${patientId}/visits`, {
       method: 'POST',
@@ -85,7 +107,11 @@ export const mamacareApi = {
     patientId: string;
     transcript: Array<{ speaker: 'AI' | 'Mother' | 'Patient'; text: string }>;
     language: string;
-  }): Promise<{ success: boolean; riskLevel: string; referralTriggered: boolean }> {
+  }): Promise<{
+    success: boolean;
+    riskLevel: string;
+    referralTriggered: boolean;
+  }> {
     return authFetch(`${API_BASE}/consultations`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -113,7 +139,7 @@ export const mamacareApi = {
       status: string;
       outcome?: string;
       note?: string;
-    }
+    },
   ): Promise<{ success: boolean }> {
     return authFetch(`${API_BASE}/referrals/${referralId}`, {
       method: 'PATCH',
@@ -153,10 +179,15 @@ export const mamacareApi = {
   },
 
   async markNotificationAsRead(id: string) {
-    return authFetch(`${API_BASE}/notifications/${id}/read`, { method: 'PATCH' });
+    return authFetch(`${API_BASE}/notifications/${id}/read`, {
+      method: 'PATCH',
+    });
   },
 
-  async changePatientPathway(patientId: string, pathway: Pathway): Promise<{ message: string; pathway: string }> {
+  async changePatientPathway(
+    patientId: string,
+    pathway: Pathway,
+  ): Promise<{ message: string; pathway: string }> {
     return authFetch(`${API_BASE}/patients/${patientId}/pathway`, {
       method: 'PATCH',
       body: JSON.stringify({ pathway }),
@@ -164,10 +195,12 @@ export const mamacareApi = {
   },
 
   async fetchCommunications(pathway: string) {
-    return authFetch(`${API_BASE}/communications/${encodeURIComponent(pathway)}`);
+    return authFetch(
+      `${API_BASE}/communications/${encodeURIComponent(pathway)}`,
+    );
   },
 
   async fetchSchedules(pathway: string) {
     return authFetch(`${API_BASE}/schedules/${encodeURIComponent(pathway)}`);
-  }
+  },
 };

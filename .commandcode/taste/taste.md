@@ -1,6 +1,7 @@
 # Taste (Continuously Learned by [CommandCode][cmd])
 
 [cmd]: https://commandcode.ai/
+
 
 # architecture
 - Use LangChain as the orchestration layer to connect ElevenLabs voice agents, Gemini triage pipeline, and database operations together. Confidence: 0.72

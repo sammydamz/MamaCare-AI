@@ -1,6 +1,19 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { mamacareApi } from '@/lib/mamacare/api';
-import type { Patient, Consultation, Referral, Facility, ActionLogEntry, Pathway } from '@/lib/mamacare/types';
+import type {
+  ActionLogEntry,
+  Consultation,
+  Facility,
+  Pathway,
+  Patient,
+  Referral,
+} from '@/lib/mamacare/types';
 import { usePathway } from './pathway-provider';
 
 interface DashboardData {
@@ -73,16 +86,35 @@ interface MamaCareContextType {
     assignedChw?: string;
     stage: string;
     phone: string;
+    address?: string;
+    trimester?: 'first' | 'second' | 'third';
+    gestationalWeeks?: number;
+    lmpDate?: string;
+    edd?: string;
+    conditions?: string[];
+    otherConditions?: string;
+    emergencyContact?: string;
+    emergencyPhone?: string;
+    occupation?: string;
+    allergies?: string;
+    currentMedications?: string;
   }) => Promise<void>;
   recordVitals: (
     patientId: string,
-    data: { bloodPressure?: string; kickCount?: number; copingIndex?: number }
+    data: { bloodPressure?: string; kickCount?: number; copingIndex?: number },
   ) => Promise<void>;
-  logVisit: (patientId: string, data: { visitType: string; notes: string }) => Promise<void>;
-  createReferral: (data: { patientId: string; facilityId: string; reason: string }) => Promise<void>;
+  logVisit: (
+    patientId: string,
+    data: { visitType: string; notes: string },
+  ) => Promise<void>;
+  createReferral: (data: {
+    patientId: string;
+    facilityId: string;
+    reason: string;
+  }) => Promise<void>;
   updateReferralStatus: (
     referralId: string,
-    data: { status: string; outcome?: string; note?: string }
+    data: { status: string; outcome?: string; note?: string },
   ) => Promise<void>;
   addFacility: (data: {
     name: string;
@@ -96,11 +128,17 @@ interface MamaCareContextType {
     patientId: string;
     transcript: Array<{ speaker: 'AI' | 'Mother' | 'Patient'; text: string }>;
     language: string;
-  }) => Promise<{ success: boolean; riskLevel: string; referralTriggered: boolean }>;
+  }) => Promise<{
+    success: boolean;
+    riskLevel: string;
+    referralTriggered: boolean;
+  }>;
   changePatientPathway: (patientId: string, pathway: Pathway) => Promise<void>;
 }
 
-const MamaCareContext = createContext<MamaCareContextType | undefined>(undefined);
+const MamaCareContext = createContext<MamaCareContextType | undefined>(
+  undefined,
+);
 
 export function MamaCareProvider({ children }: { children: ReactNode }) {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -108,8 +146,12 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [actionLogs, setActionLogs] = useState<ActionLogEntry[]>([]);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null,
+  );
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const { activePathway } = usePathway();
@@ -128,7 +170,9 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
         mamacareApi.fetchAnalytics(activePathway),
       ]);
       const val = <T,>(i: number, fallback: T): T =>
-        results[i].status === 'fulfilled' ? (results[i] as PromiseFulfilledResult<T>).value : fallback;
+        results[i].status === 'fulfilled'
+          ? (results[i] as PromiseFulfilledResult<T>).value
+          : fallback;
       setPatients(val(0, patients));
       setConsultations(val(1, consultations));
       setReferrals(val(2, referrals));
@@ -143,7 +187,6 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
     }
   };
 
-
   const refreshConsultationsOnly = async () => {
     try {
       const cons = await mamacareApi.fetchConsultations();
@@ -155,7 +198,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshAll();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePathway]);
 
   const registerPatient = async (data: {
@@ -166,6 +209,18 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
     assignedChw?: string;
     stage: string;
     phone: string;
+    address?: string;
+    trimester?: 'first' | 'second' | 'third';
+    gestationalWeeks?: number;
+    lmpDate?: string;
+    edd?: string;
+    conditions?: string[];
+    otherConditions?: string;
+    emergencyContact?: string;
+    emergencyPhone?: string;
+    occupation?: string;
+    allergies?: string;
+    currentMedications?: string;
   }) => {
     try {
       await mamacareApi.registerPatient(data);
@@ -178,7 +233,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
 
   const recordVitals = async (
     patientId: string,
-    data: { bloodPressure?: string; kickCount?: number; copingIndex?: number }
+    data: { bloodPressure?: string; kickCount?: number; copingIndex?: number },
   ) => {
     try {
       await mamacareApi.recordVitals(patientId, data);
@@ -189,7 +244,10 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logVisit = async (patientId: string, data: { visitType: string; notes: string }) => {
+  const logVisit = async (
+    patientId: string,
+    data: { visitType: string; notes: string },
+  ) => {
     try {
       await mamacareApi.logVisit(patientId, data);
       await refreshAll();
@@ -199,7 +257,11 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const createReferral = async (data: { patientId: string; facilityId: string; reason: string }) => {
+  const createReferral = async (data: {
+    patientId: string;
+    facilityId: string;
+    reason: string;
+  }) => {
     try {
       await mamacareApi.createReferral(data);
       await refreshAll();
@@ -211,7 +273,7 @@ export function MamaCareProvider({ children }: { children: ReactNode }) {
 
   const updateReferralStatus = async (
     referralId: string,
-    data: { status: string; outcome?: string; note?: string }
+    data: { status: string; outcome?: string; note?: string },
   ) => {
     try {
       await mamacareApi.updateReferralStatus(referralId, data);

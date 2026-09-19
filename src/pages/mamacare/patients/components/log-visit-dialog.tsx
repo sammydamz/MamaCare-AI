@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { useMamaCare } from '@/providers/mamacare-provider';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,8 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -16,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useMamaCare } from '@/providers/mamacare-provider';
+import { Textarea } from '@/components/ui/textarea';
 
 export function LogVisitDialog({ patientId }: { patientId: string }) {
   const [open, setOpen] = useState(false);
@@ -25,14 +26,19 @@ export function LogVisitDialog({ patientId }: { patientId: string }) {
   const { logVisit } = useMamaCare();
 
   const handleSubmit = async () => {
-    if (!visitType || !notes) return;
+    if (!visitType || !notes) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
     try {
       await logVisit(patientId, { visitType, notes });
+      toast.success('Visit logged successfully');
       setOpen(false);
       setVisitType('');
       setNotes('');
     } catch (err) {
       console.error(err);
+      toast.error('Failed to log visit');
     }
   };
 
@@ -46,7 +52,9 @@ export function LogVisitDialog({ patientId }: { patientId: string }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Log Visit</DialogTitle>
-          <DialogDescription>Record details from a patient visit.</DialogDescription>
+          <DialogDescription>
+            Record details from a patient visit.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1.5">
@@ -76,7 +84,11 @@ export function LogVisitDialog({ patientId }: { patientId: string }) {
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleSubmit} disabled={!visitType || !notes}>
+            <Button
+              variant="primary"
+              onClick={handleSubmit}
+              disabled={!visitType || !notes}
+            >
               Save
             </Button>
           </div>

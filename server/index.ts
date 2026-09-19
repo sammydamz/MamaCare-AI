@@ -211,11 +211,14 @@ app.get('/api/user', async (req, res) => {
 
 // Middleware: resolve user_id from X-User-Email and attach to req
 app.use('/api', async (req: any, res, next) => {
-  if (req.path === '/login' || req.path === '/health' || req.path === '/user') return next();
+  if (req.path === '/login' || req.path === '/health' || req.path === '/user')
+    return next();
   const email = req.headers['x-user-email'];
   if (!email) return next();
   try {
-    const result = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    const result = await pool.query('SELECT id FROM users WHERE email = $1', [
+      email,
+    ]);
     if (result.rows.length > 0) {
       req.userId = result.rows[0].id;
     }
@@ -229,7 +232,10 @@ app.get('/api/dashboard', async (req, res) => {
     const userId = (req as any).userId;
 
     const kpisResult = userId
-      ? await pool.query('SELECT * FROM kpis WHERE (user_id = $1 OR user_id IS NULL)', [userId])
+      ? await pool.query(
+          'SELECT * FROM kpis WHERE (user_id = $1 OR user_id IS NULL)',
+          [userId],
+        )
       : await pool.query('SELECT * FROM kpis');
     const kpis: Record<string, number> = {};
     kpisResult.rows.forEach((row) => {
@@ -237,8 +243,13 @@ app.get('/api/dashboard', async (req, res) => {
     });
 
     const feedResult = userId
-      ? await pool.query('SELECT * FROM risk_escalation_feed WHERE (user_id = $1 OR user_id IS NULL) ORDER BY id DESC LIMIT 10', [userId])
-      : await pool.query('SELECT * FROM risk_escalation_feed ORDER BY id DESC LIMIT 10');
+      ? await pool.query(
+          'SELECT * FROM risk_escalation_feed WHERE (user_id = $1 OR user_id IS NULL) ORDER BY id DESC LIMIT 10',
+          [userId],
+        )
+      : await pool.query(
+          'SELECT * FROM risk_escalation_feed ORDER BY id DESC LIMIT 10',
+        );
 
     res.json({
       kpis: {
@@ -271,8 +282,13 @@ app.get('/api/patients', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM patients WHERE (user_id = $1 OR user_id IS NULL) ORDER BY risk_level DESC, name ASC', [userId])
-      : await pool.query('SELECT * FROM patients ORDER BY risk_level DESC, name ASC');
+      ? await pool.query(
+          'SELECT * FROM patients WHERE (user_id = $1 OR user_id IS NULL) ORDER BY risk_level DESC, name ASC',
+          [userId],
+        )
+      : await pool.query(
+          'SELECT * FROM patients ORDER BY risk_level DESC, name ASC',
+        );
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -293,6 +309,18 @@ app.get('/api/patients', async (req, res) => {
         sleepQuality: row.sleep_quality,
         bleedingStatus: row.bleeding_status,
         phone: row.phone,
+        address: row.address,
+        trimester: row.trimester,
+        gestationalWeeks: row.gestational_weeks,
+        lmpDate: row.lmp_date,
+        edd: row.edd,
+        conditions: row.conditions,
+        otherConditions: row.other_conditions,
+        emergencyContact: row.emergency_contact,
+        emergencyPhone: row.emergency_phone,
+        occupation: row.occupation,
+        allergies: row.allergies,
+        currentMedications: row.current_medications,
       })),
     );
   } catch (err: any) {
@@ -302,18 +330,52 @@ app.get('/api/patients', async (req, res) => {
 
 // POST /api/patients (Register Patient)
 app.post('/api/patients', async (req, res) => {
-  const { name, age, pathway, language, assignedChw, stage, careStage, phone,
-    dateOfBirth, address, trimester, gestationalWeeks, lmpDate, edd,
-    conditions, otherConditions, emergencyContact, emergencyPhone, occupation,
-    allergies, currentMedications } = req.body;
+  const {
+    name,
+    age,
+    pathway,
+    language,
+    assignedChw,
+    stage,
+    careStage,
+    phone,
+    address,
+    trimester,
+    gestationalWeeks,
+    lmpDate,
+    edd,
+    conditions,
+    otherConditions,
+    emergencyContact,
+    emergencyPhone,
+    occupation,
+    allergies,
+    currentMedications,
+  } = req.body;
   const id = 'p' + Math.floor(100 + Math.random() * 900);
   const regDate = new Date().toISOString().split('T')[0];
   const initialHistory = JSON.stringify([{ date: regDate, level: 'LOW' }]);
   const resolvedCareStage = careStage || 'prenatal';
 
+  // Auto-calculate EDD from LMP using Naegele's rule: LMP + 280 days
+  let resolvedEdd = edd || null;
+  if (lmpDate && !edd) {
+    try {
+      const lmp = new Date(lmpDate);
+      if (!isNaN(lmp.getTime())) {
+        const eddDate = new Date(lmp);
+        eddDate.setDate(eddDate.getDate() + 280);
+        resolvedEdd = eddDate.toISOString().split('T')[0];
+      }
+    } catch (err) {
+      console.error('EDD calculation failed:', err);
+      resolvedEdd = null;
+    }
+  }
+
   try {
     await pool.query(
-      'INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, care_stage, registration_date, risk_history, phone, date_of_birth, address, trimester, gestational_weeks, lmp_date, edd, conditions, other_conditions, emergency_contact, emergency_phone, occupation, allergies, current_medications, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)',
+      'INSERT INTO patients (id, name, age, pathway, risk_level, language, assigned_chw, stage, care_stage, registration_date, risk_history, phone, address, trimester, gestational_weeks, lmp_date, edd, conditions, other_conditions, emergency_contact, emergency_phone, occupation, allergies, current_medications, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)',
       [
         id,
         name,
@@ -327,12 +389,11 @@ app.post('/api/patients', async (req, res) => {
         regDate,
         initialHistory,
         phone || null,
-        dateOfBirth || null,
         address || null,
         trimester || null,
         gestationalWeeks || null,
         lmpDate || null,
-        edd || null,
+        resolvedEdd || null,
         conditions || null,
         otherConditions || null,
         emergencyContact || null,
@@ -368,32 +429,29 @@ app.post('/api/patients', async (req, res) => {
       "UPDATE kpis SET value = value + 1 WHERE key = 'caseload'",
     );
 
-    res
-      .status(201)
-      .json({
-        id,
-        name,
-        age,
-        pathway,
-        riskLevel: 'LOW',
-        language,
-        assignedChw,
-        stage,
-        phone,
-        dateOfBirth,
-        address,
-        trimester,
-        gestationalWeeks,
-        lmpDate,
-        edd,
-        conditions,
-        otherConditions,
-        emergencyContact,
-        emergencyPhone,
-        occupation,
-        allergies,
-        currentMedications,
-      });
+    res.status(201).json({
+      id,
+      name,
+      age,
+      pathway,
+      riskLevel: 'LOW',
+      language,
+      assignedChw,
+      stage,
+      phone,
+      address,
+      trimester,
+      gestationalWeeks,
+      lmpDate,
+      resolvedEdd,
+      conditions,
+      otherConditions,
+      emergencyContact,
+      emergencyPhone,
+      occupation,
+      allergies,
+      currentMedications,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -444,18 +502,27 @@ app.patch('/api/patients/:id/pathway', async (req, res) => {
   }
 
   try {
-    const patientRes = await pool.query('SELECT * FROM patients WHERE id = $1', [id]);
+    const patientRes = await pool.query(
+      'SELECT * FROM patients WHERE id = $1',
+      [id],
+    );
     if (patientRes.rows.length === 0) {
       return res.status(404).json({ error: 'Patient not found' });
     }
     const prev = patientRes.rows[0];
 
-    const defaultStage = pathway === 'Pregnancy' ? '12 weeks'
-      : pathway === 'Postnatal' ? '6 weeks postpartum'
-      : 'Post-loss: 1 month';
-    const defaultCareStage = pathway === 'Pregnancy' ? 'prenatal'
-      : pathway === 'Postnatal' ? 'postpartum'
-      : 'bereavement';
+    const defaultStage =
+      pathway === 'Pregnancy'
+        ? '12 weeks'
+        : pathway === 'Postnatal'
+          ? '6 weeks postpartum'
+          : 'Post-loss: 1 month';
+    const defaultCareStage =
+      pathway === 'Pregnancy'
+        ? 'prenatal'
+        : pathway === 'Postnatal'
+          ? 'postpartum'
+          : 'bereavement';
 
     await pool.query(
       'UPDATE patients SET pathway = $1, stage = $2, care_stage = $3 WHERE id = $4',
@@ -516,7 +583,15 @@ app.post('/api/outcomes', async (req, res) => {
   try {
     await pool.query(
       'INSERT INTO outcomes (id, patient_id, metric_type, value, timestamp, recorded_by, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-      [id, patientId, metricType, value, timestamp, recordedBy || 'System', (req as any).userId || null],
+      [
+        id,
+        patientId,
+        metricType,
+        value,
+        timestamp,
+        recordedBy || 'System',
+        (req as any).userId || null,
+      ],
     );
     res
       .status(201)
@@ -620,7 +695,15 @@ app.post('/api/patients/:id/vitals', async (req, res) => {
     await pool.query(
       `INSERT INTO action_logs (id, patient_id, type, description, timestamp, performed_by, user_id) 
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [logId, id, 'Vitals', desc, timestamp, patient.assigned_chw || 'System', (req as any).userId || patient.user_id || null],
+      [
+        logId,
+        id,
+        'Vitals',
+        desc,
+        timestamp,
+        patient.assigned_chw || 'System',
+        (req as any).userId || patient.user_id || null,
+      ],
     );
 
     res.json({ success: true, riskLevel: newRisk });
@@ -672,8 +755,13 @@ app.get('/api/consultations', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM consultations WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC LIMIT 200', [userId])
-      : await pool.query('SELECT * FROM consultations ORDER BY created_at DESC LIMIT 200');
+      ? await pool.query(
+          'SELECT * FROM consultations WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC LIMIT 200',
+          [userId],
+        )
+      : await pool.query(
+          'SELECT * FROM consultations ORDER BY created_at DESC LIMIT 200',
+        );
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -820,8 +908,13 @@ app.get('/api/referrals', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM referrals WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC LIMIT 200', [userId])
-      : await pool.query('SELECT * FROM referrals ORDER BY created_at DESC LIMIT 200');
+      ? await pool.query(
+          'SELECT * FROM referrals WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC LIMIT 200',
+          [userId],
+        )
+      : await pool.query(
+          'SELECT * FROM referrals ORDER BY created_at DESC LIMIT 200',
+        );
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1013,8 +1106,13 @@ app.get('/api/action-logs', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM action_logs WHERE (user_id = $1 OR user_id IS NULL) ORDER BY timestamp DESC LIMIT 200', [userId])
-      : await pool.query('SELECT * FROM action_logs ORDER BY timestamp DESC LIMIT 200');
+      ? await pool.query(
+          'SELECT * FROM action_logs WHERE (user_id = $1 OR user_id IS NULL) ORDER BY timestamp DESC LIMIT 200',
+          [userId],
+        )
+      : await pool.query(
+          'SELECT * FROM action_logs ORDER BY timestamp DESC LIMIT 200',
+        );
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1035,8 +1133,13 @@ app.get('/api/notifications', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM notifications WHERE (user_id = $1 OR user_id IS NULL) ORDER BY timestamp DESC LIMIT 200', [userId])
-      : await pool.query('SELECT * FROM notifications ORDER BY timestamp DESC LIMIT 200');
+      ? await pool.query(
+          'SELECT * FROM notifications WHERE (user_id = $1 OR user_id IS NULL) ORDER BY timestamp DESC LIMIT 200',
+          [userId],
+        )
+      : await pool.query(
+          'SELECT * FROM notifications ORDER BY timestamp DESC LIMIT 200',
+        );
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1296,8 +1399,14 @@ app.get('/api/communications/:pathway', async (req, res) => {
     const { pathway } = req.params;
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM communications WHERE pathway = $1 AND (user_id = $2 OR user_id IS NULL) ORDER BY sent_at DESC', [pathway, userId])
-      : await pool.query('SELECT * FROM communications WHERE pathway = $1 ORDER BY sent_at DESC', [pathway]);
+      ? await pool.query(
+          'SELECT * FROM communications WHERE pathway = $1 AND (user_id = $2 OR user_id IS NULL) ORDER BY sent_at DESC',
+          [pathway, userId],
+        )
+      : await pool.query(
+          'SELECT * FROM communications WHERE pathway = $1 ORDER BY sent_at DESC',
+          [pathway],
+        );
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1320,8 +1429,14 @@ app.get('/api/schedules/:pathway', async (req, res) => {
     const { pathway } = req.params;
     const userId = (req as any).userId;
     const result = userId
-      ? await pool.query('SELECT * FROM schedules WHERE pathway = $1 AND (user_id = $2 OR user_id IS NULL) ORDER BY created_at DESC', [pathway, userId])
-      : await pool.query('SELECT * FROM schedules WHERE pathway = $1 ORDER BY created_at DESC', [pathway]);
+      ? await pool.query(
+          'SELECT * FROM schedules WHERE pathway = $1 AND (user_id = $2 OR user_id IS NULL) ORDER BY created_at DESC',
+          [pathway, userId],
+        )
+      : await pool.query(
+          'SELECT * FROM schedules WHERE pathway = $1 ORDER BY created_at DESC',
+          [pathway],
+        );
     res.json(
       result.rows.map((row) => ({
         id: row.id,
@@ -1346,125 +1461,292 @@ app.get('/api/education', async (req, res) => {
   try {
     const userId = (req as any).userId;
     const pieces = userId
-      ? await pool.query('SELECT * FROM education_pieces WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC', [userId])
-      : await pool.query('SELECT * FROM education_pieces ORDER BY created_at DESC');
-    const langs = await pool.query('SELECT piece_id, language, MAX(version) AS v FROM education_versions GROUP BY piece_id, language');
+      ? await pool.query(
+          'SELECT * FROM education_pieces WHERE (user_id = $1 OR user_id IS NULL) ORDER BY created_at DESC',
+          [userId],
+        )
+      : await pool.query(
+          'SELECT * FROM education_pieces ORDER BY created_at DESC',
+        );
+    const langs = await pool.query(
+      'SELECT piece_id, language, MAX(version) AS v FROM education_versions GROUP BY piece_id, language',
+    );
     const byPiece: Record<string, string[]> = {};
-    langs.rows.forEach((r: any) => { (byPiece[r.piece_id] = byPiece[r.piece_id] || []).push(`${r.language}:v${r.v}`); });
-    res.json(pieces.rows.map((p: any) => ({
-      id: p.id, title: p.title, track: p.track, trimester: p.trimester, month: p.month,
-      status: p.status, sourceRef: p.source_ref, audioUrl: p.audio_url, audioMode: p.audio_mode,
-      currentVersion: p.current_version, reviewer: p.reviewer, approvedAt: p.approved_at,
-      reviewNote: p.review_note, languages: byPiece[p.id] || [],
-    })));
-  } catch (err: any) { res.status(500).json({ error: err.message }); }
+    langs.rows.forEach((r: any) => {
+      (byPiece[r.piece_id] = byPiece[r.piece_id] || []).push(
+        `${r.language}:v${r.v}`,
+      );
+    });
+    res.json(
+      pieces.rows.map((p: any) => ({
+        id: p.id,
+        title: p.title,
+        track: p.track,
+        trimester: p.trimester,
+        month: p.month,
+        status: p.status,
+        sourceRef: p.source_ref,
+        audioUrl: p.audio_url,
+        audioMode: p.audio_mode,
+        currentVersion: p.current_version,
+        reviewer: p.reviewer,
+        approvedAt: p.approved_at,
+        reviewNote: p.review_note,
+        languages: byPiece[p.id] || [],
+      })),
+    );
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/education', async (req, res) => {
   try {
     const userId = (req as any).userId || null;
-    const { title, track, trimester, month, sourceRef, script, language, audioMode } = req.body;
+    const {
+      title,
+      track,
+      trimester,
+      month,
+      sourceRef,
+      script,
+      language,
+      audioMode,
+    } = req.body;
     const id = 'e' + Date.now().toString(36);
     await pool.query(
       `INSERT INTO education_pieces (id, title, track, trimester, month, status, source_ref, audio_mode, current_version, user_id, created_at)
        VALUES ($1,$2,$3,$4,$5,'draft',$6,$7,1,$8,$9)`,
-      [id, title, track, trimester || null, month ?? null, sourceRef || null, audioMode || 'generated', userId, new Date().toISOString()]);
-    if (script) await pool.query(
-      `INSERT INTO education_versions (piece_id, version, script, language, created_at) VALUES ($1,1,$2,$3,$4)`,
-      [id, script, language || 'en', new Date().toISOString()]);
+      [
+        id,
+        title,
+        track,
+        trimester || null,
+        month ?? null,
+        sourceRef || null,
+        audioMode || 'generated',
+        userId,
+        new Date().toISOString(),
+      ],
+    );
+    if (script)
+      await pool.query(
+        `INSERT INTO education_versions (piece_id, version, script, language, created_at) VALUES ($1,1,$2,$3,$4)`,
+        [id, script, language || 'en', new Date().toISOString()],
+      );
     res.json({ id, success: true });
-  } catch (err: any) { res.status(500).json({ error: err.message }); }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.patch('/api/education/:id', async (req, res) => {
   try {
-    const { action, script, language, title, track, trimester, month, sourceRef, reviewer, note, audioUrl } = req.body;
-    const cur = await pool.query('SELECT * FROM education_pieces WHERE id = $1', [req.params.id]);
-    if (!cur.rows.length) { res.status(404).json({ error: 'Not found' }); return; }
+    const {
+      action,
+      script,
+      language,
+      title,
+      track,
+      trimester,
+      month,
+      sourceRef,
+      reviewer,
+      note,
+      audioUrl,
+    } = req.body;
+    const cur = await pool.query(
+      'SELECT * FROM education_pieces WHERE id = $1',
+      [req.params.id],
+    );
+    if (!cur.rows.length) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
     const p = cur.rows[0];
     const now = new Date().toISOString();
     if (action === 'edit') {
-      if (p.status === 'approved') { res.status(400).json({ error: 'Approved pieces are frozen — use new-version' }); return; }
-      await pool.query('UPDATE education_pieces SET title=$2, track=$3, trimester=$4, month=$5, source_ref=$6 WHERE id=$1',
-        [p.id, title ?? p.title, track ?? p.track, trimester ?? p.trimester, month ?? p.month, sourceRef ?? p.source_ref]);
-      if (script) await pool.query('UPDATE education_versions SET script=$2 WHERE piece_id=$1 AND version=$3 AND language=$4',
-        [p.id, script, p.current_version, language || 'en']);
+      if (p.status === 'approved') {
+        res
+          .status(400)
+          .json({ error: 'Approved pieces are frozen — use new-version' });
+        return;
+      }
+      await pool.query(
+        'UPDATE education_pieces SET title=$2, track=$3, trimester=$4, month=$5, source_ref=$6 WHERE id=$1',
+        [
+          p.id,
+          title ?? p.title,
+          track ?? p.track,
+          trimester ?? p.trimester,
+          month ?? p.month,
+          sourceRef ?? p.source_ref,
+        ],
+      );
+      if (script)
+        await pool.query(
+          'UPDATE education_versions SET script=$2 WHERE piece_id=$1 AND version=$3 AND language=$4',
+          [p.id, script, p.current_version, language || 'en'],
+        );
     } else if (action === 'review') {
-      await pool.query(`UPDATE education_pieces SET status='in-review' WHERE id=$1`, [p.id]);
+      await pool.query(
+        `UPDATE education_pieces SET status='in-review' WHERE id=$1`,
+        [p.id],
+      );
     } else if (action === 'sendback') {
-      await pool.query(`UPDATE education_pieces SET status='draft', review_note=$2 WHERE id=$1`, [p.id, note || null]);
+      await pool.query(
+        `UPDATE education_pieces SET status='draft', review_note=$2 WHERE id=$1`,
+        [p.id, note || null],
+      );
     } else if (action === 'approve') {
       // Freeze: snapshot current script as the approved version
-      const v = await pool.query('SELECT script FROM education_versions WHERE piece_id=$1 AND version=$2 AND language=$3',
-        [p.id, p.current_version, language || 'en']);
-      if (!v.rows.length && script) await pool.query(
-        'INSERT INTO education_versions (piece_id, version, script, language, reviewer, approved_at, created_at) VALUES ($1,$2,$3,$4,$5,$6,$6)',
-        [p.id, p.current_version, script, language || 'en', reviewer || null, now]);
-      else await pool.query('UPDATE education_versions SET reviewer=$4, approved_at=$5 WHERE piece_id=$1 AND version=$2 AND language=$3',
-        [p.id, p.current_version, language || 'en', reviewer || null, now]);
-      await pool.query(`UPDATE education_pieces SET status='approved', reviewer=$2, approved_at=$3, review_note=NULL, audio_url=$4 WHERE id=$1`,
-        [p.id, reviewer || null, now, audioUrl ?? p.audio_url]);
+      const v = await pool.query(
+        'SELECT script FROM education_versions WHERE piece_id=$1 AND version=$2 AND language=$3',
+        [p.id, p.current_version, language || 'en'],
+      );
+      if (!v.rows.length && script)
+        await pool.query(
+          'INSERT INTO education_versions (piece_id, version, script, language, reviewer, approved_at, created_at) VALUES ($1,$2,$3,$4,$5,$6,$6)',
+          [
+            p.id,
+            p.current_version,
+            script,
+            language || 'en',
+            reviewer || null,
+            now,
+          ],
+        );
+      else
+        await pool.query(
+          'UPDATE education_versions SET reviewer=$4, approved_at=$5 WHERE piece_id=$1 AND version=$2 AND language=$3',
+          [p.id, p.current_version, language || 'en', reviewer || null, now],
+        );
+      await pool.query(
+        `UPDATE education_pieces SET status='approved', reviewer=$2, approved_at=$3, review_note=NULL, audio_url=$4 WHERE id=$1`,
+        [p.id, reviewer || null, now, audioUrl ?? p.audio_url],
+      );
     } else if (action === 'new-version') {
       const nv = p.current_version + 1;
-      await pool.query(`UPDATE education_pieces SET status='draft', current_version=$2, reviewer=NULL, approved_at=NULL WHERE id=$1`, [p.id, nv]);
-      await pool.query('INSERT INTO education_versions (piece_id, version, script, language, created_at) VALUES ($1,$2,$3,$4,$5)',
-        [p.id, nv, script || '', language || 'en', now]);
-    } else { res.status(400).json({ error: 'Unknown action' }); return; }
+      await pool.query(
+        `UPDATE education_pieces SET status='draft', current_version=$2, reviewer=NULL, approved_at=NULL WHERE id=$1`,
+        [p.id, nv],
+      );
+      await pool.query(
+        'INSERT INTO education_versions (piece_id, version, script, language, created_at) VALUES ($1,$2,$3,$4,$5)',
+        [p.id, nv, script || '', language || 'en', now],
+      );
+    } else {
+      res.status(400).json({ error: 'Unknown action' });
+      return;
+    }
     res.json({ success: true });
-  } catch (err: any) { res.status(500).json({ error: err.message }); }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Approved-only selector — unapproved content is unreachable here by construction.
 app.get('/api/education/next', async (req, res) => {
   try {
-    const { track, month, language, patientId } = req.query as Record<string, string>;
+    const { track, month, language, patientId } = req.query as Record<
+      string,
+      string
+    >;
     const lang = language || 'en';
     let delivered: string[] = [];
     if (patientId) {
-      const d = await pool.query('SELECT piece_id FROM education_deliveries WHERE patient_id=$1 AND skipped=FALSE', [patientId]);
+      const d = await pool.query(
+        'SELECT piece_id FROM education_deliveries WHERE patient_id=$1 AND skipped=FALSE',
+        [patientId],
+      );
       delivered = d.rows.map((r: any) => r.piece_id);
     }
     const pieces = await pool.query(
       `SELECT * FROM education_pieces WHERE status='approved' AND track=$1 AND ($2::int IS NULL OR month IS NULL OR month=$2)
        ORDER BY month NULLS LAST, created_at`,
-      [track, month ? parseInt(month) : null]);
+      [track, month ? parseInt(month) : null],
+    );
     for (const p of pieces.rows) {
       if (delivered.includes(p.id)) continue;
-      let v = await pool.query('SELECT * FROM education_versions WHERE piece_id=$1 AND version=$2 AND language=$3',
-        [p.id, p.current_version, lang]);
+      let v = await pool.query(
+        'SELECT * FROM education_versions WHERE piece_id=$1 AND version=$2 AND language=$3',
+        [p.id, p.current_version, lang],
+      );
       let fallback = false;
       if (!v.rows.length) {
-        v = await pool.query('SELECT * FROM education_versions WHERE piece_id=$1 AND version=$2 AND language=$3',
-          [p.id, p.current_version, 'en']);
+        v = await pool.query(
+          'SELECT * FROM education_versions WHERE piece_id=$1 AND version=$2 AND language=$3',
+          [p.id, p.current_version, 'en'],
+        );
         fallback = true;
       }
       if (!v.rows.length) continue;
-      res.json({ pieceId: p.id, title: p.title, version: p.current_version, language: fallback ? 'en' : lang,
-        fallback, script: v.rows[0].script, audioUrl: p.audio_url, audioMode: p.audio_mode });
+      res.json({
+        pieceId: p.id,
+        title: p.title,
+        version: p.current_version,
+        language: fallback ? 'en' : lang,
+        fallback,
+        script: v.rows[0].script,
+        audioUrl: p.audio_url,
+        audioMode: p.audio_mode,
+      });
       return;
     }
     res.json({ pieceId: null });
-  } catch (err: any) { res.status(500).json({ error: err.message }); }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/education/deliveries', async (req, res) => {
   try {
     const userId = (req as any).userId || null;
-    const { pieceId, version, patientId, language, stayedPct, replayed, skipped, skipReason, conversationId } = req.body;
+    const {
+      pieceId,
+      version,
+      patientId,
+      language,
+      stayedPct,
+      replayed,
+      skipped,
+      skipReason,
+      conversationId,
+    } = req.body;
     await pool.query(
       `INSERT INTO education_deliveries (piece_id, version, patient_id, language, stayed_pct, replayed, skipped, skip_reason, conversation_id, user_id, created_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-      [pieceId, version ?? null, patientId, language, stayedPct ?? null, replayed || 0, !!skipped, skipReason || null, conversationId || null, userId, new Date().toISOString()]);
+      [
+        pieceId,
+        version ?? null,
+        patientId,
+        language,
+        stayedPct ?? null,
+        replayed || 0,
+        !!skipped,
+        skipReason || null,
+        conversationId || null,
+        userId,
+        new Date().toISOString(),
+      ],
+    );
     res.json({ success: true });
-  } catch (err: any) { res.status(500).json({ error: err.message }); }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/education/deliveries', async (req, res) => {
   try {
     const { patientId } = req.query as Record<string, string>;
-    const r = await pool.query('SELECT * FROM education_deliveries WHERE patient_id=$1 ORDER BY created_at DESC LIMIT 100', [patientId]);
+    const r = await pool.query(
+      'SELECT * FROM education_deliveries WHERE patient_id=$1 ORDER BY created_at DESC LIMIT 100',
+      [patientId],
+    );
     res.json(r.rows);
-  } catch (err: any) { res.status(500).json({ error: err.message }); }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/health', async (req, res) => {
