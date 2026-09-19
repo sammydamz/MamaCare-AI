@@ -1,14 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@heroui/react/button';
-import { Card } from '@heroui/react/card';
-import { Chip } from '@heroui/react/chip';
-import { Drawer } from '@heroui/react/drawer';
-import { Input } from '@heroui/react/input';
-import { SearchField } from '@heroui/react/search-field';
-import { Table } from '@heroui/react/table';
-import { Tabs } from '@heroui/react/tabs';
-import { TextArea } from '@heroui/react/textarea';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from '@/components/ui/drawer';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const selectCls = 'rounded-lg border border-input bg-white px-3 py-2 text-sm';
 
@@ -51,10 +59,16 @@ async function api(url: string, options: RequestInit = {}) {
 const TRACKS = ['prenatal', 'postnatal', 'bereavement'];
 const LANGS = ['en', 'tw', 'dag', 'ewe', 'ga'];
 
-const STATUS_COLOR: Record<string, 'default' | 'warning' | 'success'> = {
-  draft: 'default',
-  'in-review': 'warning',
-  approved: 'success',
+const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  draft: 'secondary',
+  'in-review': 'outline',
+  approved: 'default',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  draft: 'Draft',
+  'in-review': 'In Review',
+  approved: 'Approved',
 };
 
 function targetLabel(p: EduPiece) {
@@ -93,7 +107,7 @@ export function EducationContent() {
     load();
   }, [load]);
 
-  const set = (k: string) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   function openNew() {
     setEditing(null);
@@ -157,19 +171,27 @@ export function EducationContent() {
         <p className="text-sm text-muted-foreground">
           Clinician-approved lessons only. Approved pieces freeze — edits create a new version.
         </p>
-        <Button color="primary" onClick={openNew}>+ New piece</Button>
+        <Button onClick={openNew}>+ New piece</Button>
       </div>
 
-      <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
-        <Tabs.List>
-          <Tabs.Tab id="library">Library ({pieces.length})</Tabs.Tab>
-          <Tabs.Tab id="review">Review queue ({inReview.length})</Tabs.Tab>
-          <Tabs.Tab id="gaps">Gap report ({gaps.length})</Tabs.Tab>
-        </Tabs.List>
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="library">Library ({pieces.length})</TabsTrigger>
+          <TabsTrigger value="review">Review queue ({inReview.length})</TabsTrigger>
+          <TabsTrigger value="gaps">Gap report ({gaps.length})</TabsTrigger>
+        </TabsList>
 
-        <Tabs.Panel id="library">
-          <div className="flex flex-wrap gap-3 py-4">
-            <SearchField value={search} onChange={setSearch} aria-label="Search pieces" className="w-64" />
+        <TabsContent value="library">
+          <div className="flex flex-wrap items-center gap-3 py-4">
+            <div className="relative w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search pieces…"
+                className="pl-8"
+              />
+            </div>
             <select value={trackFilter} onChange={(e) => setTrackFilter(e.target.value)} aria-label="Track filter" className={selectCls}>
               <option value="all">All tracks</option>
               {TRACKS.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -185,122 +207,159 @@ export function EducationContent() {
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : (
-            <Table aria-label="Education library">
-              <Table.Header>
-                <Table.Column>Title</Table.Column>
-                <Table.Column>Target</Table.Column>
-                <Table.Column>Languages</Table.Column>
-                <Table.Column>Status</Table.Column>
-                <Table.Column>Version</Table.Column>
-                <Table.Column>Actions</Table.Column>
-              </Table.Header>
-              <Table.Body>
-                {filtered.map((p) => (
-                  <Table.Row key={p.id} id={p.id}>
-                    <Table.Cell>
-                      <div className="font-medium">{p.title}</div>
-                      <div className="text-xs text-muted-foreground">{p.sourceRef || 'No source ref'}</div>
-                    </Table.Cell>
-                    <Table.Cell>{targetLabel(p)}</Table.Cell>
-                    <Table.Cell>
-                      <div className="flex gap-1">
-                        {(p.languages.length ? p.languages : ['—']).map((l) => <Chip key={l} size="sm">{l}</Chip>)}
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell><Chip size="sm" color={STATUS_COLOR[p.status]}>{p.status}</Chip></Table.Cell>
-                    <Table.Cell>v{p.currentVersion}{p.reviewer ? ` · ${p.reviewer}` : ''}</Table.Cell>
-                    <Table.Cell>
-                      <div className="flex gap-1">
-                        {p.status !== 'approved' && <Button size="sm" variant="flat" onClick={() => openEdit(p)}>Edit</Button>}
-                        {p.status === 'draft' && <Button size="sm" variant="flat" color="warning" onClick={() => act(p.id, 'review')}>Send for review</Button>}
-                        {p.status === 'approved' && <Button size="sm" variant="flat" onClick={() => act(p.id, 'new-version', { script: '', language: 'en' })}>New version</Button>}
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Target</TableHead>
+                    <TableHead>Languages</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Version</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell>
+                        <div className="font-medium">{p.title}</div>
+                        <div className="text-xs text-muted-foreground">{p.sourceRef || 'No source ref'}</div>
+                      </TableCell>
+                      <TableCell>{targetLabel(p)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {(p.languages.length ? p.languages : ['—']).map((l) => <Badge key={l} variant="secondary" className="text-xs">{l}</Badge>)}
+                        </div>
+                      </TableCell>
+                      <TableCell><Badge variant={STATUS_VARIANT[p.status]}>{STATUS_LABEL[p.status]}</Badge></TableCell>
+                      <TableCell>v{p.currentVersion}{p.reviewer ? ` · ${p.reviewer}` : ''}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {p.status !== 'approved' && <Button size="sm" variant="outline" onClick={() => openEdit(p)}>Edit</Button>}
+                          {p.status === 'draft' && <Button size="sm" variant="outline" onClick={() => act(p.id, 'review')}>Send for review</Button>}
+                          {p.status === 'approved' && <Button size="sm" variant="outline" onClick={() => act(p.id, 'new-version', { script: '', language: 'en' })}>New version</Button>}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
-        </Tabs.Panel>
+        </TabsContent>
 
-        <Tabs.Panel id="review">
+        <TabsContent value="review">
           <div className="flex flex-col gap-3 py-4">
-            {!inReview.length && <Card className="p-6 text-sm text-muted-foreground">Nothing waiting for review.</Card>}
+            {!inReview.length && <Card><CardContent className="p-6 text-sm text-muted-foreground">Nothing waiting for review.</CardContent></Card>}
             {inReview.map((p) => (
-              <Card key={p.id} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{p.title} <span className="text-xs text-muted-foreground">v{p.currentVersion} · {targetLabel(p)}</span></div>
-                    {p.reviewNote && <div className="text-xs text-red-600">Sent back: {p.reviewNote}</div>}
-                  </div>
-                  <Button size="sm" variant="flat" onClick={() => setExpanded(expanded === p.id ? null : p.id)}>
-                    {expanded === p.id ? 'Close' : 'Review'}
-                  </Button>
-                </div>
-                {expanded === p.id && (
-                  <div className="mt-3 flex flex-col gap-2 border-t pt-3">
-                    <Input value={reviewer} onChange={setReviewer} aria-label="Reviewer name" placeholder="Reviewer name" className="max-w-xs" />
-                    <div className="flex gap-2">
-                      <Button size="sm" color="success" onClick={() => act(p.id, 'approve', { reviewer: reviewer || 'Reviewer', language: 'en' })}>Approve & freeze</Button>
-                      <Button size="sm" color="danger" variant="flat" onClick={() => act(p.id, 'sendback', { note: note || 'Needs changes' })}>Send back</Button>
+              <Card key={p.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{p.title} <span className="text-xs text-muted-foreground">v{p.currentVersion} · {targetLabel(p)}</span></div>
+                      {p.reviewNote && <div className="text-xs text-red-600">Sent back: {p.reviewNote}</div>}
                     </div>
-                    <TextArea value={note} onChange={setNote} aria-label="Review note" placeholder="Note for the author (for send-back)" />
+                    <Button size="sm" variant="outline" onClick={() => setExpanded(expanded === p.id ? null : p.id)}>
+                      {expanded === p.id ? 'Close' : 'Review'}
+                    </Button>
                   </div>
-                )}
+                  {expanded === p.id && (
+                    <div className="mt-3 flex flex-col gap-2 border-t pt-3">
+                      <div className="flex flex-col gap-1.5">
+                        <Label>Reviewer name</Label>
+                        <Input value={reviewer} onChange={(e) => setReviewer(e.target.value)} placeholder="Reviewer name" className="max-w-xs" />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => act(p.id, 'approve', { reviewer: reviewer || 'Reviewer', language: 'en' })}>Approve & freeze</Button>
+                        <Button size="sm" variant="destructive" onClick={() => act(p.id, 'sendback', { note: note || 'Needs changes' })}>Send back</Button>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <Label>Review note</Label>
+                        <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note for the author (for send-back)" />
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
               </Card>
             ))}
           </div>
-        </Tabs.Panel>
+        </TabsContent>
 
-        <Tabs.Panel id="gaps">
+        <TabsContent value="gaps">
           <div className="flex flex-col gap-3 py-4">
-            <Card className="border-amber-300 p-4 text-sm">
-              Pieces below block a pilot launch: not yet approved, or approved without a Twi version.
-              (4-week-need scheduling lands once due-date data exists.)
+            <Card className="border-amber-300">
+              <CardContent className="p-4 text-sm">
+                Pieces below block a pilot launch: not yet approved, or approved without a Twi version.
+                (4-week-need scheduling lands once due-date data exists.)
+              </CardContent>
             </Card>
             {gaps.map((p) => (
-              <Card key={p.id} className="flex items-center justify-between p-4">
-                <div>
-                  <div className="font-medium">{p.title}</div>
-                  <div className="text-xs text-muted-foreground">{targetLabel(p)} · {p.status} · {p.languages.join(', ') || 'no versions yet'}</div>
-                </div>
-                <Chip size="sm" color={p.status === 'approved' ? 'warning' : 'danger'}>
-                  {p.status === 'approved' ? 'Missing Twi' : 'Not approved'}
-                </Chip>
+              <Card key={p.id}>
+                <CardContent className="flex items-center justify-between p-4">
+                  <div>
+                    <div className="font-medium">{p.title}</div>
+                    <div className="text-xs text-muted-foreground">{targetLabel(p)} · {p.status} · {p.languages.join(', ') || 'no versions yet'}</div>
+                  </div>
+                  <Badge variant={p.status === 'approved' ? 'outline' : 'destructive'}>
+                    {p.status === 'approved' ? 'Missing Twi' : 'Not approved'}
+                  </Badge>
+                </CardContent>
               </Card>
             ))}
           </div>
-        </Tabs.Panel>
+        </TabsContent>
       </Tabs>
 
-      <Drawer isOpen={drawerOpen} onOpenChange={setDrawerOpen}>
-        <Drawer.Backdrop />
-        <Drawer.Content>
-          <Drawer.Header><Drawer.Heading>{editing ? 'Edit draft' : 'New education piece'}</Drawer.Heading></Drawer.Header>
-          <Drawer.Body>
-            <div className="flex flex-col gap-3">
-              <Input value={form.title} onChange={set('title')} aria-label="Title" placeholder="Title, e.g. Iron-rich foods in pregnancy" />
-              <div className="flex gap-3">
-                <select value={form.track} onChange={(e) => set('track')(e.target.value)} aria-label="Track" className={`${selectCls} flex-1`}>
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>{editing ? 'Edit draft' : 'New education piece'}</DrawerTitle>
+            <DrawerDescription>Create clinician-approved education content.</DrawerDescription>
+          </DrawerHeader>
+          <div className="px-4 pb-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label>Title</Label>
+              <Input value={form.title} onChange={set('title')} placeholder="e.g. Iron-rich foods in pregnancy" />
+            </div>
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <Label>Track</Label>
+                <select value={form.track} onChange={(e) => set('track')(e)} className={selectCls}>
                   {TRACKS.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
-                <select value={form.language} onChange={(e) => set('language')(e.target.value)} aria-label="Language" className={`${selectCls} w-32`}>
+              </div>
+              <div className="flex flex-col gap-1.5 w-32">
+                <Label>Language</Label>
+                <select value={form.language} onChange={(e) => set('language')(e)} className={selectCls}>
                   {LANGS.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
-              <div className="flex gap-3">
-                <Input value={form.trimester} onChange={set('trimester')} aria-label="Trimester group" placeholder="Trimester: 1st / 2nd / 3rd (optional)" className="flex-1" />
-                <Input value={form.month} onChange={set('month')} aria-label="Month" placeholder="Month 1–9 (optional)" className="w-44" inputMode="numeric" />
-              </div>
-              <Input value={form.sourceRef} onChange={set('sourceRef')} aria-label="Source reference" placeholder="Source, e.g. WHO ANC 2016 §A.2.1" />
-              <TextArea value={form.script} onChange={set('script')} aria-label="Script" placeholder="Approved script text (45–90 seconds spoken)" rows={8} />
             </div>
-          </Drawer.Body>
-          <Drawer.Footer>
-            <Button variant="flat" onClick={() => setDrawerOpen(false)}>Cancel</Button>
-            <Button color="primary" onClick={save}>{editing ? 'Save draft' : 'Create draft'}</Button>
-          </Drawer.Footer>
-        </Drawer.Content>
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <Label>Trimester</Label>
+                <Input value={form.trimester} onChange={set('trimester')} placeholder="1st / 2nd / 3rd (optional)" />
+              </div>
+              <div className="flex flex-col gap-1.5 w-44">
+                <Label>Month</Label>
+                <Input value={form.month} onChange={set('month')} placeholder="Month 1–9 (optional)" inputMode="numeric" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Source reference</Label>
+              <Input value={form.sourceRef} onChange={set('sourceRef')} placeholder="e.g. WHO ANC 2016 §A.2.1" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Script</Label>
+              <Textarea value={form.script} onChange={set('script')} placeholder="Approved script text (45–90 seconds spoken)" rows={8} />
+            </div>
+          </div>
+          <DrawerFooter>
+            <Button variant="outline" onClick={() => setDrawerOpen(false)}>Cancel</Button>
+            <Button onClick={save}>{editing ? 'Save draft' : 'Create draft'}</Button>
+          </DrawerFooter>
+        </DrawerContent>
       </Drawer>
     </div>
   );
