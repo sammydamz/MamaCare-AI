@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerFooter,
-} from '@/components/ui/drawer';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -311,12 +311,12 @@ export function EducationContent() {
         </TabsContent>
       </Tabs>
 
-      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>{editing ? 'Edit draft' : 'New education piece'}</DrawerTitle>
-            <DrawerDescription>Create clinician-approved education content.</DrawerDescription>
-          </DrawerHeader>
+      <Dialog open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editing ? 'Edit draft' : 'New education piece'}</DialogTitle>
+            <DialogDescription>Create clinician-approved education content.</DialogDescription>
+          </DialogHeader>
           <div className="px-4 pb-4 flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <Label>Title</Label>
@@ -355,12 +355,12 @@ export function EducationContent() {
               <Textarea value={form.script} onChange={set('script')} placeholder="Approved script text (45–90 seconds spoken)" rows={8} />
             </div>
           </div>
-          <DrawerFooter>
+          <DialogFooter>
             <Button variant="outline" onClick={() => setDrawerOpen(false)}>Cancel</Button>
             <Button onClick={save}>{editing ? 'Save draft' : 'Create draft'}</Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
