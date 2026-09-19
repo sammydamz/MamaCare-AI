@@ -23,7 +23,7 @@ function trackFor(pathway: string) {
   return 'bereavement';
 }
 
-export function EducationCallPanel() {
+export function EducationDeliveryPanel() {
   const { patients } = useMamaCare();
   const [patientId, setPatientId] = useState('');
   const [month, setMonth] = useState('');
@@ -74,10 +74,10 @@ export function EducationCallPanel() {
   }
 
   return (
-    <Card className="mt-4 shadow-lg">
+    <Card className="shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Education segment</CardTitle>
-        <CardDescription>Approved lesson for this call: screening first, lesson after.</CardDescription>
+        <CardTitle className="text-base">Deliver a lesson</CardTitle>
+        <CardDescription>Pick a mother and load her next approved lesson to play on the call.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex gap-2">
